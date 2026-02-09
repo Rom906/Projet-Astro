@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 
 def RK4(rp, vp, t, dt, Nsteps, q, m, B, ROdip, mu):
+
     for i in range(1, Nsteps):
         rp1 = rp[i - 1, :]
         vp1 = vp[i - 1, :]
@@ -33,10 +34,4 @@ def RK4(rp, vp, t, dt, Nsteps, q, m, B, ROdip, mu):
 
 def plot_trajectory(rp):
     plt.plot(rp[:, 0], rp[:, 1], rp[:, 2])
-    plt.xlabel("X [Earth Radii]")
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
-    ax.plot(rp[:, 0], rp[:, 1], rp[:, 2])
-    ax.set_xlabel("X [Earth Radii]")
-    ax.set_ylabel("Y [Earth Radii]")
-    ax.set_zlabel("Z [Earth Radii]")
+    plt.show()
