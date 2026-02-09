@@ -1,46 +1,49 @@
 import numpy as np
-from fonctions_RK4 import RK4, plot_trajectory
+from fonctions_RK4 import RK4, plot_trajectory_2D, plot_trajectory_3D, normalize_r_position
 
-# ==== Def Key constants ====
+# ==== Key constants ====
 RT = 6371000.0  # Earth radius [m]
 m_p = 1.67e-27  # mass of proton [kg]
-m_e = 9.109e-31  # mass of electron [kg]
-qe = 1.602e-19  # charge of proton [c]
+qe = 1.602e-19  # charge of proton [C]
 phi = 11.70 * np.pi / 180.0  # Magnetic dipole tilt [rad]
-th = 23.67 * np.pi / 180.0  # Earth's obliquity [rad]
-mu = -7.94e22 * np.array(
-    [0.0, np.sin(phi), np.cos(phi)]
-)  # Earth's magnetic moment [A m2]
-ROdip = np.array([0.0, 0.0, 0.0])  # Dipole moment location
+mu = -7.94e22 * np.array([0.0, np.sin(phi), np.cos(phi)])  # Earth's magnetic moment [A m2]
+ROdip = np.array([0.0, 0.0, 0.0])  # Dipole location
 MO = 1.0e-7  # mu0/4pi
 
-
-# =====Def. magnetic field at point r ====
+# ===== Magnetic field definition =====
 def B(R, RO, mu):
-    r = np.array([R[0] - RO[0], R[1] - RO[1], R[2] - RO[2]]) * RT
-    rmag = np.sqrt(r[0] ** 2 + r[1] ** 2 + r[2] ** 2)
-    Bfield = MO * (3.0 * r * np.dot(mu, r) / (rmag**5) - mu / (rmag**3))
+    # R is in meters
+    r = (R - RO)
+    rmag = np.linalg.norm(r)
+    Bfield = MO * (3.0 * r * np.dot(mu, r) / rmag**5 - mu / rmag**3)
     return Bfield
 
-
-# ===setup time steps====
-dt = 0.1
-tf = 5000.0
+# ===== Time steps =====
+dt = 0.001  # small enough to resolve trajectory
+tf = 500.0  # total simulation time
 Nsteps = int(tf / dt)
 
-# ==== vector initialization====
+# ===== Vector initialization =====
 t = np.linspace(0, tf, Nsteps)
 rp = np.zeros((len(t), 3))
 vp = np.zeros((len(t), 3))
 
-# ====== Setup a charged particle====
+# ===== Charged particle setup =====
 m = 4.0 * m_p
 q = 2.0 * qe
 
-# ==== Define initial conditions====
+# ===== Initial conditions =====
 t[0] = 0.0
-rp[0, :] = np.array([5.0, 5.0, 5.0])
-vp[0, :] = np.array([1.0, 1.0, 1.0])
+rp[0, :] = np.array([5.0, 5.0, 5.0])*RT# position in meters
+vp[0, :] = np.array([1e4, 2e4, 0.0])      # velocity in m/s
 
+# ===== Run RK4 =====
 rp, vp, t = RK4(rp, vp, t, dt, Nsteps, q, m, B, ROdip, mu)
-plot_trajectory(rp)
+
+# ===== Plot trajectory =====
+# normalize only for plotting in Earth radii
+# rp_plot = normalize_r_position(rp)
+# plot_trajectory_2D(rp_plot)
+# plot_trajectory_3D(rp_plot)
+
+plot_trajectory_3D(rp)
