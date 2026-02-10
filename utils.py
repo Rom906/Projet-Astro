@@ -10,7 +10,7 @@ class Vector:
     """
     def __init__(self, coordinates: List[Any]) -> None:
         """
-        Initializing method for Vector. It sets its dimension and his coordinates
+        Initializing method for Vector. Sets its dimension and its coordinates
 
         :param coordinates: The vector coordinates in the order of the list
         :type coordinates: List[Any]
@@ -23,7 +23,7 @@ class Vector:
 
     def set_coordinates(self, coordinates: List[Any]) -> None:
         """
-        set the coordinates of the current vector
+        Sets the coordinates of the current vector
 
         :param coordinates: The new vector coordinates in the order of the list
         :type coordinates: List[Any]
@@ -33,7 +33,7 @@ class Vector:
 
     def __getitem__(self, index: int) -> Any:
         """
-        give the chosen coordinate of the curent vector
+        Gives the chosen coordinate of the current vector
 
         :param index: index of the wanted coordinate
         :type index: int
@@ -44,7 +44,7 @@ class Vector:
 
     def __setitem__(self, index: int, value: Any) -> None:
         """
-        set the vector coordinate at the chosen index
+        Sets the vector coordinate at the chosen index
 
         :param index: the index of the coordinate you are changing
         :type index: int
