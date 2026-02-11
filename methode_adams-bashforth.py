@@ -25,7 +25,7 @@ def ui_plus_un(
     beta = [1, 1 / 2, 1 / 12, 1 / 24]
     alphas = [(1,), (3, -1), (23, -16, 5), (55, -59, 37, -9)]
 
-
+    for
 
     ui_plus_1 = list_ui[-1] + beta * h * sum (tout le reste)
 
