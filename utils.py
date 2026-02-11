@@ -8,6 +8,7 @@ class Vector:
     """
     A vector in any dimension with all arithmetics operators
     """
+
     def __init__(self, coordinates: List[Any]) -> None:
         """
         Initializing method for Vector. Sets its dimension and its coordinates
