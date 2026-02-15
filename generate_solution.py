@@ -1,10 +1,7 @@
 from utils import Vector
 from typing import Callable, List
-# import seaborn as sb
-# import matplotlib.pyplot as plt
-
-differential_equation_type = Callable[[Vector, float], Vector]
-model_type = Callable[[List[Vector], differential_equation_type, float, float, int], Vector]
+import seaborn as sb
+import matplotlib.pyplot as plt
 
 
 def get_intervall(steps: int, minimum: float, maximum: float) -> List[float]:
@@ -28,8 +25,8 @@ def get_intervall(steps: int, minimum: float, maximum: float) -> List[float]:
 
 
 def compute_solution(
-    model: model_type,
-    differential_equation: differential_equation_type,
+    model: Callable[[List[Vector], Callable[[Vector, float], Vector], float, float, int], Vector],
+    differential_equation: Callable[[Vector, float], Vector],
     steps: int,
     minimum: float,
     maximum: float,
@@ -41,9 +38,9 @@ def compute_solution(
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps
 
     :param model: function representing the model used to approximate the solution. It needs to take a specified amount of previous steps to calculate the next one
-    :type model: model_type
+    :type model: Callable[[List[Vector], differential_equation_type, float, float, int], Vector]
     :param differential_equation: represent the differential equation system to approximate. It is a function which represent the f in the equation y' = f(y, t)
-    :type differential_equation: differential_equation_type
+    :type differential_equation: Callable[[Vector, float], Vector]
     :param steps: number of steps used to approximate the solution
     :type steps: int
     :param minimum: the value where we start to compute the approximate solution of the differential equation
@@ -71,7 +68,7 @@ def compute_solution(
             solution.append(model(vector_list, differential_equation, minimum + h * i, h, i))
         start = minimum - h * number_of_steps
 
-    intervall = get_intervall(steps, start, maximum)
+    intervall = get_intervall(steps - 1, start, maximum)
 
     for ti in intervall:
         vector_list = []
@@ -79,3 +76,44 @@ def compute_solution(
             vector_list.append(solution[-1 - i])
         solution.append(model(vector_list, differential_equation, ti, h, number_of_steps))
     return solution
+
+
+def plot_x_solution(time: List[float], solution: List[Vector]) -> None:
+    x_coordinate = []
+    for vector in solution:
+        x_coordinate.append(vector[0][0])
+    sb.lineplot(x=time, y=x_coordinate)
+    plt.title("x coordinate of the particule trajectory")
+    plt.grid(True)
+    plt.show()
+
+
+def plot_y_solution(time: List[float], solution: List[Vector]) -> None:
+    y_coordinate = []
+    for vector in solution:
+        y_coordinate.append(vector[0][1])
+    sb.lineplot(x=time, y=y_coordinate)
+    plt.title("y coordinate of the particule trajectory")
+    plt.grid(True)
+    plt.show()
+
+
+def plot_z_solution(time: List[float], solution: List[Vector]) -> None:
+    z_coordinate = []
+    for vector in solution:
+        z_coordinate.append(vector[0][2])
+    sb.lineplot(x=time, y=z_coordinate)
+    plt.title("z coordinate of the particule trajectory")
+    plt.grid(True)
+    plt.show()
+
+
+def plot_error(approximated_solution: List[Vector], exact_solution: List[Vector], time: List[float]) -> None:
+    error = []
+    for i in range(len(exact_solution)):
+        error.append(abs(approximated_solution[i][0] - exact_solution[i][0]) ** 2)
+        print(approximated_solution[i][0])
+    sb.lineplot(x=time, y=error)
+    plt.title("Model error during time")
+    plt.grid(True)
+    plt.show()
