@@ -13,7 +13,7 @@ def methode_de_collocation_de_degre_trois(x_0, f, t_0, t_1):
     return [a_0, a_1, a_2, a_3]
 
 q = 1
-mp = 1
+mp = 2
 mu0 = 1
 m = Vector([1, 1, 1])
 er = Vector([1, 0, 0])
