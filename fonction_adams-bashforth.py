@@ -1,5 +1,13 @@
 import typing
 
+import matplotlib.pyplot as plt
+
+RT = 6371000.0  # Earth radius [m]
+
+
+def normalize_r_position(rp):
+    return rp / RT
+
 
 def ui_plus_un(
     liste_ui: typing.List["Vector"],
