@@ -87,6 +87,14 @@ def compute_solution(
 
 
 def plot_x_solution(time: List[float], solution: List[Vector]) -> None:
+    """
+    plot the x coordinates of the computed solution
+
+    :param time: The list of the different time where the soltution was computed
+    :type time: List[float]
+    :param solution: The computed solution
+    :type solution: List[Vector]
+    """
     x_coordinate = []
     for vector in solution:
         x_coordinate.append(vector[0][0])
@@ -97,6 +105,14 @@ def plot_x_solution(time: List[float], solution: List[Vector]) -> None:
 
 
 def plot_y_solution(time: List[float], solution: List[Vector]) -> None:
+    """
+    plot the y coordinates of the computed solution
+
+    :param time: The list of the different time where the soltution was computed
+    :type time: List[float]
+    :param solution: The computed solution
+    :type solution: List[Vector]
+    """
     y_coordinate = []
     for vector in solution:
         y_coordinate.append(vector[0][1])
@@ -107,6 +123,14 @@ def plot_y_solution(time: List[float], solution: List[Vector]) -> None:
 
 
 def plot_z_solution(time: List[float], solution: List[Vector]) -> None:
+    """
+    plot the z coordinates of the computed solution
+
+    :param time: The list of the different time where the soltution was computed
+    :type time: List[float]
+    :param solution: The computed solution
+    :type solution: List[Vector]
+    """
     z_coordinate = []
     for vector in solution:
         z_coordinate.append(vector[0][2])
@@ -116,9 +140,15 @@ def plot_z_solution(time: List[float], solution: List[Vector]) -> None:
     plt.show()
 
 
-def plot_error(
-    approximated_solution: List[Vector], exact_solution: List[Vector], time: List[float]
-) -> None:
+def plot_error(approximated_solution: List[Vector], exact_solution: List[Vector], time: List[float]) -> None:
+    """
+    plot the error on the position during time of the computed solution compared to an exact (or almost exact) solution
+
+    :param approximated_solution: the computed solution with the choosen model
+    :type approximated_solution: List[vector]
+    :param exact_solution: the exact solution of the equation
+    :type exact_solution: List[Vector]
+    """
     error = []
     for i in range(len(exact_solution)):
         error.append(abs(approximated_solution[i][0] - exact_solution[i][0]) ** 2)
@@ -130,6 +160,12 @@ def plot_error(
 
 
 def plot_3d(positions: List[Vector]) -> None:
+    """
+    make a 3D plot of an ordonated liste of position to represent the trajectory of the studied system
+
+    :param positions: the list of the different position
+    :type positions: List[Vector0]
+    """
     figure = go.Figure()
 
     # Plot the position
