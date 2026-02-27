@@ -5,7 +5,11 @@ import typing
 
 
 def ui_plus_un(
-    liste_ui: typing.List['Vector'], f: typing.Callable[[float,'Vector'],'Vector'], ti: float, h: float, m: int
+    liste_ui: typing.List["Vector"],
+    f: typing.Callable[[float, "Vector"], "Vector"],
+    ti: float,
+    h: float,
+    m: int,
 ):
     """Calculate the next ui of the list, using the previous ones
 
@@ -22,13 +26,23 @@ def ui_plus_un(
     m : int
         number of previous step used"""
 
-    beta = [1, 1 / 2, 1 / 12, 1 / 24]
+    betas = [1, 1 / 2, 1 / 12, 1 / 24]
     alphas = [(1,), (3, -1), (23, -16, 5), (55, -59, 37, -9)]
 
-    for
+    beta_choisi = betas[m - 1]
+    alpha_choisi = alphas[m - 1]
 
-    ui_plus_1 = list_ui[-1] + beta * h * sum (tout le reste)
+    sum = 0
 
-    res = u_i + h * beta * sum_ODE
+    for i in range(1, m + 1):
+        alpha_i = alpha_choisi[i]
+        u_pred = liste_ui[-i]
+        t_pred = ti - (i - 1) * h
 
-    return res
+        produit = alpha_i * f(t_pred, u_pred)
+
+        sum += produit
+
+    ui_plus_1 = liste_ui[-1] + beta_choisi * h * sum
+
+    return ui_plus_1
