@@ -3,12 +3,12 @@ from utils import Vector
 
 
 def adams(
-    liste_ui: typing.List["Vector"],
-    f: typing.Callable[[float, "Vector"], "Vector"],
+    liste_ui: typing.List[Vector],
+    f: typing.Callable[[float, Vector], Vector],
     ti: float,
     h: float,
     m: int,
-):
+) -> Vector:
     """Calculate the next ui of the list, using the previous ones
 
     Parameters
@@ -30,9 +30,9 @@ def adams(
     beta_choisi = betas[m - 1]
     alpha_choisi = alphas[m - 1]
 
-    sum = 0
+    sum = Vector([Vector([0 for i in range(liste_ui[0][0].dimension)]) for i in range(liste_ui[0].dimension)])
 
-    for i in range(1, m + 1):
+    for i in range(m):
         alpha_i = alpha_choisi[i]
         u_pred = liste_ui[-i]
         t_pred = ti - (i - 1) * h

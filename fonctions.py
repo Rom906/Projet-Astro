@@ -68,7 +68,7 @@ def compute_solution(
         for i in range(1, number_of_steps):
             vector_list = []
             for j in range(i):
-                vector_list.append(solution[-1 - i])
+                vector_list.append(solution[-i])
             solution.append(
                 model(vector_list, differential_equation, minimum + h * i, h, i)
             )
@@ -185,24 +185,24 @@ def plot_3d(positions: List[Vector]) -> None:
     )
 
     # Add a sphere at (0, 0, 0) representing earth
-    r = 1
-    phi = get_intervall(30, 0, 2 * pi)
-    theta = get_intervall(15, 0, pi)
-    xe = []
-    ye = []
-    ze = []
-    for i in range(len(phi)):
-        row_x = []
-        row_y = []
-        row_z = []
-        for j in range(len(theta)):
-            row_x.append(r * cos(phi[i]) * sin(theta[j]))
-            row_y.append(r * sin(phi[i]) * sin(theta[j]))
-            row_z.append(r * cos(theta[j]))
-        xe.append(row_x)
-        ye.append(row_y)
-        ze.append(row_z)
-    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False))
+    # r = 1
+    # phi = get_intervall(30, 0, 2 * pi)
+    # theta = get_intervall(15, 0, pi)
+    # xe = []
+    # ye = []
+    # ze = []
+    # for i in range(len(phi)):
+    #     row_x = []
+    #     row_y = []
+    #     row_z = []
+    #     for j in range(len(theta)):
+    #         row_x.append(r * cos(phi[i]) * sin(theta[j]))
+    #         row_y.append(r * sin(phi[i]) * sin(theta[j]))
+    #         row_z.append(r * cos(theta[j]))
+    #     xe.append(row_x)
+    #     ye.append(row_y)
+    #     ze.append(row_z)
+    # figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False))
 
     # Set parameters
     figure.update_layout(

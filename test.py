@@ -9,7 +9,7 @@ mp = 1
 mu0 = 1
 er = Vector([1, 0, 0])
 
-vector_CI = Vector([Vector([-10, 0, 0]), Vector([1, 1, 1])])
+vector_CI = Vector([Vector([0.1, 0.1, 0]), Vector([0, 0.1, 0])])
 
 
 def f(t, Y):
@@ -20,4 +20,8 @@ def f(t, Y):
     return Vector([f_0, f_1])
 
 
-solutions = compute_solution(adams, f, 100, -10, 10, vector_CI, True, 4)
+solutions = compute_solution(adams, f, 100000, -1, 1, vector_CI, True, 4)
+ploted_position = []
+for i in range(len(solutions)):
+    ploted_position.append(solutions[i][1])
+plot_3d(ploted_position)
