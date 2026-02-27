@@ -1,9 +1,8 @@
 import typing
+from utils import Vector
 
-import matplotlib.pyplot as plt
 
-
-def ui_plus_un(
+def adams(
     liste_ui: typing.List["Vector"],
     f: typing.Callable[[float, "Vector"], "Vector"],
     ti: float,
