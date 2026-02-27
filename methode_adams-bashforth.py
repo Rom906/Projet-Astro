@@ -1,8 +1,5 @@
 import typing
 
-# y = alpha f'' + beta f' +  gama f + d
-# ti+1 = t0 + h*i = ti + h
-
 
 def ui_plus_un(
     liste_ui: typing.List["Vector"],
@@ -46,3 +43,28 @@ def ui_plus_un(
     ui_plus_1 = liste_ui[-1] + beta_choisi * h * sum
 
     return ui_plus_1
+
+
+# === Trajectory visualization ===
+
+
+def plot_trajectory_2D(rp):
+    plt.plot(rp[:, 0], rp[:, 1])
+    plt.xlabel("X (Earth Radii)")
+    plt.ylabel("Y (Earth Radii)")
+    plt.title("2D Trajectory of Charged Particle")
+    plt.grid()
+    plt.axis("equal")
+    plt.show()
+
+
+def plot_trajectory_3D(rp):
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection="3d")
+    ax.plot(rp[:, 0], rp[:, 1], rp[:, 2])
+    ax.set_xlabel("X (Earth Radii)")
+    ax.set_ylabel("Y (Earth Radii)")
+    ax.set_zlabel("Z (Earth Radii)")
+    ax.set_title("3D Trajectory of Charged Particle")
+    plt.show()
