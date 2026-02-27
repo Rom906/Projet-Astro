@@ -21,3 +21,5 @@ def f(t, Y):
 
 
 solutions = compute_solution(adams, f, 100, -10, 10, vector_CI, True, 4)
+
+plot_3d(solutions)
