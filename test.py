@@ -7,16 +7,21 @@ m = Vector([1, 1, 1])
 q = 1
 mp = 1
 mu0 = 1
-er = Vector([1, 0, 0])
 
-vector_CI = Vector([Vector([0.1, 0.1, 0]), Vector([0, 0.1, 0])])
+vector_CI = Vector([Vector([5, 2, 0]), Vector([0.5, 0.5, 0.5])])
 
 
 def f(t, Y):
-    y_0 = Y[0]
-    y_1 = Y[1]
-    f_0 = ((q / mp) * (mu0 / (4 * pi * y_0[0] ** 3)) * y_1) @ (3 * (m * er) * er - m)
-    f_1 = y_0
+    v = Y[0]
+    r = Y[1]
+
+    er = r.normalized()
+
+    B = (mu0 / (4 * pi * v[0] ** 3)) * (3 * (m * er) * er - m)
+
+    f_0 = (q / mp) * (v @ B)
+    f_1 = v
+
     return Vector([f_0, f_1])
 
 
