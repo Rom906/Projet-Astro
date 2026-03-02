@@ -67,4 +67,3 @@ def Euler_v2(R, V, q, m, B, ROdip, mu, dt):
     KE = 0.5 * m * np.dot(V_new_array, V_new_array)
     
     return R_new, V_new, KE
-
