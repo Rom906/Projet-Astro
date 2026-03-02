@@ -15,12 +15,17 @@ def f(t, Y: Vector):
     y_0: Vector = Y[0]
     y_1: Vector = Y[1]
     y_1_norm = y_1.normalized()
-    f_0 = ((q / mp) * (mu0 / (4 * pi * (abs(y_1) ** 3))) * y_0 @ (3 * ((m * (y_1_norm)) * y_1_norm - m)))
+    f_0 = (
+        (q / mp)
+        * (mu0 / (4 * pi * (abs(y_1) ** 3)))
+        * y_0
+        @ (3 * ((m * (y_1_norm)) * y_1_norm - m))
+    )
     f_1 = y_0
     return Vector([f_0, f_1])
 
 
-solutions = compute_solution(dormand_prince, f, 1000000, 0, 1000000, vector_CI, False, 1)
+solutions = compute_solution(dormand_prince, f, 100000, 0, 1000000, vector_CI, False, 1)
 ploted_position = []
 for i in range(0, len(solutions), 100):
     ploted_position.append(solutions[i][1])

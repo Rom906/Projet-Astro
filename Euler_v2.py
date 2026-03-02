@@ -9,9 +9,9 @@ from utils import Vector
 def Euler_v2(R, V, q, m, B, ROdip, mu, dt):
     """
     Single step Euler method for particle motion in a magnetic field.
-    
+
     This function performs one iteration of the Euler integration scheme.
-    
+
     Parameters:
     -----------
     R : Vector
@@ -30,7 +30,7 @@ def Euler_v2(R, V, q, m, B, ROdip, mu, dt):
         Magnetic moment vector
     dt : float
         Time step
-    
+
     Returns:
     --------
     R_new : Vector
@@ -40,14 +40,14 @@ def Euler_v2(R, V, q, m, B, ROdip, mu, dt):
     KE : float
         Kinetic energy
     """
-    
+
     # Convert Vector to numpy array for B field calculation
     R_array = np.array(R.coordinates)
     V_array = np.array(V.coordinates)
-    
+
     # Update position: R[i] = R[i-1] + V[i-1] * dt
     R_new = R + V * dt
-    
+
     # Calculate magnetic field at current position
     B_field = B(R_array, ROdip, mu)
 
@@ -65,5 +65,5 @@ def Euler_v2(R, V, q, m, B, ROdip, mu, dt):
     # Calculate kinetic energy: KE = 0.5 * m * ||V||²
     V_new_array = np.array(V_new.coordinates)
     KE = 0.5 * m * np.dot(V_new_array, V_new_array)
-    
+
     return R_new, V_new, KE

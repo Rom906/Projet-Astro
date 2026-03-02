@@ -1,4 +1,3 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -78,4 +77,3 @@ def RK4(vector_list, differential_equation, t, h, number_of_steps):
     Y_next = Y + (k1 * (h / 6.0) + k2 * (h / 3.0) + k3 * (h / 3.0) + k4 * (h / 6.0))
 
     return Y_next
-
