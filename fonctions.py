@@ -4,6 +4,7 @@ import seaborn as sb
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from math import pi, cos, sin
+import time
 
 
 def get_intervall(steps: int, minimum: float, maximum: float) -> List[float]:
@@ -60,6 +61,7 @@ def compute_solution(
     :return: a list of "steps" approximated value of the differential equation solution
     :rtype: List[Vector]
     """
+    start_time = time.time()
     solution: List[Vector] = [initial_conditions]
     h = (maximum - minimum) / (steps - 1)
     start = minimum + h
@@ -83,6 +85,14 @@ def compute_solution(
         solution.append(
             model(vector_list, differential_equation, ti, h, number_of_steps)
         )
+    
+    comp_time = time.time() - start_time
+    print(f"\n=== Computation Statistics ===")
+    print(f"Method: {model.__name__}")
+    print(f"Number of points: {len(solution)}")
+    print(f"Computation time: {comp_time:.4f} s")
+    print(f"==============================\n")
+    
     return solution
 
 
