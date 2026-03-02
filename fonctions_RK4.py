@@ -1,16 +1,24 @@
+
 import numpy as np
 import matplotlib.pyplot as plt
 
 RT = 6371000.0  # Earth radius [m]
 
-# ==== RK4 implementation ====
+
+# ==== RK4 implementation for numpy arrays ====
 
 
 def normalize_r_position(rp):
     return rp / RT
 
 
-def RK4(rp, vp, t, dt, Nsteps, q, m, B, ROdip, mu):
+def RK4_numpy(rp, vp, t, dt, Nsteps, q, m, B, ROdip, mu):
+    """
+    Legacy RK4 implementation operating on numpy arrays.
+
+    Parameters kept similar to the original code but with an explicit Nsteps parameter.
+    Returns updated (rp, vp, t).
+    """
     for i in range(1, Nsteps):
         rp1 = rp[i - 1, :]
         vp1 = vp[i - 1, :]
@@ -34,25 +42,40 @@ def RK4(rp, vp, t, dt, Nsteps, q, m, B, ROdip, mu):
     return rp, vp, t
 
 
-# === Trajectory visualization ===
-
-def plot_trajectory_2D(rp):
-    plt.plot(rp[:, 0], rp[:, 1])
-    plt.xlabel('X (Earth Radii)')
-    plt.ylabel('Y (Earth Radii)')
-    plt.title('2D Trajectory of Charged Particle')
-    plt.grid()
-    plt.axis('equal')
-    plt.show()
+# ==== RK4 implementation compatible with compute_solution and Vector objects ====
 
 
-def plot_trajectory_3D(rp):
+def RK4(vector_list, differential_equation, t, h, number_of_steps):
+    """
+    Runge-Kutta 4 single step compatible with `compute_solution`.
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot(rp[:, 0], rp[:, 1], rp[:, 2])
-    ax.set_xlabel('X (Earth Radii)')
-    ax.set_ylabel('Y (Earth Radii)')
-    ax.set_zlabel('Z (Earth Radii)')
-    ax.set_title('3D Trajectory of Charged Particle')
-    plt.show()
+    Expected inputs:
+      - vector_list: List[Vector] where vector_list[0] is the most recent state Y_n.
+      - differential_equation: function f(t, Y) -> Vector representing Y'.
+      - t: current time (float)
+      - h: timestep (float)
+      - number_of_steps: not used for single-step RK4 but kept for API compatibility.
+
+    Returns:
+      - Vector: the estimated Y_{n+1}
+    """
+    # The most recent state
+    Y = vector_list[0]
+
+    # k1 = f(t, Y)
+    k1 = differential_equation(t, Y)
+
+    # k2 = f(t + h/2, Y + k1 * (h/2))
+    k2 = differential_equation(t + h / 2.0, Y + k1 * (h / 2.0))
+
+    # k3 = f(t + h/2, Y + k2 * (h/2))
+    k3 = differential_equation(t + h / 2.0, Y + k2 * (h / 2.0))
+
+    # k4 = f(t + h, Y + k3 * h)
+    k4 = differential_equation(t + h, Y + k3 * h)
+
+    # Combine to produce next value
+    Y_next = Y + (k1 * (h / 6.0) + k2 * (h / 3.0) + k3 * (h / 3.0) + k4 * (h / 6.0))
+
+    return Y_next
+
