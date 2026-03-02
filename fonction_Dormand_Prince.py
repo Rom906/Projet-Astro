@@ -83,7 +83,7 @@ def dormand_prince(
 
         # Evaluate f at the stage point
         t_stage = t + c[i] * h
-        k_i = f(y_stage, t_stage)
+        k_i = f(t_stage, y_stage)
         k.append(k_i)
 
     # Compute the 5th order solution
