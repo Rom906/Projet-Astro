@@ -1,8 +1,7 @@
-from Integrate_fonctions import adams
 from generate_solutions import plot_3d, compute_solution
 from utils import Vector
 from math import pi
-from RK4 import RK4
+from Integrate_fonctions import adams, RK4, euler, dormand_prince
 
 m = Vector([100, 100, 100])
 q = 0.1
