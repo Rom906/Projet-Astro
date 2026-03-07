@@ -1,5 +1,4 @@
 import typing
-import numpy as np
 from utils import Vector
 
 
