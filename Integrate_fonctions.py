@@ -1,6 +1,6 @@
 import typing
 import numpy as np
-from utils import Vector, Callable
+from utils import Vector
 
 
 def adams(
@@ -54,7 +54,7 @@ def adams(
 
 def euler(
     liste_ui: typing.List[Vector],
-    f: Callable[[float, Vector], Vector],
+    f: typing.Callable[[float, Vector], Vector],
     ti: float,
     h: float,
     m: int,
@@ -100,7 +100,11 @@ def RK4(vector_list, differential_equation, t, h, number_of_steps):
 
 
 def dormand_prince(
-    u_i: List[Vector], f: Callable[[Vector, float], Vector], ti: float, h: float, m: int
+    u_i: typing.List[Vector],
+    f: typing.Callable[[Vector, float], Vector],
+    ti: float,
+    h: float,
+    m: int,
 ) -> Vector:
     """
     Dormand-Prince 5(4) method for solving differential equations.
