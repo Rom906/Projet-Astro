@@ -1,5 +1,5 @@
 from utils import Vector
-from typing import Callable, List
+from typing import Callable, List, Tuple
 import seaborn as sb
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
@@ -38,7 +38,7 @@ def compute_solution(
     initial_conditions: Vector,
     multiple_steps_method: bool = False,
     number_of_steps: int = 1,
-) -> List[Vector]:
+) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps
 
@@ -93,7 +93,7 @@ def compute_solution(
     print(f"Computation time: {comp_time:.4f} s")
     print("==============================\n")
 
-    return solution
+    return solution, intervall
 
 
 def plot_x_solution(time: List[float], solution: List[Vector]) -> None:

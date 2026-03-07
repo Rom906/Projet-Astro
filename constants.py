@@ -8,4 +8,4 @@ phi = 11.70 * pi / 180.0  # Magnetic dipole tilt [rad]
 mu = -7.94e22 * Vector([0.0, sin(phi), cos(phi)])  # Earth's magnetic moment [A m2]
 ROdip = Vector([0.0, 0.0, 0.0])  # Dipole location
 MO = 1.0e-7  # mu0/4pi
-er = Vector([1, 0, 0]) # first unitay vector of the basis for spherical coordinates
+er = Vector([1, 0, 0])  # first unitay vector of the basis for spherical coordinates
