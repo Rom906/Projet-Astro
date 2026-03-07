@@ -1,5 +1,5 @@
-from fonction_adams_bashforth import adams
-from fonctions import plot_3d, compute_solution
+from Integrate_fonctions import adams
+from generate_solutions import plot_3d, compute_solution
 from utils import Vector
 from math import pi
 from RK4 import RK4
