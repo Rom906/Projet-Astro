@@ -3,6 +3,7 @@ from fonctions import plot_3d, compute_solution
 from utils import Vector
 from math import pi
 from RK4 import RK4
+from euler import euler
 
 m = Vector([100, 100, 100])
 q = 0.1
@@ -29,14 +30,20 @@ def f(t, Y: Vector):
 # test comparatif
 
 # solutions_1 = compute_solution(adams, f, 10000000, 0, 1000000, vector_CL, False, 1)
-solutions_2 = compute_solution(RK4, f, 10000000, 0, 10000000, vector_CL, False, 1)
+# solutions_2 = compute_solution(RK4, f, 10000000, 0, 10000000, vector_CL, False, 1)
+solutions_3 = compute_solution(euler, f, 10000000, 0, 10000000, vector_CL, False, 1)
 
 # ploted_position_1 = []
 # for i in range(0, len(solutions_1), 100):
 #     ploted_position_1.append(solutions_1[i][1])
 # plot_3d(ploted_position_1)
 
-ploted_position_2 = []
-for i in range(0, len(solutions_2), 100):
-    ploted_position_2.append(solutions_2[i][1])
-plot_3d(ploted_position_2)
+# ploted_position_2 = []
+# for i in range(0, len(solutions_2), 100):
+#     ploted_position_2.append(solutions_2[i][1])
+# plot_3d(ploted_position_2)
+
+ploted_position_3 = []
+for i in range(0, len(solutions_3), 100):
+    ploted_position_3.append(solutions_3[i][1])
+plot_3d(ploted_position_3)
