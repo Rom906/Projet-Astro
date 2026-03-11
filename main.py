@@ -1,4 +1,4 @@
-from generate_solutions import compute_solution, plot_3d
+from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
@@ -16,14 +16,19 @@ initial_velocity = 4e5 * 3 ** (1 / 2) * Vector([1, 1, 1])
 initial_conditions = convert_to_normalized(initial_position, initial_velocity, parameters)
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)
-solution_normalized, time_noramlized = compute_solution(
+solution_normalized, time_noramlized = compute_solution_trash_points(
     RK4,
     differential_equation_normalized,
     200000,
     0,
-    100000,
+    10000000,
     initial_conditions,
-)
+    False,
+    1,
+    100
+    )
+
+print(len(solution_normalized))
 
 position = []
 velocity = []

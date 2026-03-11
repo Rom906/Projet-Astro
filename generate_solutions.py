@@ -96,6 +96,90 @@ def compute_solution(
     return solution, intervall
 
 
+def compute_solution_trash_points(
+    model: Callable[
+        [List[Vector], Callable[[float, Vector], Vector], float, float, int], Vector
+    ],
+    differential_equation: Callable[[float, Vector], Vector],
+    steps: int,
+    minimum: float,
+    maximum: float,
+    initial_conditions: Vector,
+    multiple_steps_method: bool = False,
+    number_of_steps: int = 1,
+    ratio: int = 1
+) -> Tuple[List[Vector], List[float]]:
+    """
+    compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
+
+    :param model: function representing the model used to approximate the solution. It needs to take a specified amount of previous steps to calculate the next one
+    :type model: Callable[[List[Vector], differential_equation_type, float, float, int], Vector]
+    :param differential_equation: represent the differential equation system to approximate. It is a function which represent the f in the equation y' = f(y, t)
+    :type differential_equation: Callable[[Vector, float], Vector]
+    :param steps: number of steps used to approximate the solution
+    :type steps: int
+    :param minimum: the value where we start to compute the approximate solution of the differential equation
+    :type minimum: float
+    :param maximum: the value where we stop to compute the approximate solution of the differential equation
+    :type maximum: float
+    :param initial_conditions: the initial values of the differential equation system
+    :type initial_conditions: Vector
+    :param multiple_steps_method: if true, means that the model used is using multiple steps to compute the solution
+    :type multiple_steps_method: bool
+    :param number_of_steps: if the method is using multiple steps, it is the maximum number of step used by it
+    :type number_of_step: int
+    :param ratio: number of point keeped during computation. If 1 all points will be keeped, if 2 only one out of 2, ...
+    :type ratio: int
+    :return: a list of "steps" approximated value of the differential equation solution
+    :rtype: List[Vector]
+    """
+    start_time = time.time()
+    solution: List[Vector] = [initial_conditions]
+    h = (maximum - minimum) / (steps - 1)
+    start = minimum + h
+
+    if multiple_steps_method:
+        for i in range(1, number_of_steps):
+            vector_list = []
+            for j in range(i):
+                vector_list.append(solution[-i])
+            solution.append(
+                model(vector_list, differential_equation, minimum + h * i, h, i)
+            )
+        start = minimum - h * number_of_steps
+
+    intervall = get_intervall(steps - 1, start, maximum)
+
+    counter = 0
+    treesold = ratio
+    for ti in intervall:
+        vector_list = []
+        for i in range(number_of_steps):
+            vector_list.append(solution[-1 - i])
+        solution.append(
+            model(vector_list, differential_equation, ti, h, number_of_steps)
+        )
+
+        if treesold >= 0:
+            treesold -= 1
+        else:
+            if counter >= ratio:
+                counter = 1
+                for i in range(ratio - 1):
+                    solution.pop(len(solution) - 2 * ratio + i)
+            else:
+                counter += 1
+
+    comp_time = time.time() - start_time
+    print("\n=== Computation Statistics ===")
+    print(f"Method: {model.__name__}")
+    print(f"Number of points: {len(solution)}")
+    print(f"Computation time: {comp_time:.4f} s")
+    print("==============================\n")
+
+    return solution, intervall
+
+
 def plot_x_solution(time: List[float], solution: List[Vector]) -> None:
     """
     plot the x coordinates of the computed solution
