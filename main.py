@@ -1,8 +1,9 @@
-from generate_solutions import compute_solution
+from generate_solutions import compute_solution, plot_3d
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
-    convert_to_dimensional,
+    convert_to_dimensional_time_only,
+    convert_to_normalized
 )
 from Integrate_fonctions import adams, euler, RK4, dormand_prince
 from utils import Vector
@@ -10,18 +11,27 @@ from constants import RT, mp, MO, qe, mu
 
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
+initial_position = Vector([0, 0.925e8, 0])
+initial_velocity = 4e5 * 3 ** (1 / 2) * Vector([1, 1, 1])
+initial_conditions = convert_to_normalized(initial_position, initial_velocity, parameters)
+initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
+print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution(
     RK4,
     differential_equation_normalized,
-    2000000,
+    200000,
     0,
-    1000,
-    Vector([Vector([0, 1, 0]), Vector([0, -0.05, -0.05])]),
+    100000,
+    initial_conditions,
 )
 
-position_normalized = solution_normalized[0]
-velocity_normalized = solution_normalized[1]
-position, velocity = convert_to_dimensional(
-    position_normalized, velocity_normalized, parameters
-)
+position = []
+velocity = []
+for i in range(len(solution_normalized)):
+    position_denormalize, velocity_denormalized = solution_normalized[i][0], solution_normalized[i][1]
+    position.append(position_denormalize)
+    velocity.append(velocity_denormalized)
+
 time = parameters.rescale_normalized_time_intervall(time_noramlized)
+
+plot_3d(position)

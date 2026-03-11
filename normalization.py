@@ -96,6 +96,14 @@ class NormalizationParameters:
         else:
             return Vector((u_prime_norm * scale).tolist())
 
+    def dimensionalize_velocity_time_only(self, u_prime_norm: Vector | np.ndarray) -> Vector:
+        """Convert normalized velocity u' to dimensional v = (1/T)·u'."""
+        scale = 1 / self.T
+        if isinstance(u_prime_norm, Vector):
+            return Vector([u_prime_norm[i] * scale for i in range(3)])
+        else:
+            return Vector((u_prime_norm * scale).tolist())
+
     def normalize_velocity(self, v_dim: Vector | np.ndarray) -> Vector:
         """Convert dimensional velocity v to normalized u' = (T/R₀)·v."""
         scale = self.T / self.R0
@@ -359,3 +367,25 @@ def convert_to_dimensional(u_norm, v_norm, params: NormalizationParameters):
     r_dim = params.dimensionalize_position(u_norm)
     v_dim = params.dimensionalize_velocity(v_norm)
     return r_dim, v_dim
+
+
+def convert_to_dimensional_time_only(u_norm, v_norm, params: NormalizationParameters):
+    """
+    Convert normalized coordinates to another normalized form but this time only normalized in space.
+
+    Parameters:
+    -----------
+    u_norm : np.ndarray or Vector
+        Normalized position
+    v_norm : np.ndarray or Vector
+        Normalized velocity
+    params : NormalizationParameters
+        Normalization parameters containing R0 and T
+
+    Returns:
+    --------
+    tuple
+        (r_dim, v_dim) - dimensional position [m] and velocity [m/s]
+    """
+    v_dim = params.dimensionalize_velocity_time_only(v_norm)
+    return u_norm, v_dim
