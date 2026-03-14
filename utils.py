@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Any, List, Iterator
-from math import sqrt
+from math import sqrt, sin, cos
 from numbers import Real
 
 
@@ -250,3 +250,21 @@ class Vector:
         :rtype: Vector
         """
         return Vector(self.coordinates.copy())
+
+
+def convert_spherical_to_cartesian(sp_vector: Vector) -> Vector:
+    """
+    take a vector in spherical coordinates and return the same vector but in cartesian
+    :param sp_vector: the vector to convert
+    :type sp_vector: Vector
+    :return: a vector in cartesian coordinates system
+    :rtype: Vector
+    """
+    r = sp_vector[0]
+    theta = sp_vector[1]
+    phi = sp_vector[2]
+
+    x = r * cos(phi) * sin(theta)
+    y = r * sin(phi) * sin(theta)
+    z = r * cos(theta)
+    return Vector([x, y, z])

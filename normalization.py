@@ -30,6 +30,7 @@ import numpy as np
 from utils import Vector
 from math import pi
 from typing import List
+from constants import mu
 
 
 class NormalizationParameters:
@@ -266,7 +267,7 @@ def differential_equation_normalized(
     tau: float,
     Y: Vector,
     params: NormalizationParameters = None,
-    mu_direction=np.array([0.0, 0.0, 1.0]),
+    mu_direction=mu.normalized(),
 ) -> Vector:
     """
     Direct evaluation of normalized differential equation.
