@@ -1,4 +1,4 @@
-from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points
+from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points, plot_kinetic_energy
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
@@ -67,3 +67,4 @@ print(min_z, max_z)
 time = parameters.rescale_normalized_time_intervall(time_noramlized)
 
 plot_3d(position)
+plot_kinetic_energy(velocity, time, mp)

@@ -152,6 +152,7 @@ def compute_solution_trash_points(
 
     counter = 0
     treesold = ratio
+    time_index_deleted = []
     for ti in intervall:
         vector_list = []
         for i in range(number_of_steps):
@@ -167,8 +168,13 @@ def compute_solution_trash_points(
                 counter = 1
                 for i in range(ratio - 1):
                     solution.pop(len(solution) - 2 * ratio + i)
+                    time_index_deleted.append(len(solution) - 2 * ratio + i)
+
             else:
                 counter += 1
+
+    for index in time_index_deleted:
+        intervall.pop(index)
 
     comp_time = time.time() - start_time
     print("\n=== Computation Statistics ===")
@@ -248,7 +254,6 @@ def plot_error(
     error = []
     for i in range(len(exact_solution)):
         error.append(abs(approximated_solution[i][0] - exact_solution[i][0]) ** 2)
-        print(approximated_solution[i][0])
     sb.lineplot(x=time, y=error)
     plt.title("Model error during time")
     plt.grid(True)
@@ -310,3 +315,22 @@ def plot_3d(positions: List[Vector]) -> None:
 
     # Show figure
     figure.show()
+
+
+def plot_kinetic_energy(velocity: List[Vector], time_list: List[float], mp: float) -> None:
+    """
+    plot the kinetic energy during time using velocity vector
+    :param velocity: the list of velocity vectors
+    :type velocity: List[Vector]
+    :param time_list: the different time associated to the velocity vetors
+    :type time_list: List[float]
+    :param mp: the mass of the particle
+    :type mp: float
+    """
+    kinetic_energy = []
+    for i in range(len(velocity)):
+        kinetic_energy.append(1 / 2 * mp * abs(velocity[i]) ** 2)
+    sb.lineplot(x=time_list, y=kinetic_energy)
+    plt.title("System kinetic energy during time")
+    plt.grid(True)
+    plt.show()
