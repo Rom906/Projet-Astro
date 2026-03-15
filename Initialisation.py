@@ -1,9 +1,6 @@
 import numpy as np
-from fonctions_RK4 import (
-    RK4,
-    plot_trajectory_2D,
-    plot_trajectory_3D,
-    normalize_r_position,
+from numerical_methods import (
+    RK4_numpy as RK4
 )
 
 # ==== Key constants ====
@@ -28,7 +25,7 @@ def B(R, RO, mu):
 
 
 # ===== Time steps =====
-dt = 0.001  # small enough to resolve trajectory
+dt = 0.01  # small enough to resolve trajectory
 tf = 500.0  # total simulation time
 Nsteps = int(tf / dt)
 
@@ -52,7 +49,7 @@ rp, vp, t = RK4(rp, vp, t, dt, Nsteps, q, m, B, ROdip, mu)
 # ===== Plot trajectory =====
 # normalize only for plotting in Earth radii
 # rp_plot = normalize_r_position(rp)
-# plot_trajectory_2D(rp_plot)
-# plot_trajectory_3D(rp_plot)
+# plot_trajectory(rp_plot)
 
-plot_trajectory_3D(rp)
+# plot_trajectory(rp)
+print("Initialisation completed successfully!")

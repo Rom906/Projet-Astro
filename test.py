@@ -1,4 +1,4 @@
-from fonctions_RK4 import RK4
+from numerical_methods import RK4
 from fonctions import plot_3d, compute_solution
 from normalized_equations import (
     NormalizationParameters,

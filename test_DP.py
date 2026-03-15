@@ -1,4 +1,4 @@
-from fonction_Dormand_Prince import dormand_prince
+from numerical_methods import dormand_prince
 from fonctions import plot_3d, compute_solution
 from utils import Vector
 from math import pi

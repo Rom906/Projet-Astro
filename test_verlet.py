@@ -1,4 +1,4 @@
-from fonction_Verlet import velocity_verlet
+from numerical_methods import velocity_verlet
 from fonctions import plot_3d, compute_solution
 from normalized_equations import (
     NormalizationParameters,
