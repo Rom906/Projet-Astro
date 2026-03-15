@@ -23,7 +23,7 @@ r0_RT = np.array([-4.0, -1.0, -6.0])
 r0_meters = r0_RT * R0
 
 # Velocity scaled by some physical velocity
-v0_scale = np.array([0.1, 0.1, 0.1])
+v0_scale = np.array([0.1, 0.1, 0.1]) # en RT.s^-1
 v0_characteristic = 1e4  # m/s (characteristic velocity)
 v0_ms = v0_scale * v0_characteristic
 
@@ -32,15 +32,15 @@ r0_norm = norm_params.normalize_position(r0_meters)
 v0_norm = norm_params.normalize_velocity(v0_ms)
 
 # Create initial state vector [position, velocity]
-Y0 = Vector([r0_norm, v0_norm])
+Y0 = Vector([r0_norm, v0_norm]) 
 
 f_normalized = create_normalized_differential_equation(
     mu_direction=np.array([0.0, 0.0, 1.0])
 )
 
 # ===== Integration Parameters =====
-n_steps = 100000  # Number of integration steps
-tau_final = 100.0  # Final normalized time
+n_steps = 1000000  # Number of integration steps
+tau_final = 10000.0  # Final normalized time
 tau_start = 0.0  # Initial normalized time
 dt_norm = tau_final / n_steps  # Normalized time step
 
