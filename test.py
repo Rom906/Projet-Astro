@@ -74,5 +74,5 @@ for i, solution in enumerate(solutions):
     r_mags.append(u_mag)
     v_mags.append(v_mag)
 
-# 3D plot
-plot_3d(ploted_position)
+# 3D plot with initial velocity
+plot_3d(ploted_position, initial_velocity=v0_norm)

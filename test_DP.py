@@ -28,5 +28,7 @@ def f(t, Y: Vector):
 solutions = compute_solution(dormand_prince, f, 100000, 0, 1000000, vector_CI, False, 1)
 ploted_position = []
 for i in range(0, len(solutions), 100):
-    ploted_position.append(solutions[i][1])
-plot_3d(ploted_position)
+    ploted_position.append(solutions[i][0])  # Position is [0], velocity is [1]
+    
+initial_velocity = vector_CI[1]  # Get initial velocity from conditions
+plot_3d(ploted_position, initial_velocity=initial_velocity)

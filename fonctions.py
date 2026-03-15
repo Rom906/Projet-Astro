@@ -171,16 +171,19 @@ def plot_error(
     plt.show()
 
 
-def plot_3d(positions: List[Vector]) -> None:
+def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     """
-    make a 3D plot of an ordonated liste of position to represent the trajectory of the studied system
+    make a 3D plot of an ordonated liste of position to represent the trajectory of the studied system.
+    Includes initial position/velocity information and start/end point markers.
 
     :param positions: the list of the different position
-    :type positions: List[Vector0]
+    :type positions: List[Vector]
+    :param initial_velocity: optional initial velocity vector for display
+    :type initial_velocity: Vector or None
     """
     figure = go.Figure()
 
-    # Plot the position
+    # Plot the trajectory
     x = []
     y = []
     z = []
@@ -190,9 +193,56 @@ def plot_3d(positions: List[Vector]) -> None:
         z.append(positions[i][2])
     figure.add_trace(
         go.Scatter3d(
-            x=x, y=y, z=z, mode="lines", line=dict(color="blue", width=1, dash="solid")
+            x=x, y=y, z=z, mode="lines", line=dict(color="blue", width=1, dash="solid"),
+            name="Trajectory"
         )
     )
+
+    # Add starting point (green)
+    figure.add_trace(
+        go.Scatter3d(
+            x=[positions[0][0]],
+            y=[positions[0][1]],
+            z=[positions[0][2]],
+            mode="markers",
+            marker=dict(size=10, color="green"),
+            name="Start Point",
+            showlegend=True
+        )
+    )
+
+    # Add ending point (red)
+    figure.add_trace(
+        go.Scatter3d(
+            x=[positions[-1][0]],
+            y=[positions[-1][1]],
+            z=[positions[-1][2]],
+            mode="markers",
+            marker=dict(size=10, color="red"),
+            name="End Point",
+            showlegend=True
+        )
+    )
+
+    # Add velocity vector at initial position if provided
+    if initial_velocity is not None:
+        # Scale the velocity for visibility
+        velocity_scale = 0.1
+        v_end_x = positions[0][0] + initial_velocity[0] * velocity_scale
+        v_end_y = positions[0][1] + initial_velocity[1] * velocity_scale
+        v_end_z = positions[0][2] + initial_velocity[2] * velocity_scale
+        
+        figure.add_trace(
+            go.Scatter3d(
+                x=[positions[0][0], v_end_x],
+                y=[positions[0][1], v_end_y],
+                z=[positions[0][2], v_end_z],
+                mode="lines",
+                line=dict(color="orange", width=3),
+                name="Initial Velocity",
+                showlegend=True
+            )
+        )
 
     # Add a sphere at (0, 0, 0) representing earth
     r = 1
@@ -212,7 +262,37 @@ def plot_3d(positions: List[Vector]) -> None:
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
-    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False))
+    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
+
+    # Add annotations for initial conditions
+    initial_pos_text = f"Initial Position:<br>x={positions[0][0]:.4f}<br>y={positions[0][1]:.4f}<br>z={positions[0][2]:.4f}"
+    if initial_velocity is not None:
+        velocity_text = f"<br>Initial Velocity:<br>vx={initial_velocity[0]:.4f}<br>vy={initial_velocity[1]:.4f}<br>vz={initial_velocity[2]:.4f}"
+        initial_pos_text += velocity_text
+    
+    figure.add_annotation(
+        text=initial_pos_text,
+        xref="paper", yref="paper",
+        x=0.02, y=0.98,
+        showarrow=False,
+        bgcolor="rgba(200, 255, 200, 0.8)",
+        bordercolor="green",
+        borderwidth=2,
+        font=dict(size=10)
+    )
+
+    # Add annotation for final position
+    final_pos_text = f"Final Position:<br>x={positions[-1][0]:.4f}<br>y={positions[-1][1]:.4f}<br>z={positions[-1][2]:.4f}"
+    figure.add_annotation(
+        text=final_pos_text,
+        xref="paper", yref="paper",
+        x=0.02, y=0.72,
+        showarrow=False,
+        bgcolor="rgba(255, 200, 200, 0.8)",
+        bordercolor="red",
+        borderwidth=2,
+        font=dict(size=10)
+    )
 
     # Set parameters
     figure.update_layout(
@@ -221,7 +301,10 @@ def plot_3d(positions: List[Vector]) -> None:
             yaxis=dict(title="y", showgrid=True, zeroline=True),
             zaxis=dict(title="z", showgrid=True, zeroline=True),
             aspectmode="data",
-        )
+        ),
+        title="Particle Trajectory in Magnetic Field",
+        showlegend=True,
+        legend=dict(x=0.7, y=0.9)
     )
 
     # Show figure
