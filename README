@@ -1,0 +1,17 @@
+This branch is made to deposit your results and keep them
+
+Here are the instructions to name the files.
+
+Name the file like this : FieldType_Method_nbpoints_nbparticles_Interval.format
+
+
+
+FieldType represents the magnetic field you are working on (Earth_perfect_dipole for example)
+
+Method is the method used to solve the equation (RK4, Eu (Euler), DP (Dormand-Prince), Ad (Adams), Co (Colocation), Ve (Verlet))
+
+nbpoints is the number of points typed like this : 2*105 represents 200000
+
+nb particles is the number of particle with the same syntax
+
+Interval is the interval typed like this : 0_1*104 represents [0, 10000]
