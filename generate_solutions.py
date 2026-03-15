@@ -279,7 +279,7 @@ def plot_3d(positions: List[Vector]) -> None:
         z.append(positions[i][2])
     figure.add_trace(
         go.Scatter3d(
-            x=x, y=y, z=z, mode="lines", line=dict(color="blue", width=1, dash="solid")
+            x=x, y=y, z=z, mode="lines", line=dict(color="blue", width=1, dash="solid"), name="Trajectory"
         )
     )
 
@@ -301,9 +301,17 @@ def plot_3d(positions: List[Vector]) -> None:
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
-    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False))
+    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Planet surface"))
+
+    # Adding start point
+    figure.add_trace(
+        go.Scatter3d(
+            x=[x[0]], y=[y[0]], z=[z[0]], mode="markers", marker=dict(color='Green', size=5), name='Starting point'
+            )
+    )
 
     # Set parameters
+    figure.update_traces(showlegend=True)
     figure.update_layout(
         scene=dict(
             xaxis=dict(title="x", showgrid=True, zeroline=True),
