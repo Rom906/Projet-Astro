@@ -224,26 +224,6 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
         )
     )
 
-    # Add velocity vector at initial position if provided
-    if initial_velocity is not None:
-        # Scale the velocity for visibility
-        velocity_scale = 0.1
-        v_end_x = positions[0][0] + initial_velocity[0] * velocity_scale
-        v_end_y = positions[0][1] + initial_velocity[1] * velocity_scale
-        v_end_z = positions[0][2] + initial_velocity[2] * velocity_scale
-        
-        figure.add_trace(
-            go.Scatter3d(
-                x=[positions[0][0], v_end_x],
-                y=[positions[0][1], v_end_y],
-                z=[positions[0][2], v_end_z],
-                mode="lines",
-                line=dict(color="orange", width=3),
-                name="Initial Velocity",
-                showlegend=True
-            )
-        )
-
     # Add a sphere at (0, 0, 0) representing earth
     r = 1
     phi = get_intervall(30, 0, 2 * pi)
