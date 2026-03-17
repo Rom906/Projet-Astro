@@ -7,7 +7,7 @@ from normalization import (
     differential_equation_normalized,
     convert_to_normalized,
 )
-from Integrate_fonctions import adams, euler, RK4, dormand_prince
+from Integrate_fonctions import RK4
 from utils import Vector
 from constants import RT, mp, MO, qe, mu
 from comparatif_solutions_csv_fonctions import sauv_reference_json

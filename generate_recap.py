@@ -1,14 +1,7 @@
-import os
-import time
-import csv
-from math import pi
 from utils import Vector
 from Integrate_fonctions import adams, RK4, euler, dormand_prince, Heun, velocity_verlet
-from generate_solutions import compute_solution,compute_solution_trash_points,
 from comparatif_solutions_csv_fonctions import (
     recup_reference_json,
-    calculer_variation_energie,
-    calculer_erreur_trajectoire,
     generer_recap_csv,
 )
 from constants import RT, qe, mp, MO, mu
@@ -16,7 +9,6 @@ from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
     convert_to_normalized,
-    
 )
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
@@ -33,7 +25,6 @@ if __name__ == "__main__":
     FICHIER_REF = "reference_rk4.json"
     FICHIER_CSV = "resultats_comparatif.csv"
     ETAPES = 2000000
-    
 
     # Vérification de la présence du fichier de référence
     solution_ref = None
@@ -61,5 +52,12 @@ if __name__ == "__main__":
     ]
 
     generer_recap_csv(
-        FICHIER_CSV, methodes_a_tester, differential_equation_normalized, ETAPES, 0, 10000000, initial_conditions, solution_ref
+        FICHIER_CSV,
+        methodes_a_tester,
+        differential_equation_normalized,
+        ETAPES,
+        0,
+        10000000,
+        initial_conditions,
+        solution_ref,
     )
