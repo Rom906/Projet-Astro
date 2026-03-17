@@ -300,7 +300,8 @@ def load_from_csv(save_name: str) -> List[Vector]:
 def save_time_interval(time_interval: List[float], save_name: str) -> None:
     f = open(save_name, "x", newline="")
     writer = csv.writer(f)
-    writer.writerow(time_interval)
+    for time in time_interval:
+        writer.writerow([time])
     f.close()
 
 
