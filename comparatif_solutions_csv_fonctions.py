@@ -74,6 +74,17 @@ def calculer_erreur_trajectoire(
     return sum(erreurs) / len(erreurs) if erreurs else 0.0
 
 
+def formater_nombre(valeur: float) -> str:
+    """Formate un nombre avec 4 décimales max"""
+    texte = f"{valeur:.4f}"
+    # Supprime les zéros inutiles à la fin
+    texte = texte.rstrip("0").rstrip(".")
+    # Si la valeur était exactement 0, le texte devient vide
+    if not texte:
+        texte = "0"
+    return texte
+
+
 def generer_recap_csv(
     fichier_csv: str,
     methodes: List[Dict[str, Any]],
@@ -130,20 +141,18 @@ def generer_recap_csv(
         )  # divmode renvoie le quotient et le reste de la division, ici pour convertir les secondes en minutes et secondes
         temps_execution_propre = f"{int(minutes)}m {secondes:.2f}s"
 
-        delta_energie = (
-            calculer_variation_energie(solution_test) * 100
-        )  # en pourcentage
-        delta_energie = f"{delta_energie:.2e} %"
+        # Calcul de l'énergie
+        valeur_delta_energie = calculer_variation_energie(solution_test) * 100
+        delta_energie = f"{formater_nombre(valeur_delta_energie)} %"
 
-        # Calcul de l'erreur uniquement si la référence est disponible
-
-        erreur_traj = calculer_erreur_trajectoire(
+        # Calcul de l'erreur
+        valeur_erreur_traj = calculer_erreur_trajectoire(
             solution_test,
             solution_reference,
             times_test,
             solution_reference_time,
         )
-        erreur_traj = f"{erreur_traj:.2e} u"
+        erreur_traj = f"{formater_nombre(valeur_erreur_traj)} u"
         resultats.append(
             {
                 "Methode": methode["nom"],
