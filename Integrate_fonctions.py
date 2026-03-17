@@ -1,10 +1,10 @@
-import typing
+from typing import List, Callable
 from utils import Vector
 
 
 def adams(
-    liste_ui: typing.List[Vector],
-    f: typing.Callable[[float, Vector], Vector],
+    liste_ui: List[Vector],
+    f: Callable[[float, Vector], Vector],
     ti: float,
     h: float,
     m: int,
@@ -52,8 +52,8 @@ def adams(
 
 
 def euler(
-    liste_ui: typing.List[Vector],
-    f: typing.Callable[[float, Vector], Vector],
+    liste_ui: List[Vector],
+    f: Callable[[float, Vector], Vector],
     ti: float,
     h: float,
     m: int,
@@ -99,8 +99,8 @@ def RK4(vector_list, differential_equation, t, h, number_of_steps):
 
 
 def dormand_prince(
-    u_i: typing.List[Vector],
-    f: typing.Callable[[Vector, float], Vector],
+    u_i: List[Vector],
+    f: Callable[[Vector, float], Vector],
     ti: float,
     h: float,
     m: int,
@@ -196,6 +196,7 @@ def dormand_prince(
 
 # ==================== VELOCITY VERLET METHOD ====================
 
+
 def velocity_verlet(
     u_i: List[Vector], f: Callable[[Vector, float], Vector], ti: float, h: float, m: int
 ) -> Vector:
@@ -280,21 +281,22 @@ def velocity_verlet(
     # Return the updated state vector [r_new, v_new]
     return Vector([r_new, v_new])
 
+
 def Heun(
-    prev_steps: List[Vector], 
-    diff_eq: Callable[[Vector, float], Vector], 
-    t: float, 
-    h: float, 
-    n_steps: int
+    prev_steps: List[Vector],
+    diff_eq: Callable[[Vector, float], Vector],
+    t: float,
+    h: float,
+    n_steps: int,
 ) -> Vector:
     """
-    Solves the differential equation system Y' = f(Y, t) using an explicit 
-    Heun method (Predictor-Corrector), specifically structured for Hamiltonian 
+    Solves the differential equation system Y' = f(Y, t) using an explicit
+    Heun method (Predictor-Corrector), specifically structured for Hamiltonian
     systems where Y = [position, velocity].
-    
+
     but uses the Heun averaging scheme instead of the symplectic half-step scheme.
 
-    :param prev_steps: List containing previous state vectors. 
+    :param prev_steps: List containing previous state vectors.
                        Expected structure: Y = [position_vector, velocity_vector]
     :type prev_steps: List[Vector]
     :param diff_eq: Differential equation function f(Y, t) returning [velocity, acceleration].
@@ -311,43 +313,43 @@ def Heun(
     # Extract current state Y_n (last element of history)
     Y_current = prev_steps[-1]
     t_next = t + h
-    
+
     # Extract position and velocity components explicitly
     # Y_current is a Vector where Y[0] = position, Y[1] = velocity
     r_current = Y_current[0]
     v_current = Y_current[1]
 
     # --- Step 1: Predictor (Explicit Euler) ---
-    
+
     # Calculate slopes at current time: k1 = f(t_n, Y_n) = [r_n, v_n]
     k1 = diff_eq(t, Y_current)
     v_slope_1 = k1[0]  # Should be v_current
     a_slope_1 = k1[1]  # Acceleration at t
-    
+
     # Estimate next state components using Euler
     # r_pred = r_n + h * v_n
     r_pred = r_current + v_slope_1 * h
     # v_pred = v_n + h * a_n
     v_pred = v_current + a_slope_1 * h
-    
+
     # Construct the predicted state vector
     Y_predict = Vector([r_pred, v_pred])
 
     # --- Step 2: Corrector (Explicit Average) ---
-    
+
     # Calculate slopes at the predicted state: k2 = f(t_{n+1}, Y_pred)
     k2 = diff_eq(t_next, Y_predict)
     v_slope_2 = k2[0]  # Velocity at predicted state
     a_slope_2 = k2[1]  # Acceleration at predicted state
-    
+
     # Compute final state components using the average of the two slopes
     # r_{n+1} = r_n + (h/2) * (v_n + v_pred)
     r_new = r_current + (v_slope_1 + v_slope_2) * (h / 2.0)
-    
+
     # v_{n+1} = v_n + (h/2) * (a_n + a_pred)
     v_new = v_current + (a_slope_1 + a_slope_2) * (h / 2.0)
-    
+
     # Reconstruct the result vector [position, velocity]
     Y_new = Vector([r_new, v_new])
-    
+
     return Y_new

@@ -150,17 +150,24 @@ def generer_recap_csv(
         )[0]
 
         temps_execution = time.time() - temps_debut
-        delta_energie = f"{calculer_variation_energie(solution_test):.2e}"  # .2 pour 2 décimales et e pour la notation scientifique
+        minutes, secondes = divmod(
+            temps_execution, 60
+        )  # divmode renvoie le quotient et le reste de la division, ici pour convertir les secondes en minutes et secondes
+        temps_execution_propre = f"{int(minutes)}m {secondes:.2f}s"
+
+        delta_energie = (
+            calculer_variation_energie(solution_test) * 100
+        )  # en pourcentage
+        delta_energie = f"{delta_energie:.2e} %"
 
         # Calcul de l'erreur uniquement si la référence est disponible
 
-        erreur_traj = (
-            f"{calculer_erreur_trajectoire(solution_test, solution_reference):.2e}"
-        )
+        erreur_traj = calculer_erreur_trajectoire(solution_test, solution_reference)
+        erreur_traj = f"{erreur_traj:.2e}u"
         resultats.append(
             {
                 "Methode": methode["nom"],
-                "Temps Execution (s)": round(temps_execution, 4),
+                "Temps Execution (s)": temps_execution_propre,
                 "Erreur Trajectoire Moyenne": erreur_traj,
                 "Variation Energie Moyenne": delta_energie,
             }
@@ -169,9 +176,9 @@ def generer_recap_csv(
     # Génération du CSV
     en_tetes = [
         "Methode",
-        "Temps Execution (s)",
-        "Erreur Trajectoire Moyenne",
-        "Variation Energie Moyenne",
+        "Temps Execution (min et s)",
+        "Delta Erreur Trajectoire Moyenne (u : unités de distance normalisée)",
+        "Variation Energie Moyenne (%)",
     ]
     with open(fichier_csv, mode="w", newline="") as f_csv:
         # Ajoute le délimiteur ici :
