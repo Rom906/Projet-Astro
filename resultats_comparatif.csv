@@ -1,0 +1,5 @@
+Methode;Temps Execution (s);Erreur Trajectoire Moyenne;Variation Energie Moyenne
+Euler;1.1799;6.84e-05;1.80e+02
+Runge-Kutta 4;5.5296;0.00e+00;1.79e+02
+Adams-Bashforth 4;4.2937;4.83e-02;7.78e+00
+Dormand-Prince;16.7249;1.68e-14;1.79e+02
