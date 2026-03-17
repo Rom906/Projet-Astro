@@ -3,7 +3,7 @@ from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
     convert_to_dimensional_time_only,
-    convert_to_normalized
+    convert_to_normalized,
 )
 from Integrate_fonctions import adams, euler, RK4, dormand_prince
 from utils import Vector
@@ -14,7 +14,9 @@ from math import inf
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
 initial_position = Vector([-4 * RT, -1 * RT, -6 * RT])
 initial_velocity = RT * Vector([0.1, 0.1, 0.1])
-initial_conditions = convert_to_normalized(initial_position, initial_velocity, parameters)
+initial_conditions = convert_to_normalized(
+    initial_position, initial_velocity, parameters
+)
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution_trash_points(
@@ -26,14 +28,14 @@ solution_normalized, time_noramlized = compute_solution_trash_points(
     initial_conditions,
     False,
     1,
-    10
+    100
 )
 
 print(len(solution_normalized))
 
 position = []
 velocity = []
-for i in range(1, len(solution_normalized)):  # Start from 1 to skip initial conditions
+for i in range(len(solution_normalized)):
     position_denormalize, velocity_denormalized = solution_normalized[i][0], solution_normalized[i][1]
     position.append(position_denormalize)
     velocity.append(velocity_denormalized)
