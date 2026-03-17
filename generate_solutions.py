@@ -77,7 +77,8 @@ def compute_solution(
             )
         start = minimum - h * number_of_steps
 
-    intervall = get_intervall(steps - 1, start, maximum)
+    intervall_not_full = get_intervall(steps - 1, start, maximum)
+    intervall = [minimum] + intervall_not_full
 
     for ti in intervall:
         vector_list = []
@@ -149,12 +150,14 @@ def compute_solution_trash_points(
             )
         start = minimum - h * number_of_steps
 
-    intervall = get_intervall(steps - 1, start, maximum)
+    intervall = [minimum] + get_intervall(steps, start, maximum)
 
     counter = 0
     treesold = ratio
     time_index_deleted = []
-    for ti in intervall:
+    deleted_points = 0
+    for i in range(1, len(intervall)):
+        ti = intervall[i]
         vector_list = []
         for i in range(number_of_steps):
             vector_list.append(solution[-1 - i])
@@ -170,6 +173,7 @@ def compute_solution_trash_points(
                 for i in range(ratio - 1):
                     solution.pop(len(solution) - 2 * ratio + i)
                     time_index_deleted.append(len(solution) - 2 * ratio + i)
+                    deleted_points += 1
 
             else:
                 counter += 1
@@ -429,6 +433,7 @@ def plot_2d_projections(positions_list, velocities_list=None, title="Projections
 
     # Color and style
     color = "navy"
+    linewidth = 0.1
     point_size = 0.5
 
     if velocities_list:
@@ -483,7 +488,4 @@ def plot_2d_projections(positions_list, velocities_list=None, title="Projections
         axs[2].set_aspect("equal")
 
     plt.tight_layout()
-    # plt.show()
-    plt.savefig(
-        "projections.png", dpi=300, bbox_inches="tight"
-    )  # To save the result in a file
+    plt.show()
