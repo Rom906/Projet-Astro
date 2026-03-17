@@ -397,3 +397,81 @@ def plot_kinetic_energy(velocity: List[Vector], time_list: List[float], mp: floa
     plt.title("System kinetic energy during time")
     plt.grid(True)
     plt.show()
+
+
+def plot_2d_projections(positions_list, velocities_list=None, title="Projections 2D"):
+    """
+    Generates 3 stacked 2D projection plots.
+    
+    :param positions_list: List of Vectors [x, y, z]
+    :param velocities_list: List of Vectors [vx, vy, vz] (Optional). 
+                            If provided, displays phase space plots (v vs pos).
+                            If absent, displays geometric projections (y vs x).
+    """
+    # Extracting data
+    x = np.array([p.coordinates[0] for p in positions_list])
+    y = np.array([p.coordinates[1] for p in positions_list])
+    z = np.array([p.coordinates[2] for p in positions_list])
+
+    fig, axs = plt.subplots(3, 1, figsize=(10, 12), sharex=False)
+    fig.suptitle(title, fontsize=16)
+
+    # Color and style
+    color = "navy"
+    linewidth = 0.1
+    point_size = 0.5
+
+    if velocities_list:
+        #It's possible let just none for the velocity list but the result will be just 2D position
+        # --- Space mode phase (v vs pos) ---
+        vx = np.array([v.coordinates[0] for v in velocities_list])
+        vy = np.array([v.coordinates[1] for v in velocities_list])
+        vz = np.array([v.coordinates[2] for v in velocities_list])
+
+        # Graph 1: vx vs x
+        axs[0].plot(x, vx, '.', markersize=point_size, color=color, alpha=0.5)
+        axs[0].set_ylabel(r"$v_x$")
+        axs[0].set_title(r"Projection Phase Space: $v_x$ vs $x$")
+        axs[0].grid(True, alpha=0.3)
+
+        # Graph 2: vy vs y
+        axs[1].plot(y, vy, '.', markersize=point_size, color=color, alpha=0.5)
+        axs[1].set_ylabel(r"$v_y$")
+        axs[1].set_title(r"Projection Phase Space: $v_y$ vs $y$")
+        axs[1].grid(True, alpha=0.3)
+
+        # Graph 3: vz vs z
+        axs[2].plot(z, vz, '.', markersize=point_size, color=color, alpha=0.5)
+        axs[2].set_ylabel(r"$v_z$")
+        axs[2].set_xlabel(r"Position ($R_T$)")
+        axs[2].set_title(r"Projection Phase Space: $v_z$ vs $z$")
+        axs[2].grid(True, alpha=0.3)
+
+    else:
+        # --- Projection mode geometrical (pos vs pos) ---
+        
+        # Graph 1: y vs x (top view)
+        axs[0].plot(x, y, '.', markersize=point_size, color=color, alpha=0.5)
+        axs[0].set_ylabel(r"$y$ [$R_T$]")
+        axs[0].set_title(r"Projection Plan XY (Top View)")
+        axs[0].grid(True, alpha=0.3)
+        axs[0].set_aspect("equal")
+
+        # Graph 2: z vs y (side view)
+        axs[1].plot(y, z, '.', markersize=point_size, color=color, alpha=0.5)
+        axs[1].set_ylabel(r"$z$ [$R_T$]")
+        axs[1].set_title(r"Projection Plan YZ (Side View)")
+        axs[1].grid(True, alpha=0.3)
+        axs[1].set_aspect('equal')
+
+        # Graph3: z vs x (front view)
+        axs[2].plot(x, z, '.', markersize=point_size, color=color, alpha=0.5)
+        axs[2].set_ylabel(r"$z$ [$R_T$]")
+        axs[2].set_xlabel(r"$x$ [$R_T$]")
+        axs[2].set_title(r"Projection Plan XZ (Front View)")
+        axs[2].grid(True, alpha=0.3)
+        axs[2].set_aspect("equal")
+
+    plt.tight_layout()
+    #plt.show()
+    plt.savefig("projections.png", dpi=300, bbox_inches="tight") #To save the result in a file 

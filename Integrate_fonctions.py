@@ -279,3 +279,77 @@ def velocity_verlet(
 
     # Return the updated state vector [r_new, v_new]
     return Vector([r_new, v_new])
+
+def Heun(
+    prev_steps: List[Vector], 
+    diff_eq: Callable[[Vector, float], Vector], 
+    t: float, 
+    h: float, 
+    n_steps: int
+) -> Vector:
+    """
+    Solves the differential equation system Y' = f(Y, t) using an explicit 
+    Heun method (Predictor-Corrector), specifically structured for Hamiltonian 
+    systems where Y = [position, velocity].
+    
+    This mimics the structure of Velocity Verlet (updating r and v distinctly)
+    but uses the Heun averaging scheme instead of the symplectic half-step scheme.
+
+    :param prev_steps: List containing previous state vectors. 
+                       Expected structure: Y = [position_vector, velocity_vector]
+    :type prev_steps: List[Vector]
+    :param diff_eq: Differential equation function f(Y, t) returning [velocity, acceleration].
+                    Note: Signature is f(Y, t) based on your provided code body.
+    :type diff_eq: Callable[[Vector, float], Vector]
+    :param t: Current time t_n
+    :type t: float
+    :param h: Time step size (delta t)
+    :type h: float
+    :param n_steps: Total number of steps (unused in this single-step implementation)
+    :type n_steps: int
+    :return: Estimated state vector Y_{n+1} structured as [position_new, velocity_new]
+    :rtype: Vector
+    """
+    # Extract current state Y_n (last element of history)
+    Y_current = prev_steps[-1]
+    t_next = t + h
+    
+    # Extract position and velocity components explicitly
+    # Y_current is a Vector where Y[0] = position, Y[1] = velocity
+    r_current = Y_current[0]
+    v_current = Y_current[1]
+
+    # --- Step 1: Predictor (Explicit Euler) ---
+    
+    # Calculate slopes at current time: k1 = f(t_n, Y_n) = [r_n, v_n]
+    k1 = diff_eq(t, Y_current)
+    v_slope_1 = k1[0]  # Should be v_current
+    a_slope_1 = k1[1]  # Acceleration at t
+    
+    # Estimate next state components using Euler
+    # r_pred = r_n + h * v_n
+    r_pred = r_current + v_slope_1 * h
+    # v_pred = v_n + h * a_n
+    v_pred = v_current + a_slope_1 * h
+    
+    # Construct the predicted state vector
+    Y_predict = Vector([r_pred, v_pred])
+
+    # --- Step 2: Corrector (Explicit Average) ---
+    
+    # Calculate slopes at the predicted state: k2 = f(t_{n+1}, Y_pred)
+    k2 = diff_eq(t_next, Y_predict)
+    v_slope_2 = k2[0]  # Velocity at predicted state
+    a_slope_2 = k2[1]  # Acceleration at predicted state
+    
+    # Compute final state components using the average of the two slopes
+    # r_{n+1} = r_n + (h/2) * (v_n + v_pred)
+    r_new = r_current + (v_slope_1 + v_slope_2) * (h / 2.0)
+    
+    # v_{n+1} = v_n + (h/2) * (a_n + a_pred)
+    v_new = v_current + (a_slope_1 + a_slope_2) * (h / 2.0)
+    
+    # Reconstruct the result vector [position, velocity]
+    Y_new = Vector([r_new, v_new])
+    
+    return Y_new
