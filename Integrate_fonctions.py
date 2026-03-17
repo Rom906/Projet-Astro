@@ -292,14 +292,12 @@ def Heun(
     Heun method (Predictor-Corrector), specifically structured for Hamiltonian 
     systems where Y = [position, velocity].
     
-    This mimics the structure of Velocity Verlet (updating r and v distinctly)
     but uses the Heun averaging scheme instead of the symplectic half-step scheme.
 
     :param prev_steps: List containing previous state vectors. 
                        Expected structure: Y = [position_vector, velocity_vector]
     :type prev_steps: List[Vector]
     :param diff_eq: Differential equation function f(Y, t) returning [velocity, acceleration].
-                    Note: Signature is f(Y, t) based on your provided code body.
     :type diff_eq: Callable[[Vector, float], Vector]
     :param t: Current time t_n
     :type t: float
