@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from math import pi, cos, sin
 import time
+import numpy as np
 
 
 def get_intervall(steps: int, minimum: float, maximum: float) -> List[float]:
@@ -473,5 +474,5 @@ def plot_2d_projections(positions_list, velocities_list=None, title="Projections
         axs[2].set_aspect("equal")
 
     plt.tight_layout()
-    #plt.show()
-    plt.savefig("projections.png", dpi=300, bbox_inches="tight") #To save the result in a file 
+    plt.show()
+    plt.savefig("projections.png", dpi=300, bbox_inches="tight") #To save the result in a file

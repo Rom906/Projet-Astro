@@ -1,4 +1,4 @@
-from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points, plot_kinetic_energy
+from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points, plot_kinetic_energy, plot_2d_projections
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
@@ -18,22 +18,22 @@ initial_conditions = convert_to_normalized(initial_position, initial_velocity, p
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution_trash_points(
-    RK4,
+    dormand_prince,
     differential_equation_normalized,
-    2000000,
+    200000,
     0,
-    10000000,
+    100000,
     initial_conditions,
     False,
     1,
-    100
+    10
 )
 
 print(len(solution_normalized))
 
 position = []
 velocity = []
-for i in range(len(solution_normalized)):
+for i in range(1, len(solution_normalized)):  # Start from 1 to skip initial conditions
     position_denormalize, velocity_denormalized = solution_normalized[i][0], solution_normalized[i][1]
     position.append(position_denormalize)
     velocity.append(velocity_denormalized)
@@ -68,3 +68,4 @@ time = parameters.rescale_normalized_time_intervall(time_noramlized)
 
 plot_3d(position)
 plot_kinetic_energy(velocity, time, mp)
+plot_2d_projections(position, velocity, "DP_Phase_Space_2000000_points")

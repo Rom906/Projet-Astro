@@ -1,4 +1,5 @@
 import typing
+from typing import List, Callable
 from utils import Vector
 
 
