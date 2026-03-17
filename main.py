@@ -20,9 +20,9 @@ initial_conditions = convert_to_normalized(
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution_trash_points(
-    RK4,
+    adams,
     differential_equation_normalized,
-    500000,
+    1000000,
     0,
     100000,
     initial_conditions,

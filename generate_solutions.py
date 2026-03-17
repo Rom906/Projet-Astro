@@ -155,7 +155,6 @@ def compute_solution_trash_points(
     counter = 0
     treesold = ratio
     time_index_deleted = []
-    deleted_points = 0
     for i in range(1, len(intervall)):
         ti = intervall[i]
         vector_list = []
@@ -173,13 +172,12 @@ def compute_solution_trash_points(
                 for i in range(ratio - 1):
                     solution.pop(len(solution) - 2 * ratio + i)
                     time_index_deleted.append(len(solution) - 2 * ratio + i)
-                    deleted_points += 1
 
             else:
                 counter += 1
 
-    for index in time_index_deleted:
-        intervall.pop(index)
+    for i in range(len(time_index_deleted) - 1, -1, -1):
+        intervall.pop(time_index_deleted[i])
 
     comp_time = time.time() - start_time
     print("\n=== Computation Statistics ===")
@@ -489,4 +487,3 @@ def plot_2d_projections(positions_list, velocities_list=None, title="Projections
 
     plt.tight_layout()
     plt.show()
-
