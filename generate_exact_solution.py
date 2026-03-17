@@ -8,9 +8,8 @@ from normalization import (
     convert_to_normalized,
 )
 from Integrate_fonctions import RK4
-from utils import Vector
+from utils import Vector, save_time_interval, save_to_csv
 from constants import RT, mp, MO, qe, mu
-from comparatif_solutions_csv_fonctions import sauv_reference_json
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
 initial_position = Vector([-4 * RT, -1 * RT, -6 * RT])
@@ -23,7 +22,7 @@ print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution_trash_points(
     RK4,
     differential_equation_normalized,
-    200000000,
+    20000,
     0,
     10000000,
     initial_conditions,
@@ -32,6 +31,5 @@ solution_normalized, time_noramlized = compute_solution_trash_points(
     100,
 )
 
-FICHIER_REF = "reference_rk4.json"
-
-sauv_reference_json(FICHIER_REF, time_noramlized, solution_normalized)
+save_to_csv(solution_normalized, "reference_rk4.csv")
+save_time_interval(time_noramlized, "time_interval_rk4.csv")

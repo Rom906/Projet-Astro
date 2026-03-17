@@ -1,7 +1,7 @@
 import json
 import csv
 import time
-from typing import List, Callable, Tuple, Dict, Any
+from typing import List, Callable, Tuple, Dict, Any, Optional
 from utils import Vector
 from generate_solutions import compute_solution, compute_solution_trash_points
 from normalization import (
@@ -9,52 +9,6 @@ from normalization import (
     convert_to_normalized,
     differential_equation_normalized,
 )
-
-
-def sauv_reference_json(
-    fichier_sortie: str, temps: List[float], solution: List[Vector]
-) -> None:
-    """
-    Sauvegarde la trajectoire et les vitesses de référence dans un fichier JSON.
-
-    :param fichier_sortie: le nom du fichier JSON de destination (ex: "reference.json")
-    :type fichier_sortie: str
-    :param temps: la liste des temps correspondant à chaque étape
-    :type temps: List[float]
-    :param solution: la liste des états [position, vitesse] à chaque étape
-    :type solution: List[Vector]
-    """
-    donnees = {
-        "temps": temps,
-        "positions": [sol[0].coordinates for sol in solution],
-        "vitesses": [sol[1].coordinates for sol in solution],
-    }
-
-    with open(fichier_sortie, "w") as f:
-        json.dump(donnees, f)
-    print(f"Référence sauvegardée avec succès dans {fichier_sortie}")
-
-
-def recup_reference_json(fichier_entree: str) -> Tuple[List[float], List[Vector]]:
-    """
-    Charge une trajectoire de référence depuis un fichier JSON.
-
-    :param fichier_entree: le nom du fichier JSON à lire
-    :type fichier_entree: str
-    :return: un tuple contenant la liste des temps et la liste des états [position, vitesse]
-    :rtype: Tuple[List[float], List[Vector]]
-    """
-    with open(fichier_entree, "r") as f:
-        donnees = json.load(f)
-
-    temps = donnees["temps"]
-    solution = []
-
-    for pos, vit in zip(donnees["positions"], donnees["vitesses"]):
-        etat = Vector([Vector(pos), Vector(vit)])
-        solution.append(etat)
-
-    return temps, solution
 
 
 def calculer_variation_energie(solution: List[Vector]) -> float:
@@ -84,20 +38,40 @@ def calculer_variation_energie(solution: List[Vector]) -> float:
 
 
 def calculer_erreur_trajectoire(
-    solution_test: List[Vector], solution_reference: List[Vector]
+    solution_test: List[Vector],
+    solution_reference: List[Vector],
+    solution_test_time: Optional[List[float]] = None,
+    solution_reference_time: Optional[List[float]] = None,
 ) -> float:
-    """
-    Calcule l'écart spatial moyen entre la trajectoire testée et la trajectoire de référence.
-    S'adapte automatiquement à la liste la plus courte si les tailles diffèrent.
-    """
-    taille_min = min(len(solution_test), len(solution_reference))
-
     erreurs = []
-    for i in range(taille_min):
-        distance = abs(solution_test[i][0] - solution_reference[i][0])
-        erreurs.append(distance)
+    ref_idx = 0  # Notre pointeur qui avance sur la liste de référence
+    n_ref = len(solution_reference_time)
 
-    return sum(erreurs) / len(erreurs)
+    for test_pos, t in zip(solution_test, solution_test_time):
+
+        # On fait avancer le pointeur de référence jusqu'à encadrer le temps t
+        while ref_idx < n_ref - 2 and solution_reference_time[ref_idx + 1] < t:
+            ref_idx += 1
+
+        t0 = solution_reference_time[ref_idx]
+        t1 = solution_reference_time[ref_idx + 1]
+
+        # Interpolation mathématique (qui est correcte grâce à la méthode __mul__ de ta classe Vector)
+        if t1 != t0:
+            u = (t - t0) / (t1 - t0)
+        else:
+            u = 0.0
+
+        # On n'interpole QUE la position (index 0 de tes vecteurs Y) pour gagner en vitesse
+        pos_ref_t = (
+            solution_reference[ref_idx][0] * (1 - u)
+            + solution_reference[ref_idx + 1][0] * u
+        )
+
+        # Calcul de la distance euclidienne (abs() géré par ta classe Vector)
+        erreurs.append(abs(test_pos[0] - pos_ref_t))
+
+    return sum(erreurs) / len(erreurs) if erreurs else 0.0
 
 
 def generer_recap_csv(
@@ -109,6 +83,7 @@ def generer_recap_csv(
     maximum: float,
     conditions_initiales: Vector,
     solution_reference: List[Vector],
+    solution_reference_time: Optional[List[float]],
 ) -> None:
     """
     Exécute plusieurs méthodes d'intégration, calcule leurs performances et génère un fichier CSV récapitulatif.
@@ -138,16 +113,16 @@ def generer_recap_csv(
         print(f"Test de {methode['nom']}...")
         temps_debut = time.time()
 
-        solution_test = compute_solution_trash_points(
+        solution_test, times_test = compute_solution_trash_points(
             methode["fonction"],
             differential_equation_normalized,
             etapes,
             0,
-            100,
+            100000,
             conditions_initiales,
             methode["multipas"],
             methode["nb_pas"],
-        )[0]
+        )
 
         temps_execution = time.time() - temps_debut
         minutes, secondes = divmod(
@@ -162,22 +137,27 @@ def generer_recap_csv(
 
         # Calcul de l'erreur uniquement si la référence est disponible
 
-        erreur_traj = calculer_erreur_trajectoire(solution_test, solution_reference)
-        erreur_traj = f"{erreur_traj:.2e}u"
+        erreur_traj = calculer_erreur_trajectoire(
+            solution_test,
+            solution_reference,
+            times_test,
+            solution_reference_time,
+        )
+        erreur_traj = f"{erreur_traj:.2e} u"
         resultats.append(
             {
                 "Methode": methode["nom"],
-                "Temps Execution (s)": temps_execution_propre,
-                "Erreur Trajectoire Moyenne": erreur_traj,
-                "Variation Energie Moyenne": delta_energie,
+                "Temps Execution": temps_execution_propre,
+                "Erreur Trajectoire Moyenne (u)": erreur_traj,
+                "Variation Energie Moyenne (%)": delta_energie,
             }
         )
 
     # Génération du CSV
     en_tetes = [
         "Methode",
-        "Temps Execution (min et s)",
-        "Delta Erreur Trajectoire Moyenne (u : unités de distance normalisée)",
+        "Temps Execution",
+        "Erreur Trajectoire Moyenne (u)",
         "Variation Energie Moyenne (%)",
     ]
     with open(fichier_csv, mode="w", newline="") as f_csv:

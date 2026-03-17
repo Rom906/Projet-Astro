@@ -1,7 +1,12 @@
-from utils import Vector
+from utils import (
+    Vector,
+    save_time_interval,
+    save_to_csv,
+    load_time_interval,
+    load_from_csv,
+)
 from Integrate_fonctions import adams, RK4, euler, dormand_prince, Heun, velocity_verlet
 from comparatif_solutions_csv_fonctions import (
-    recup_reference_json,
     generer_recap_csv,
 )
 from constants import RT, qe, mp, MO, mu
@@ -22,15 +27,14 @@ print(initial_conditions)
 
 
 if __name__ == "__main__":
-    FICHIER_REF = "reference_rk4.json"
+    FICHIER_REF = "reference_rk4.csv"
+    FICHIER_REF_TIME = "time_interval_rk4.csv"
     FICHIER_CSV = "resultats_comparatif.csv"
-    ETAPES = 2000000
+    ETAPES = 20000
 
-    # Vérification de la présence du fichier de référence
-    solution_ref = None
     print(f"Fichier '{FICHIER_REF}' trouvé. L'erreur de trajectoire sera calculée.")
-    resultat = recup_reference_json(FICHIER_REF)
-    solution_ref = resultat[1]
+    solution_ref = load_from_csv(FICHIER_REF)
+    resultat_time = load_time_interval("time_interval_rk4.csv")
 
     methodes_a_tester = [
         {"nom": "Euler", "fonction": euler, "multipas": False, "nb_pas": 1},
@@ -59,5 +63,6 @@ if __name__ == "__main__":
         0,
         10000000,
         initial_conditions,
-        solution_ref,
+        FICHIER_REF,
+        FICHIER_REF_TIME,
     )
