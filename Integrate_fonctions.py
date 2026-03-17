@@ -1,5 +1,7 @@
-from typing import List, Callable
+import typing
+from typing import Callable, List, Tuple
 from utils import Vector
+from typing import List, Callable
 
 
 def adams(
