@@ -295,3 +295,19 @@ def load_from_csv(save_name: str) -> List[Vector]:
         vector_list.append(Vector(coordinates))
     f.close()
     return vector_list
+
+
+def save_time_interval(time_interval: List[float], save_name: str) -> None:
+    f = open(save_name, "x", newline="")
+    writer = csv.writer(f)
+    writer.writerow(time_interval)
+    f.close()
+
+
+def load_time_interval(save_name: str) -> List[float]:
+    f = open(save_name, 'r', newline="")
+    reader = csv.reader(f)
+    time_intervall = []
+    for value in reader:
+        time_intervall.append(float(value[0]))
+    return time_intervall

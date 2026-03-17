@@ -1,5 +1,6 @@
 import typing
 from utils import Vector
+from typing import List, Callable
 
 
 def adams(

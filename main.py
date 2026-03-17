@@ -20,13 +20,13 @@ print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution_trash_points(
     RK4,
     differential_equation_normalized,
-    2000000,
+    200000,
     0,
-    10000000,
+    100000,
     initial_conditions,
     False,
     1,
-    100
+    10
 )
 
 print(len(solution_normalized))
