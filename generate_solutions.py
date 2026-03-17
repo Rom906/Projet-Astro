@@ -343,7 +343,12 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     # Add annotations for initial conditions
     initial_pos_text = f"Initial Position:<br>x={positions[0][0]:.4f}<br>y={positions[0][1]:.4f}<br>z={positions[0][2]:.4f}"
     if initial_velocity is not None:
-        velocity_text = f"<br>Initial Velocity:<br>vx={initial_velocity[0]:.4f}<br>vy={initial_velocity[1]:.4f}<br>vz={initial_velocity[2]:.4f}"
+        velocity_text = (
+            f"<br>Initial Velocity:<br>"
+            f"vx={initial_velocity[0]:.3e}<br>"
+            f"vy={initial_velocity[1]:.3e}<br>"
+            f"vz={initial_velocity[2]:.3e}"
+        )
         initial_pos_text += velocity_text
 
     figure.add_annotation(
@@ -366,7 +371,7 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
         xref="paper",
         yref="paper",
         x=0.02,
-        y=0.72,
+        y=0.52,
         showarrow=False,
         bgcolor="rgba(255, 200, 200, 0.8)",
         bordercolor="red",
