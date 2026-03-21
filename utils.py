@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any, List, Iterator
 from math import sqrt, sin, cos
 from numbers import Real
+import csv
 
 
 class Vector:
@@ -268,3 +269,46 @@ def convert_spherical_to_cartesian(sp_vector: Vector) -> Vector:
     y = r * sin(phi) * sin(theta)
     z = r * cos(theta)
     return Vector([x, y, z])
+
+
+def save_to_csv(vector_list: List[Vector], save_name: str) -> None:
+    f = open(save_name, "x", newline="")
+    writer = csv.writer(f)
+    coordinate_list = []
+    for vector in vector_list:
+        coordinate = []
+        for i in range(vector.dimension):
+            coordinate.append(vector[i])
+        coordinate_list.append(coordinate)
+    writer.writerows(coordinate_list)
+    f.close()
+
+
+def load_from_csv(save_name: str) -> List[Vector]:
+    vector_list = []
+    f = open(save_name, "r", newline="")
+    reader = csv.reader(f)
+    for row in reader:
+        coordinates = []
+        for coordinate in row:
+            coordinates.append(float(coordinate))
+        vector_list.append(Vector(coordinates))
+    f.close()
+    return vector_list
+
+
+def save_time_interval(time_interval: List[float], save_name: str) -> None:
+    f = open(save_name, "x", newline="")
+    writer = csv.writer(f)
+    for time in time_interval:
+        writer.writerow([time])
+    f.close()
+
+
+def load_time_interval(save_name: str) -> List[float]:
+    f = open(save_name, 'r', newline="")
+    reader = csv.reader(f)
+    time_intervall = []
+    for value in reader:
+        time_intervall.append(float(value[0]))
+    return time_intervall
