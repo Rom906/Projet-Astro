@@ -1,4 +1,5 @@
 from utils import Vector
+from scientific_notation import ScientificNotation
 from typing import Callable, List, Tuple
 import seaborn as sb
 import matplotlib.pyplot as plt
@@ -274,7 +275,6 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     :type initial_velocity: Vector or None
     """
     figure = go.Figure()
-
     # Plot the trajectory
     x = []
     y = []
@@ -345,9 +345,9 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     if initial_velocity is not None:
         velocity_text = (
             f"<br>Initial Velocity:<br>"
-            f"vx={initial_velocity[0]:.3e}<br>"
-            f"vy={initial_velocity[1]:.3e}<br>"
-            f"vz={initial_velocity[2]:.3e}"
+            f"vx={ScientificNotation(initial_velocity[0],'m').to_scientific_notation()}<br>"
+            f"vy={ScientificNotation(initial_velocity[1],'m').to_scientific_notation()}<br>"
+            f"vz={ScientificNotation(initial_velocity[2],'m').to_scientific_notation()}"
         )
         initial_pos_text += velocity_text
 
@@ -365,7 +365,7 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     )
 
     # Add annotation for final position
-    final_pos_text = f"Final Position:<br>x={positions[-1][0]:.4f}<br>y={positions[-1][1]:.4f}<br>z={positions[-1][2]:.4f}"
+    final_pos_text = f"Final Position:<br>x={ScientificNotation(positions[-1][0],'m').to_scientific_notation()}<br>y={ScientificNotation(positions[-1][1],'m').to_scientific_notation()}<br>z={ScientificNotation(positions[-1][2],'m').to_scientific_notation()}"
     figure.add_annotation(
         text=final_pos_text,
         xref="paper",
@@ -383,9 +383,9 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     figure.update_traces(showlegend=True)
     figure.update_layout(
         scene=dict(
-            xaxis=dict(title="x", showgrid=True, zeroline=True),
-            yaxis=dict(title="y", showgrid=True, zeroline=True),
-            zaxis=dict(title="z", showgrid=True, zeroline=True),
+            xaxis=dict(title="x/RT", showgrid=True, zeroline=True),
+            yaxis=dict(title="y/RT", showgrid=True, zeroline=True),
+            zaxis=dict(title="z/RT", showgrid=True, zeroline=True),
             aspectmode="data",
         ),
         title="Particle Trajectory in Magnetic Field",
