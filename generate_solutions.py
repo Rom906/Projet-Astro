@@ -130,6 +130,9 @@ def compute_solution_trash_points(
     multiple_steps_method: bool = False,
     number_of_steps: int = 1,
     ratio: int = 1,
+    variable_steps: bool = False,
+    minimum_variation: int = 0.01,
+    maximum_variation: int = 0.02
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
@@ -152,6 +155,12 @@ def compute_solution_trash_points(
     :type number_of_step: int
     :param ratio: number of point keeped during computation. If 1 all points will be keeped, if 2 only one out of 2, ...
     :type ratio: int
+    :param variable_steps: if true, means that the steps sise adapts to change
+    :type variable_steps: bool
+    :param minimum_variation: if the step size is variable, it is the minimum tolerated variation between steps without which the step size is unchanged
+    :type minimum_variation: int
+    :param maximum_variation: if the step size is variable, it is the maximum tolerated variation between steps without which the step size is unchanged
+    :type maximum_variation: int
     :return: a list of "steps" approximated value of the differential equation solution
     :rtype: List[Vector]
     """
@@ -173,19 +182,28 @@ def compute_solution_trash_points(
     intervall = [minimum] + get_intervall(steps, start, maximum)
 
     counter = 0
-    treesold = ratio
+    treshold = ratio
     time_index_deleted = []
-    for i in range(1, len(intervall)):
-        ti = intervall[i]
+    ti = 0
+    while ti < maximum:
         vector_list = []
         for i in range(number_of_steps):
             vector_list.append(solution[-1 - i])
-        solution.append(
-            model(vector_list, differential_equation, ti, h, number_of_steps)
-        )
+        new_step = model(vector_list, differential_equation, ti, h, number_of_steps)
+        new_step_pos = new_step[0]
+        last_step_pos = solution[-1][0]
+        if variable_steps:
+            variation_btw_steps = max([(new_step_pos[i] - last_step_pos[i]) / last_step_pos[i] for i in range(len(new_step_pos.coordinates))])
+            print("hiyah", ti, variation_btw_steps)
+            if variation_btw_steps < minimum_variation:
+                h *= 1.1
+            elif variation_btw_steps > maximum_variation:
+                h /= 1.1
+        ti += h
+        solution.append(new_step)
 
-        if treesold >= 0:
-            treesold -= 1
+        if treshold >= 0:
+            treshold -= 1
         else:
             if counter >= ratio:
                 counter = 1

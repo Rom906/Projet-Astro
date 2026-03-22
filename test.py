@@ -1,4 +1,4 @@
-from generate_solutions import plot_3d, compute_solution
+from generate_solutions import plot_3d, compute_solution, compute_solution_trash_points
 from utils import Vector
 from math import pi
 from Integrate_fonctions import adams, RK4, euler, dormand_prince
@@ -28,7 +28,7 @@ def f(t, Y: Vector):
 # test comparatif
 
 # solutions_1 = compute_solution(adams, f, 10000000, 0, 1000000, vector_CL, False, 1)
-solutions_2 = compute_solution(RK4, f, 10000000, 0, 1000000, vector_CL, variable_steps=True)[0]
+solutions_2 = compute_solution_trash_points(RK4, f, 10000, 0, 1000, vector_CL, variable_steps=True)[0]
 
 # ploted_position_1 = []
 # for i in range(0, len(solutions_1), 100):
