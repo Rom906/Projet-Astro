@@ -39,6 +39,8 @@ def compute_solution(
     initial_conditions: Vector,
     multiple_steps_method: bool = False,
     number_of_steps: int = 1,
+    variable_steps: bool = False,
+    variation_threshold: int = 0.5
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps
@@ -59,6 +61,10 @@ def compute_solution(
     :type multiple_steps_method: bool
     :param number_of_steps: if the method is using multiple steps, it is the maximum number of step used by it
     :type number_of_step: int
+    :param variable_steps: if true, means that the steps sise adapts to change
+    :type variable_steps: bool
+    :param variation_threshold: if the step size is variable, it is the minimum tolerated variation between steps without which the step size is unchanged
+    :type variation_threshold: int
     :return: a list of "steps" approximated value of the differential equation solution
     :rtype: List[Vector]
     """
@@ -80,13 +86,18 @@ def compute_solution(
     intervall_not_full = get_intervall(steps - 1, start, maximum)
     intervall = [minimum] + intervall_not_full
 
-    for ti in intervall:
+    ti = 0
+    while ti < maximum:
         vector_list = []
         for i in range(number_of_steps):
             vector_list.append(solution[-1 - i])
-        solution.append(
-            model(vector_list, differential_equation, ti, h, number_of_steps)
-        )
+        new_step = model(vector_list, differential_equation, ti, h, number_of_steps)
+        solution.append(new_step)
+        new_step_pos = new_step[0]
+        last_step_pos = solution[-1][0]
+        variation_btw_steps = max([(new_step_pos[0] - last_step_pos[i]) / last_step_pos[i] for i in range(len(solution))])
+        if variation_btw_steps > 0.5:
+            
 
     comp_time = time.time() - start_time
     print("\n=== Computation Statistics ===")
