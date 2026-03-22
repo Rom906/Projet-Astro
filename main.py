@@ -13,7 +13,7 @@ from math import inf
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
 initial_position = Vector([-4 * RT, -1 * RT, -6 * RT])
-initial_velocity = RT * Vector([0.1, 0.1, 0.1])
+initial_velocity = RT * Vector([0.01, 0.01, 0.01])
 initial_conditions = convert_to_normalized(initial_position, initial_velocity, parameters)
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)

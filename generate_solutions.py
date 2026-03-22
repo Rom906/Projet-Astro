@@ -1,4 +1,5 @@
 from utils import Vector
+from constants import RT
 from scientific_notation import ScientificNotation
 from typing import Callable, List, Tuple
 import seaborn as sb
@@ -339,9 +340,11 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
         ye.append(row_y)
         ze.append(row_z)
     figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
-
+    position_x = round(positions[0][0], 3)
+    position_y = round(positions[0][1], 3)
+    position_z = round(positions[0][2], 3)
     # Add annotations for initial conditions
-    initial_pos_text = f"Initial Position:<br>x={positions[0][0]:.4f}<br>y={positions[0][1]:.4f}<br>z={positions[0][2]:.4f}"
+    initial_pos_text = f"Initial Position (en RT):<br>x={position_x:.3f}<br>y={position_y:.3f}<br>z={position_z:.3f}"
     if initial_velocity is not None:
         velocity_text = (
             f"<br>Initial Velocity:<br>"
@@ -365,7 +368,7 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     )
 
     # Add annotation for final position
-    final_pos_text = f"Final Position:<br>x={ScientificNotation(positions[-1][0],'m').to_scientific_notation()}<br>y={ScientificNotation(positions[-1][1],'m').to_scientific_notation()}<br>z={ScientificNotation(positions[-1][2],'m').to_scientific_notation()}"
+    final_pos_text = f"Final Position:<br>x={ScientificNotation(RT*positions[-1][0],'m').to_scientific_notation()}<br>y={ScientificNotation(RT*positions[-1][1],'m').to_scientific_notation()}<br>z={ScientificNotation(RT*positions[-1][2],'m').to_scientific_notation()}"
     figure.add_annotation(
         text=final_pos_text,
         xref="paper",
