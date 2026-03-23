@@ -1,14 +1,19 @@
-from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points, plot_kinetic_energy, plot_2d_projections
+ffrom generate_solutions import (
+    compute_solution,
+    plot_3d,
+    compute_solution_trash_points,
+    plot_kinetic_energy,
+)
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
     convert_to_dimensional_time_only,
     convert_to_normalized,
 )
-from Integrate_fonctions import adams, euler, RK4, dormand_prince, velocity_verlet
+from Integrate_fonctions import adams, euler, RK4, dormand_prince
 from utils import Vector
 from constants import RT, mp, MO, qe, mu
-from utils import save_time_interval, save_to_csv
+from math import inf
 
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
@@ -20,15 +25,15 @@ initial_conditions = convert_to_normalized(
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution_trash_points(
-    velocity_verlet,
+    RK4,
     differential_equation_normalized,
-    500000,
+    2000000,
     0,
-    1000000,
+    10000000,
     initial_conditions,
     False,
     1,
-    100
+    100,
 )
 
 print(len(solution_normalized))
@@ -36,7 +41,10 @@ print(len(solution_normalized))
 position = []
 velocity = []
 for i in range(len(solution_normalized)):
-    position_denormalize, velocity_denormalized = convert_to_dimensional_time_only(solution_normalized[i][0], solution_normalized[i][1], parameters)
+    position_denormalize, velocity_denormalized = (
+        solution_normalized[i][0],
+        solution_normalized[i][1],
+    )
     position.append(position_denormalize)
     velocity.append(velocity_denormalized)
 
@@ -70,8 +78,3 @@ time = parameters.rescale_normalized_time_intervall(time_noramlized)
 
 plot_3d(position)
 plot_kinetic_energy(velocity, time, mp)
-plot_2d_projections(position, velocity, "DP_Phase_Space_2000000_points")
-
-save_to_csv(position, "save_position.csv")
-save_to_csv(velocity, "save_velocity.csv")
-save_time_interval(time, "save_time.csv")

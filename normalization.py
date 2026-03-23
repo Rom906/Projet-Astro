@@ -30,7 +30,7 @@ import numpy as np
 from utils import Vector
 from math import pi
 from typing import List
-from constants import mu
+from constants import UNIT, mu
 
 
 class NormalizationParameters:
@@ -390,3 +390,4 @@ def convert_to_dimensional_time_only(u_norm, v_norm, params: NormalizationParame
     """
     v_dim = params.dimensionalize_velocity_time_only(v_norm)
     return u_norm, v_dim
+
