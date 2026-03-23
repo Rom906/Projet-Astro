@@ -5,7 +5,7 @@ from normalization import (
     convert_to_dimensional_time_only,
     convert_to_normalized,
 )
-from Integrate_fonctions import adams, euler, RK4, dormand_prince
+from Integrate_fonctions import adams, euler, RK4, dormand_prince, velocity_verlet
 from utils import Vector
 from constants import RT, mp, MO, qe, mu
 from utils import save_time_interval, save_to_csv
@@ -20,11 +20,11 @@ initial_conditions = convert_to_normalized(
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution_trash_points(
-    RK4,
+    velocity_verlet,
     differential_equation_normalized,
     500000,
     0,
-    100000,
+    1000000,
     initial_conditions,
     False,
     1,
