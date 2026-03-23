@@ -1,33 +1,49 @@
-from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points, plot_kinetic_energy, plot_2d_projections
+from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points, plot_kinetic_energy
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
     convert_to_dimensional_time_only,
-    convert_to_normalized,
+    convert_to_normalized
 )
 from Integrate_fonctions import adams, euler, RK4, dormand_prince
 from utils import Vector
 from constants import RT, mp, MO, qe, mu
-from utils import save_time_interval, save_to_csv
+from math import inf
 
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
+<<<<<<< HEAD
 initial_position = Vector([-2 * RT, -2 * RT, -2 * RT])
 initial_velocity = RT * Vector([0.1, 0.1, 0.1])
 initial_conditions = convert_to_normalized(
     initial_position, initial_velocity, parameters
 )
+=======
+initial_position = Vector([-4 * RT, -1 * RT, -6 * RT])
+initial_velocity = RT * Vector([0.01, 0.01, 0.01])
+initial_conditions = convert_to_normalized(initial_position, initial_velocity, parameters)
+>>>>>>> main
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution_trash_points(
     RK4,
     differential_equation_normalized,
+<<<<<<< HEAD
     10000000,
     0,
     10000,
     initial_conditions=initial_conditions,
     ratio=1,
     variable_steps=True
+=======
+    10000,
+    0,
+    2000000,
+    initial_conditions,
+    False,
+    1,
+    100
+>>>>>>> main
 )
 
 print(len(solution_normalized))
@@ -35,7 +51,7 @@ print(len(solution_normalized))
 position = []
 velocity = []
 for i in range(len(solution_normalized)):
-    position_denormalize, velocity_denormalized = convert_to_dimensional_time_only(solution_normalized[i][0], solution_normalized[i][1], parameters)
+    position_denormalize, velocity_denormalized = solution_normalized[i][0], solution_normalized[i][1]
     position.append(position_denormalize)
     velocity.append(velocity_denormalized)
 
@@ -67,10 +83,5 @@ print(min_z, max_z)
 
 time = parameters.rescale_normalized_time_intervall(time_noramlized)
 
-plot_3d(position)
+plot_3d(position, initial_velocity=initial_velocity)
 plot_kinetic_energy(velocity, time, mp)
-plot_2d_projections(position, velocity, "DP_Phase_Space_2000000_points")
-
-save_to_csv(position, "save_position.csv")
-save_to_csv(velocity, "save_velocity.csv")
-save_time_interval(time, "save_time.csv")

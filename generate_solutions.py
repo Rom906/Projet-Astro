@@ -1,4 +1,6 @@
 from utils import Vector
+from constants import RT
+from scientific_notation import ScientificNotation
 from typing import Callable, List, Tuple
 import seaborn as sb
 import matplotlib.pyplot as plt
@@ -312,7 +314,6 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     :type initial_velocity: Vector or None
     """
     figure = go.Figure()
-
     # Plot the trajectory
     x = []
     y = []
@@ -377,15 +378,17 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
         ye.append(row_y)
         ze.append(row_z)
     figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
-
+    position_x = round(positions[0][0], 3)
+    position_y = round(positions[0][1], 3)
+    position_z = round(positions[0][2], 3)
     # Add annotations for initial conditions
-    initial_pos_text = f"Initial Position:<br>x={positions[0][0]:.4f}<br>y={positions[0][1]:.4f}<br>z={positions[0][2]:.4f}"
+    initial_pos_text = f"Initial Position (en RT):<br>x={position_x:.3f}<br>y={position_y:.3f}<br>z={position_z:.3f}"
     if initial_velocity is not None:
         velocity_text = (
             f"<br>Initial Velocity:<br>"
-            f"vx={initial_velocity[0]:.3e}<br>"
-            f"vy={initial_velocity[1]:.3e}<br>"
-            f"vz={initial_velocity[2]:.3e}"
+            f"vx={ScientificNotation(initial_velocity[0], 'm').to_scientific_notation()}<br>"
+            f"vy={ScientificNotation(initial_velocity[1], 'm').to_scientific_notation()}<br>"
+            f"vz={ScientificNotation(initial_velocity[2], 'm').to_scientific_notation()}"
         )
         initial_pos_text += velocity_text
 
@@ -403,7 +406,7 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     )
 
     # Add annotation for final position
-    final_pos_text = f"Final Position:<br>x={positions[-1][0]:.4f}<br>y={positions[-1][1]:.4f}<br>z={positions[-1][2]:.4f}"
+    final_pos_text = f"Final Position:<br>x={ScientificNotation(RT * positions[-1][0], 'm').to_scientific_notation()}<br>y={ScientificNotation(RT * positions[-1][1], 'm').to_scientific_notation()}<br>z={ScientificNotation(RT * positions[-1][2], 'm').to_scientific_notation()}"
     figure.add_annotation(
         text=final_pos_text,
         xref="paper",
@@ -418,11 +421,12 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     )
 
     # Set parameters
+    figure.update_traces(showlegend=True)
     figure.update_layout(
         scene=dict(
-            xaxis=dict(title="x", showgrid=True, zeroline=True),
-            yaxis=dict(title="y", showgrid=True, zeroline=True),
-            zaxis=dict(title="z", showgrid=True, zeroline=True),
+            xaxis=dict(title="x/RT", showgrid=True, zeroline=True),
+            yaxis=dict(title="y/RT", showgrid=True, zeroline=True),
+            zaxis=dict(title="z/RT", showgrid=True, zeroline=True),
             aspectmode="data",
         ),
         title="Particle Trajectory in Magnetic Field",
@@ -474,7 +478,6 @@ def plot_2d_projections(positions_list, velocities_list=None, title="Projections
 
     # Color and style
     color = "navy"
-    linewidth = 0.1
     point_size = 0.5
 
     if velocities_list:
@@ -530,3 +533,100 @@ def plot_2d_projections(positions_list, velocities_list=None, title="Projections
 
     plt.tight_layout()
     plt.show()
+
+
+def saved_plot_kinetic_energy(
+    velocity: List[Vector], time_list: List[float], mp: float, save_name: str
+) -> None:
+    """
+    plot the kinetic energy during time using velocity vector
+    :param velocity: the list of velocity vectors
+    :type velocity: List[Vector]
+    :param time_list: the different time associated to the velocity vetors
+    :type time_list: List[float]
+    :param mp: the mass of the particle
+    :type mp: float
+    """
+    kinetic_energy = []
+    for i in range(len(velocity)):
+        kinetic_energy.append(1 / 2 * mp * abs(velocity[i]) ** 2)
+    sb.lineplot(x=time_list, y=kinetic_energy)
+    plt.title("System kinetic energy during time")
+    plt.grid(True)
+    plt.savefig(save_name)
+
+
+def saved_plot_2d_projections(positions_list, save_name: str, velocities_list=None, title="Projections 2D"):
+    """
+    Generates 3 stacked 2D projection plots.
+
+    :param positions_list: List of Vectors [x, y, z]
+    :param velocities_list: List of Vectors [vx, vy, vz] (Optional).
+                            If provided, displays phase space plots (v vs pos).
+                            If absent, displays geometric projections (y vs x).
+    """
+    # Extracting data
+    x = np.array([p.coordinates[0] for p in positions_list])
+    y = np.array([p.coordinates[1] for p in positions_list])
+    z = np.array([p.coordinates[2] for p in positions_list])
+
+    fig, axs = plt.subplots(3, 1, figsize=(10, 12), sharex=False)
+    fig.suptitle(title, fontsize=16)
+
+    # Color and style
+    color = "navy"
+    point_size = 0.5
+
+    if velocities_list:
+        # It's possible let just none for the velocity list but the result will be just 2D position
+        # --- Space mode phase (v vs pos) ---
+        vx = np.array([v.coordinates[0] for v in velocities_list])
+        vy = np.array([v.coordinates[1] for v in velocities_list])
+        vz = np.array([v.coordinates[2] for v in velocities_list])
+
+        # Graph 1: vx vs x
+        axs[0].plot(x, vx, ".", markersize=point_size, color=color, alpha=0.5)
+        axs[0].set_ylabel(r"$v_x$")
+        axs[0].set_title(r"Projection Phase Space: $v_x$ vs $x$")
+        axs[0].grid(True, alpha=0.3)
+
+        # Graph 2: vy vs y
+        axs[1].plot(y, vy, ".", markersize=point_size, color=color, alpha=0.5)
+        axs[1].set_ylabel(r"$v_y$")
+        axs[1].set_title(r"Projection Phase Space: $v_y$ vs $y$")
+        axs[1].grid(True, alpha=0.3)
+
+        # Graph 3: vz vs z
+        axs[2].plot(z, vz, ".", markersize=point_size, color=color, alpha=0.5)
+        axs[2].set_ylabel(r"$v_z$")
+        axs[2].set_xlabel(r"Position ($R_T$)")
+        axs[2].set_title(r"Projection Phase Space: $v_z$ vs $z$")
+        axs[2].grid(True, alpha=0.3)
+
+    else:
+        # --- Projection mode geometrical (pos vs pos) ---
+
+        # Graph 1: y vs x (top view)
+        axs[0].plot(x, y, ".", markersize=point_size, color=color, alpha=0.5)
+        axs[0].set_ylabel(r"$y$ [$R_T$]")
+        axs[0].set_title(r"Projection Plan XY (Top View)")
+        axs[0].grid(True, alpha=0.3)
+        axs[0].set_aspect("equal")
+
+        # Graph 2: z vs y (side view)
+        axs[1].plot(y, z, ".", markersize=point_size, color=color, alpha=0.5)
+        axs[1].set_ylabel(r"$z$ [$R_T$]")
+        axs[1].set_title(r"Projection Plan YZ (Side View)")
+        axs[1].grid(True, alpha=0.3)
+        axs[1].set_aspect("equal")
+
+        # Graph3: z vs x (front view)
+        axs[2].plot(x, z, ".", markersize=point_size, color=color, alpha=0.5)
+        axs[2].set_ylabel(r"$z$ [$R_T$]")
+        axs[2].set_xlabel(r"$x$ [$R_T$]")
+        axs[2].set_title(r"Projection Plan XZ (Front View)")
+        axs[2].grid(True, alpha=0.3)
+        axs[2].set_aspect("equal")
+
+    plt.tight_layout()
+    plt.savefig(save_name)

@@ -28,7 +28,11 @@ def f(t, Y: Vector):
 # test comparatif
 
 # solutions_1 = compute_solution(adams, f, 10000000, 0, 1000000, vector_CL, False, 1)
+<<<<<<< HEAD
 solutions_2 = compute_solution_trash_points(RK4, f, 10000, 0, 1000, vector_CL, variable_steps=True)[0]
+=======
+solutions_2 = compute_solution(RK4, f, 100000, 0, 10000, vector_CL, False, 1)[0]
+>>>>>>> main
 
 # ploted_position_1 = []
 # for i in range(0, len(solutions_1), 100):
