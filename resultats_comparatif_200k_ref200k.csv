@@ -1,0 +1,7 @@
+Methode;Temps Execution;Erreur Trajectoire Moyenne (u);Variation Energie Moyenne (%)
+Euler;0m 3.11s;7.4997 u;222.6825 %
+Runge-Kutta 4;0m 13.84s;2.8461 u;0 %
+Adams-Bashforth 4;0m 11.41s;760.9717 u;1215406.0752 %
+Dormand-Prince;0m 39.25s;2.8461 u;0 %
+Heun;0m 5.87s;2.8462 u;0.0028 %
+Velocity Verlet;0m 6.79s;5.3915 u;109.9579 %

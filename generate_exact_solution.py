@@ -24,7 +24,7 @@ print("Conditions initiales :", initial_conditions)
 solution_normalized, time_normalized = compute_solution_trash_points(
     RK4,
     differential_equation_normalized,
-    2000000,
+    20000000,
     0,
     10000000,
     initial_conditions,
