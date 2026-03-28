@@ -1,9 +1,14 @@
-from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points, plot_kinetic_energy
+ffrom generate_solutions import (
+    compute_solution,
+    plot_3d,
+    compute_solution_trash_points,
+    plot_kinetic_energy,
+)
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
     convert_to_dimensional_time_only,
-    convert_to_normalized
+    convert_to_normalized,
 )
 from Integrate_fonctions import adams, euler, RK4, dormand_prince
 from utils import Vector
@@ -13,20 +18,22 @@ from math import inf
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
 initial_position = Vector([-4 * RT, -1 * RT, -6 * RT])
-initial_velocity = RT * Vector([0.01, 0.01, 0.01])
-initial_conditions = convert_to_normalized(initial_position, initial_velocity, parameters)
+initial_velocity = RT * Vector([0.1, 0.1, 0.1])
+initial_conditions = convert_to_normalized(
+    initial_position, initial_velocity, parameters
+)
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution_trash_points(
     RK4,
     differential_equation_normalized,
-    10000,
-    0,
     2000000,
+    0,
+    10000000,
     initial_conditions,
     False,
     1,
-    100
+    100,
 )
 
 print(len(solution_normalized))
@@ -34,7 +41,10 @@ print(len(solution_normalized))
 position = []
 velocity = []
 for i in range(len(solution_normalized)):
-    position_denormalize, velocity_denormalized = solution_normalized[i][0], solution_normalized[i][1]
+    position_denormalize, velocity_denormalized = (
+        solution_normalized[i][0],
+        solution_normalized[i][1],
+    )
     position.append(position_denormalize)
     velocity.append(velocity_denormalized)
 
@@ -66,5 +76,5 @@ print(min_z, max_z)
 
 time = parameters.rescale_normalized_time_intervall(time_noramlized)
 
-plot_3d(position, initial_velocity=initial_velocity)
+plot_3d(position)
 plot_kinetic_energy(velocity, time, mp)
