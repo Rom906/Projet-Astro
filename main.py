@@ -1,8 +1,10 @@
-ffrom generate_solutions import (
+from generate_solutions import (
     compute_solution,
     plot_3d,
     compute_solution_trash_points,
+    plot_kinetic_energy_v2,
     plot_kinetic_energy,
+    plot_2d_projections
 )
 from normalization import (
     NormalizationParameters,
@@ -10,15 +12,15 @@ from normalization import (
     convert_to_dimensional_time_only,
     convert_to_normalized,
 )
-from Integrate_fonctions import adams, euler, RK4, dormand_prince
-from utils import Vector
+from Integrate_fonctions import adams, euler, RK4, dormand_prince, velocity_verlet
+from utils import Vector, save_to_csv, save_time_interval
 from constants import RT, mp, MO, qe, mu
 from math import inf
 
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
 initial_position = Vector([-4 * RT, -1 * RT, -6 * RT])
-initial_velocity = RT * Vector([0.1, 0.1, 0.1])
+initial_velocity = RT * Vector([0.05, 0.05, 0.05])
 initial_conditions = convert_to_normalized(
     initial_position, initial_velocity, parameters
 )
@@ -27,13 +29,13 @@ print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution_trash_points(
     RK4,
     differential_equation_normalized,
-    2000000,
+    500000,
     0,
-    10000000,
+    100000,
     initial_conditions,
     False,
     1,
-    100,
+    10,
 )
 
 print(len(solution_normalized))
@@ -76,5 +78,11 @@ print(min_z, max_z)
 
 time = parameters.rescale_normalized_time_intervall(time_noramlized)
 
+# # Save data to CSV for debugging
+# save_to_csv(velocity, "debug_velocity.csv")
+# save_time_interval(time, "debug_time.csv")
+
 plot_3d(position)
 plot_kinetic_energy(velocity, time, mp)
+plot_kinetic_energy_v2(velocity, time, mp)
+plot_2d_projections(position, velocity)
