@@ -1,4 +1,4 @@
-from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points, plot_kinetic_energy, plot_kinetic_energy_compared
+from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points, plot_kinetic_energy, plot_kinetic_energy_compared, plot_variation_energy, saved_plot_kinetic_energy
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
@@ -39,8 +39,8 @@ for j in range(N):
     for i in range(len(solution_normalized)):
         position_denormalize, velocity_denormalized = solution_normalized[i][0], solution_normalized[i][1]
         position.append(position_denormalize)
-        velocity.append(velocity_denormalized)
-        velocity_kinetic[j].append(velocity_denormalized)
+        velocity.append(parameters.dimensionalize_velocity(velocity_denormalized))
+        velocity_kinetic[j].append(parameters.dimensionalize_velocity(velocity_denormalized))
 
     max_x = position[0][0]
     max_y = position[0][1]
@@ -69,7 +69,7 @@ for j in range(N):
     print(min_z, max_z)
 
     time = parameters.rescale_normalized_time_intervall(time_noramlized)
-
     plot_3d(position, initial_velocity=initial_velocity)
     plot_kinetic_energy(velocity, time, mp)
+    plot_variation_energy(velocity, time, mp)
 plot_kinetic_energy_compared(velocity_kinetic, time, mp)
