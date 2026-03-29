@@ -27,8 +27,8 @@ def compute_solution_specific(initial_conditions: Vector, parameters: Normalizat
     position = []
     velocity = []
     for i in range(len(solution_normalized)):
-        position_denormalize, velocity_denormalized = solution_normalized[i][0], solution_normalized[i][1]
-        position.append(position_denormalize)
+        position_denormalized, velocity_denormalized = solution_normalized[i][0], solution_normalized[i][1]
+        position.append(position_denormalized)
         velocity.append(velocity_denormalized)
 
     time = parameters.rescale_normalized_time_intervall(time_noramlized)
