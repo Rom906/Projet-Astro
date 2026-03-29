@@ -4,7 +4,7 @@ from normalization import (
     differential_equation_normalized,
     convert_to_normalized
 )
-from Integrate_fonctions import adams, euler, RK4, dormand_prince, Heun
+from integration_functions import adams, euler, RK4, dormand_prince, Heun
 from utils import Vector, save_time_interval, save_to_csv
 from constants import RT, mp, MO, qe, mu
 from random import randrange
