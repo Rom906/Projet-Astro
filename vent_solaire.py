@@ -14,6 +14,7 @@ from normalization import (
     differential_equation_normalized,
     convert_to_normalized,
 )
+from generate_solutions import compute_solution_trash_points, plot_3d
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
 initial_position = Vector([-4 * RT, -1 * RT, -6 * RT])
@@ -25,14 +26,15 @@ initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 
 N_particules = 10
 
-vitesse_vent_lent = Vector([400000.0, 400000.0, 400000.0])
-vitesse_vent_rapide = Vector([650000.0, 650000.0, 650000.0])
+vitesse_vent_lent = Vector([40.0, 40.0, 40.0])
+vitesse_vent_rapide = Vector([65.0, 65.0, 65.0])
 
-vitesse_thermique = Vector([40000.0, 40000.0, 40000.0])
+vitesse_thermique = 4.0
+facteur_conversion = parameters.R0 / parameters.T
+vitesse_termique_nomr = vitesse_thermique * facteur_conversion
 
 vitesse_moyenne_norm = parameters.normalize_velocity(vitesse_vent_lent)
 
-vitesse_termique_nomr = parameters.normalize_velocity(vitesse_thermique)
 
 liste_conditions_initiales = []
 
@@ -53,3 +55,22 @@ print(f"{N_particules} particules générées avec succès !\n")
 #     print(f"ci pour la {i}eme particule :")
 #     print(f"- position : {liste_conditions_initiales[0][0]}")
 #     print(f"- vitesse : {liste_conditions_initiales[0][1]}\n")
+
+liste_solutions = []
+
+for i in range(len(liste_conditions_initiales)):
+    solution_normalized, time_normalized = compute_solution_trash_points(
+        RK4,
+        differential_equation_normalized,
+        2000000,
+        0,
+        10000000,
+        liste_conditions_initiales[i],
+        False,
+        1,
+        100,
+    )
+    liste_solutions.append(solution_normalized)
+
+# fonction à completer dans generate_solutions
+plot_3d_plusieurs_particules(liste_solutions[0])

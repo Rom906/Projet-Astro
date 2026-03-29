@@ -391,6 +391,12 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     figure.show()
 
 
+def plot_3d_plusieurs_solutions(
+    positions: List[Vector], initial_velocity: Vector = None
+) -> None:
+    pass
+
+
 def plot_kinetic_energy(
     velocity: List[Vector], time_list: List[float], mp: float
 ) -> None:
