@@ -16,4 +16,4 @@ initial_conditions = convert_to_normalized(
     initial_position, initial_velocity, parameters
 )
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
-compute_collisional_trajectory(initial_conditions, differential_equation_normalized, 0.1, 10)
+trajectory, collision = compute_collisional_trajectory(initial_conditions, differential_equation_normalized, 0.1, 10)
