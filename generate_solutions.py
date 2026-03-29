@@ -400,6 +400,180 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     figure.show()
 
 
+def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magnetic_moment: Vector = None) -> None:
+    """
+    Enhanced 3D plot of particle trajectory in magnetic field with magnetic dipole moment vector.
+    Includes initial position/velocity information, start/end point markers, and magnetic moment visualization.
+
+    :param positions: the list of different positions
+    :type positions: List[Vector]
+    :param initial_velocity: optional initial velocity vector for display
+    :type initial_velocity: Vector or None
+    :param magnetic_moment: optional magnetic moment vector (default: mu from constants)
+    :type magnetic_moment: Vector or None
+    """
+    from constants import mu
+    
+    if magnetic_moment is None:
+        magnetic_moment = mu
+    
+    figure = go.Figure()
+    
+    # Plot the trajectory
+    x = []
+    y = []
+    z = []
+    for i in range(len(positions)):
+        x.append(positions[i][0])
+        y.append(positions[i][1])
+        z.append(positions[i][2])
+    figure.add_trace(
+        go.Scatter3d(
+            x=x,
+            y=y,
+            z=z,
+            mode="lines",
+            line=dict(color="blue", width=1, dash="solid"),
+            name="Trajectory",
+        )
+    )
+
+    # Add starting point (green)
+    figure.add_trace(
+        go.Scatter3d(
+            x=[positions[0][0]],
+            y=[positions[0][1]],
+            z=[positions[0][2]],
+            mode="markers",
+            marker=dict(size=10, color="green"),
+            name="Start Point",
+            showlegend=True,
+        )
+    )
+
+    # Add ending point (red)
+    figure.add_trace(
+        go.Scatter3d(
+            x=[positions[-1][0]],
+            y=[positions[-1][1]],
+            z=[positions[-1][2]],
+            mode="markers",
+            marker=dict(size=10, color="red"),
+            name="End Point",
+            showlegend=True,
+        )
+    )
+
+    # Add a sphere at (0, 0, 0) representing earth
+    r = 1
+    phi = get_intervall(30, 0, 2 * pi)
+    theta = get_intervall(15, 0, pi)
+    xe = []
+    ye = []
+    ze = []
+    for i in range(len(phi)):
+        row_x = []
+        row_y = []
+        row_z = []
+        for j in range(len(theta)):
+            row_x.append(r * cos(phi[i]) * sin(theta[j]))
+            row_y.append(r * sin(phi[i]) * sin(theta[j]))
+            row_z.append(r * cos(theta[j]))
+        xe.append(row_x)
+        ye.append(row_y)
+        ze.append(row_z)
+    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
+    
+    # Add magnetic moment vector at North Pole (0, 0, 1)
+    # Normalize and scale the magnetic moment for visualization
+    mu_normalized = magnetic_moment.normalized()
+    mu_magnitude = abs(magnetic_moment)
+    # Scale factor for visualization (proportional to magnitude but visible on plot)
+    scale_factor = 2.0
+    mu_scaled = mu_normalized * scale_factor
+    
+    north_pole = [0, 0, 1]
+    mu_end = [north_pole[i] + mu_scaled[i] for i in range(3)]
+    
+    figure.add_trace(
+        go.Scatter3d(
+            x=[north_pole[0], mu_end[0]],
+            y=[north_pole[1], mu_end[1]],
+            z=[north_pole[2], mu_end[2]],
+            mode="lines+markers",
+            line=dict(color="purple", width=4),
+            marker=dict(size=8, color="purple"),
+            name="Magnetic Moment",
+            showlegend=True,
+        )
+    )
+    
+    position_x = round(positions[0][0], 3)
+    position_y = round(positions[0][1], 3)
+    position_z = round(positions[0][2], 3)
+    
+    # Add annotations for initial conditions
+    initial_pos_text = f"Initial Position (en RT):<br>x={position_x:.3f}<br>y={position_y:.3f}<br>z={position_z:.3f}"
+    if initial_velocity is not None:
+        velocity_text = (
+            f"<br>Initial Velocity:<br>"
+            f"vx={ScientificNotation(initial_velocity[0], 'm').to_scientific_notation()}<br>"
+            f"vy={ScientificNotation(initial_velocity[1], 'm').to_scientific_notation()}<br>"
+            f"vz={ScientificNotation(initial_velocity[2], 'm').to_scientific_notation()}"
+        )
+        initial_pos_text += velocity_text
+    
+    # Add magnetic moment information
+    mu_magnitude_formatted = ScientificNotation(mu_magnitude, 'A·m²').to_scientific_notation()
+    magnetic_moment_text = f"<br><br>Magnetic Moment: {mu_magnitude_formatted}"
+    initial_pos_text += magnetic_moment_text
+
+    figure.add_annotation(
+        text=initial_pos_text,
+        xref="paper",
+        yref="paper",
+        x=0.02,
+        y=0.98,
+        showarrow=False,
+        bgcolor="rgba(200, 255, 200, 0.8)",
+        bordercolor="green",
+        borderwidth=2,
+        font=dict(size=10),
+    )
+
+    # Add annotation for final position
+    final_pos_text = f"Final Position:<br>x={ScientificNotation(RT * positions[-1][0], 'm').to_scientific_notation()}<br>y={ScientificNotation(RT * positions[-1][1], 'm').to_scientific_notation()}<br>z={ScientificNotation(RT * positions[-1][2], 'm').to_scientific_notation()}"
+    figure.add_annotation(
+        text=final_pos_text,
+        xref="paper",
+        yref="paper",
+        x=0.02,
+        y=0.52,
+        showarrow=False,
+        bgcolor="rgba(255, 200, 200, 0.8)",
+        bordercolor="red",
+        borderwidth=2,
+        font=dict(size=10),
+    )
+
+    # Set parameters
+    figure.update_traces(showlegend=True)
+    figure.update_layout(
+        scene=dict(
+            xaxis=dict(title="x/RT", showgrid=True, zeroline=True),
+            yaxis=dict(title="y/RT", showgrid=True, zeroline=True),
+            zaxis=dict(title="z/RT", showgrid=True, zeroline=True),
+            aspectmode="data",
+        ),
+        title="Particle Trajectory in Magnetic Field with Dipole Moment",
+        showlegend=True,
+        legend=dict(x=0.7, y=0.9),
+    )
+
+    # Show figure
+    figure.show()
+
+
 def plot_kinetic_energy(
     velocity: List[Vector], time_list: List[float], mp: float
 ) -> None:
