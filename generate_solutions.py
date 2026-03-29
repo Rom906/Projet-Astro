@@ -651,6 +651,50 @@ def plot_kinetic_energy_v2(
     plt.tight_layout(rect=[0, 0, 0.8, 1])
     plt.show()
 
+def plot_kinetic_energy_multiple(velocity_list, time_list, mp):
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    all_ke_final = []
+
+    first_velocity = velocity_list[0]
+    first_ke = np.array([0.5 * (abs(v) ** 2) for v in first_velocity])
+    first_ke0 = first_ke[0] if len(first_ke) > 0 else 1
+    exponent = int(np.floor(np.log10(abs(first_ke0)))) if first_ke0 != 0 else 0
+
+    for sol_idx, velocity in enumerate(velocity_list):
+        # --- Compute Ke/m
+        ke = np.array([0.5 * (abs(v) ** 2) for v in velocity])
+
+        # --- Reliable zone (ΔE/E0 < 0.1)
+        ke0 = ke[0] if len(ke) > 0 else 1
+        critical_index = len(ke) - 1
+        if ke0 != 0:
+            for j, val in enumerate(ke):
+                if abs(val - ke0) / ke0 > 0.1:
+                    critical_index = j - 1
+                    break
+
+        ke_final = ke[:critical_index+1] 
+        time_final = time_list[sol_idx][:critical_index+1] if sol_idx < len(time_list) else []
+        valid_mask = ke_final > 0
+        ke_valid = ke_final[valid_mask]
+        time_valid = np.array(time_final)[valid_mask] if len(time_final) > 0 else []
+
+        if len(ke_valid) > 0:
+            all_ke_final.extend(ke_valid)
+            ax.plot(time_valid, ke_valid, linewidth=2, marker='o', markersize=3, label=f'Solution {sol_idx+1}')
+
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel(f'Ke/m (×10^{exponent})')
+    ax.set_yscale('log')
+    ax.set_xscale('log')  
+    ax.set_title(f'Kinetic Energy per mass (m = {mp})')
+
+    ax.grid(True, alpha=0.3, which='both', linestyle='-', linewidth=0.5)
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.tight_layout(rect=[0, 0, 0.8, 1])
+    plt.show()
 
 def plot_2d_projections(positions_list, velocities_list=None, title="Projections 2D"):
     """
