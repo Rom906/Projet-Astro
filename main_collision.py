@@ -15,5 +15,5 @@ initial_velocity = RT * Vector([0.05, 0.05, 0.05])
 initial_conditions = convert_to_normalized(
     initial_position, initial_velocity, parameters
 )
-initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
+print(initial_conditions)
 compute_collisional_trajectory(initial_conditions, differential_equation_normalized, 0.1, 10)

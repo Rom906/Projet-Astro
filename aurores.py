@@ -24,7 +24,6 @@ def compute_collisional_trajectory(initial_conditions: Vector, differential_equa
     solution = [initial_conditions]
     t = 0
     collision_points = []
-    print(solution)
     while n_collisions < max_collisions:
         new = RK4(solution[-1], differential_equation, t, h, 1)
         t += h
