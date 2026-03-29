@@ -195,7 +195,8 @@ def compute_solution_trash_points(
         new_step_pos = new_step[0]
         last_step_pos = solution[-1][0]
         if variable_steps:
-            variation_btw_steps = max([(new_step_pos[i] - last_step_pos[i]) / last_step_pos[i] for i in range(len(new_step_pos.coordinates))])
+            print(last_step_pos)
+            variation_btw_steps = max([abs(new_step_pos[i] - last_step_pos[i]) / last_step_pos[i] for i in range(len(new_step_pos.coordinates))])
             if variation_btw_steps < minimum_variation:
                 h *= 1.1
             elif variation_btw_steps > maximum_variation:

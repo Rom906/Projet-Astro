@@ -21,7 +21,8 @@ def compute_solution_specific(initial_conditions: Vector, parameters: Normalizat
         initial_conditions,
         False,
         1,
-        100
+        100,
+        variable_steps=True
     )
 
     position = []
