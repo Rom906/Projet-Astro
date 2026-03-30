@@ -132,8 +132,8 @@ def compute_solution_trash_points(
     number_of_steps: int = 1,
     ratio: int = 1,
     variable_steps: bool = False,
-    minimum_variation: int = 0.01,
-    maximum_variation: int = 0.02
+    minimum_variation: int = 0.05,
+    maximum_variation: int = 0.1
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
@@ -196,19 +196,19 @@ def compute_solution_trash_points(
         new_step_pos = new_step[0]
         last_step_pos = solution[-1][0]
         if variable_steps:
-            max_variation_btw_steps = 0
+            max_variation = 0
             for i in range(len(new_step_pos.coordinates)):
                 if last_step_pos[i] != 0:
                     variation = abs(new_step_pos[i] - last_step_pos[i]) / last_step_pos[i]
-                    if variation > max_variation_btw_steps:
-                        max_variation_btw_steps = variation
-            if max_variation_btw_steps < minimum_variation:
-                h *= 1.1
-            elif max_variation_btw_steps > maximum_variation:
-                h /= 1.1
-        solution.append(new_step)
-        time_index.append(ti)
-        ti += h
+                    if variation > max_variation:
+                        max_variation = variation
+            if max_variation < minimum_variation:
+                h *= 2
+            elif max_variation > maximum_variation:
+                h /= 2
+            solution.append(new_step)
+            time_index.append(ti)
+            ti += h
 
         if treshold >= 0:
             treshold -= 1
