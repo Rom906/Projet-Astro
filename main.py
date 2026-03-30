@@ -5,7 +5,7 @@ from normalization import (
     convert_to_dimensional_time_only,
     convert_to_normalized
 )
-from Integrate_fonctions import adams, euler, RK4, dormand_prince
+from Integrate_fonctions import adams, euler, RK4, dormand_prince, Heun
 from utils import Vector
 from constants import RT, mp, MO, qe, mu
 from math import inf

@@ -518,7 +518,7 @@ def saved_plot_kinetic_energy(
     plt.savefig(save_name)
 
 
-def saved_plot_2d_projections(positions_list, save_name: str, velocities_list=None, title="Projections 2D"):
+def saved_plot_2d_projections(positions_list, save_name: str, velocities_list=None, title="Projections 2D", coordinate_system="cartesian", save=True):
     """
     Generates 3 stacked 2D projection plots.
 
@@ -539,30 +539,81 @@ def saved_plot_2d_projections(positions_list, save_name: str, velocities_list=No
     color = "navy"
     point_size = 0.5
 
+    if coordinate_system == "spherical":
+        # --- Conversion from cartesian to spherical system ---
+
+        #r and rho
+        rho = np.sqrt(x**2 + y**2)
+        r = np.sqrt(x**2 + y**2 + z**2)
+        
+        # To not divide by 0 (remplace any 0 in the array)
+        r = np.where(r == 0, 1e-9, r)
+        rho = np.where(rho == 0, 1e-9, rho)
+
+        # Coordinates Position (r, theta, phi)
+        r_pos = r
+        theta = np.arccos(z / r)          # Colatitude (0 = North, pi = South)
+        phi = np.arctan2(y, x)            # Longitude
+
+        # Speed coordinates if present
+        if velocities_list:
+            vx = np.array([v.coordinates[0] for v in velocities_list])
+            vy = np.array([v.coordinates[1] for v in velocities_list])
+            vz = np.array([v.coordinates[2] for v in velocities_list])
+
+            # Radial Speed (vr)
+            vr = (x * vx + y * vy + z * vz) / r
+
+            # Colatitudinal Speed (v_theta)
+            # Projection on u_theta: (z/rho * urho - u_z) watch out for signs
+            v_theta = (z * (x * vx + y * vy) / rho - rho * vz) / r
+            
+            # Vitesse Azimutale (v_phi)
+            v_phi = (x * vy - y * vx) / rho
+
+            # We replace the variables for the rest of the code
+            x, y, z = r_pos, theta, phi
+            vx, vy, vz = vr, v_theta, v_phi
+
+            labels_pos = [r"$r$ [$R_T$]", r"$\theta$ [rad]", r"$\phi$ [rad]"]
+            labels_vel = [r"$v_r$ [$R_T$/unit]", r"$v_\theta$ [$R_T$/unit]", r"$v_\phi$ [$R_T$/unit]"]
+            titles = [r"Espace des phases: $v_r$ vs $r$", r"Espace des phases: $v_\theta$ vs $\theta$", r"Espace des phases: $v_\phi$ vs $\phi$"]
+        else:
+            labels_pos = [r"$r$ [$R_T$]", r"$\theta$ [rad]", r"$\phi$ [rad]"]
+            # Pour le mode géométrique sphérique, on projette souvent theta vs phi, etc.
+            titles = [r"Projection: $\theta$ vs $r$", r"Projection: $\phi$ vs $\theta$", r"Projection: $\phi$ vs $r$"]
+        
+    else: #cartesian
+        if velocities_list:
+            vx = np.array([v.coordinates[0] for v in velocities_list])
+            vy = np.array([v.coordinates[1] for v in velocities_list])
+            vz = np.array([v.coordinates[2] for v in velocities_list])
+
+        labels_pos = [r"$x$ [$R_T$]", r"$y$ [$R_T$]", r"$z$ [$R_T$]"]
+        labels_vel = [r"$v_x$", r"$v_y$", r"$v_z$"]
+        titles = [r"Projection Phase Space: $v_x$ vs $x$", r"Projection Phase Space: $v_y$ vs $y$", r"Projection Phase Space: $v_z$ vs $z$"]
+
     if velocities_list:
         # It's possible let just none for the velocity list but the result will be just 2D position
         # --- Space mode phase (v vs pos) ---
-        vx = np.array([v.coordinates[0] for v in velocities_list])
-        vy = np.array([v.coordinates[1] for v in velocities_list])
-        vz = np.array([v.coordinates[2] for v in velocities_list])
 
-        # Graph 1: vx vs x
+        # Graph 1: vx vs x or
         axs[0].plot(x, vx, ".", markersize=point_size, color=color, alpha=0.5)
-        axs[0].set_ylabel(r"$v_x$")
-        axs[0].set_title(r"Projection Phase Space: $v_x$ vs $x$")
+        axs[0].set_ylabel(labels_vel[0])
+        axs[0].set_title(titles[0])
         axs[0].grid(True, alpha=0.3)
 
-        # Graph 2: vy vs y
+        # Graph 2: vy vs y or 
         axs[1].plot(y, vy, ".", markersize=point_size, color=color, alpha=0.5)
-        axs[1].set_ylabel(r"$v_y$")
-        axs[1].set_title(r"Projection Phase Space: $v_y$ vs $y$")
+        axs[1].set_ylabel(labels_vel[1])
+        axs[1].set_title(titles[1])
         axs[1].grid(True, alpha=0.3)
 
-        # Graph 3: vz vs z
+        # Graph 3: vz vs z or 
         axs[2].plot(z, vz, ".", markersize=point_size, color=color, alpha=0.5)
-        axs[2].set_ylabel(r"$v_z$")
+        axs[2].set_ylabel(labels_vel[2])
         axs[2].set_xlabel(r"Position ($R_T$)")
-        axs[2].set_title(r"Projection Phase Space: $v_z$ vs $z$")
+        axs[2].set_title(titles[2])
         axs[2].grid(True, alpha=0.3)
 
     else:
@@ -570,25 +621,28 @@ def saved_plot_2d_projections(positions_list, save_name: str, velocities_list=No
 
         # Graph 1: y vs x (top view)
         axs[0].plot(x, y, ".", markersize=point_size, color=color, alpha=0.5)
-        axs[0].set_ylabel(r"$y$ [$R_T$]")
-        axs[0].set_title(r"Projection Plan XY (Top View)")
+        axs[0].set_ylabel(labels_pos[0])
+        axs[0].set_title(titles[0])
         axs[0].grid(True, alpha=0.3)
         axs[0].set_aspect("equal")
 
         # Graph 2: z vs y (side view)
         axs[1].plot(y, z, ".", markersize=point_size, color=color, alpha=0.5)
-        axs[1].set_ylabel(r"$z$ [$R_T$]")
-        axs[1].set_title(r"Projection Plan YZ (Side View)")
+        axs[1].set_ylabel(labels_pos[1])
+        axs[1].set_title(titles[1])
         axs[1].grid(True, alpha=0.3)
         axs[1].set_aspect("equal")
 
         # Graph3: z vs x (front view)
         axs[2].plot(x, z, ".", markersize=point_size, color=color, alpha=0.5)
-        axs[2].set_ylabel(r"$z$ [$R_T$]")
-        axs[2].set_xlabel(r"$x$ [$R_T$]")
+        axs[2].set_ylabel(labels_pos[2])
+        axs[2].set_xlabel(titles[2])
         axs[2].set_title(r"Projection Plan XZ (Front View)")
         axs[2].grid(True, alpha=0.3)
         axs[2].set_aspect("equal")
 
     plt.tight_layout()
-    plt.savefig(save_name)
+    if save:
+        plt.savefig(f"../{save_name}.png")
+    else:
+        plt.show
