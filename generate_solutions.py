@@ -391,47 +391,41 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     figure.show()
 
 
-def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = None) -> None:
+def plot_3d_multi(
+    positions_list: List[List[Vector]], magnetic_moment: Vector = None
+) -> None:
     """
     3D plot of multiple particle trajectories in magnetic field with magnetic dipole moment vector.
-    Trajectories are colored with a plasma gradient to distinguish between particles.
-    Includes Earth sphere and magnetic moment visualization.
-
-    :param positions_list: list of trajectory lists, where each trajectory is a list of Vectors [x, y, z]
-    :type positions_list: List[List[Vector]]
-    :param magnetic_moment: optional magnetic moment vector (default: mu from constants)
-    :type magnetic_moment: Vector or None
     """
     from constants import mu
     import matplotlib.cm as cm
-    
+
     if magnetic_moment is None:
         magnetic_moment = mu
-    
+
     figure = go.Figure()
-    
-    # Generate plasma colormap for particles
+
     num_particles = len(positions_list)
-    plasma_colors = cm.get_cmap('plasma')
-    
-    # Plot each trajectory
+    plasma_colors = cm.get_cmap("plasma")
+
     for particle_idx, positions in enumerate(positions_list):
-        # Compute color for this particle on the plasma gradient
-        color_val = particle_idx / max(1, num_particles - 1) if num_particles > 1 else 0.5
+        color_val = (
+            particle_idx / max(1, num_particles - 1) if num_particles > 1 else 0.5
+        )
         rgba = plasma_colors(color_val)
-        # Convert RGBA to hex color for plotly
-        color_hex = f'rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 0.8)'
-        
-        # Extract coordinates
+        color_hex = (
+            f"rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 0.8)"
+        )
+
+        # 1. CORRECTION ICI : Extraction des nombres (pas des objets Vector)
         x = []
         y = []
         z = []
         for pos in positions:
-            x.append(pos[0])
-            y.append(pos[1])
-            z.append(pos[2])
-        
-        # Plot trajectory with reduced line width
+            x.append(pos[0][0])
+            y.append(pos[0][1])
+            z.append(pos[0][2])
+
         figure.add_trace(
             go.Scatter3d(
                 x=x,
@@ -443,44 +437,39 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
                 hoverinfo="skip",
             )
         )
-        
-        # Add starting point (smaller)
+
+        # 2. CORRECTION ICI : Point de départ
         figure.add_trace(
             go.Scatter3d(
-                x=[positions[0][0]],
-                y=[positions[0][1]],
-                z=[positions[0][2]],
+                x=[positions[0][0][0]],
+                y=[positions[0][0][1]],
+                z=[positions[0][0][2]],
                 mode="markers",
                 marker=dict(size=3, color=color_hex),
                 showlegend=False,
                 hoverinfo="skip",
             )
         )
-        
-        # Add ending point (smaller)
+
+        # 3. CORRECTION ICI : Point d'arrivée
         figure.add_trace(
             go.Scatter3d(
-                x=[positions[-1][0]],
-                y=[positions[-1][1]],
-                z=[positions[-1][2]],
+                x=[positions[-1][0][0]],
+                y=[positions[-1][0][1]],
+                z=[positions[-1][0][2]],
                 mode="markers",
                 marker=dict(size=3, color=color_hex),
                 showlegend=False,
                 hoverinfo="skip",
             )
         )
-    
-    # Add Earth sphere
+
     r = 1
     phi = get_intervall(30, 0, 2 * pi)
     theta = get_intervall(15, 0, pi)
-    xe = []
-    ye = []
-    ze = []
+    xe, ye, ze = [], [], []
     for i in range(len(phi)):
-        row_x = []
-        row_y = []
-        row_z = []
+        row_x, row_y, row_z = [], [], []
         for j in range(len(theta)):
             row_x.append(r * cos(phi[i]) * sin(theta[j]))
             row_y.append(r * sin(phi[i]) * sin(theta[j]))
@@ -489,15 +478,14 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
         ye.append(row_y)
         ze.append(row_z)
     figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
-    
-    # Add magnetic moment vector at North Pole (0, 0, 1)
+
     mu_normalized = magnetic_moment.normalized()
     scale_factor = 2.0
     mu_scaled = mu_normalized * scale_factor
-    
+
     north_pole = [0, 0, 1]
     mu_end = [north_pole[i] + mu_scaled[i] for i in range(3)]
-    
+
     figure.add_trace(
         go.Scatter3d(
             x=[north_pole[0], mu_end[0]],
@@ -510,8 +498,7 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
             showlegend=True,
         )
     )
-    
-    # Set parameters
+
     figure.update_layout(
         scene=dict(
             xaxis=dict(title="x/RT", showgrid=True, zeroline=True),
@@ -523,8 +510,6 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
         showlegend=True,
         legend=dict(x=0.7, y=0.9),
     )
-    
-    # Show figure
     figure.show()
 
 

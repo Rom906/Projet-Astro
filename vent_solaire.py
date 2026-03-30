@@ -18,47 +18,41 @@ from generate_solutions import compute_solution_trash_points, plot_3d_multi
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
 initial_position = Vector([-4 * RT, -1 * RT, -6 * RT])
-initial_velocity = RT * Vector([0.1, 0.1, 0.1])
+initial_velocity = RT * Vector([0.0628, 0, 0])
 initial_conditions = convert_to_normalized(
     initial_position, initial_velocity, parameters
 )
-initial_vitesse_norm = initial_conditions[1]
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
+print("Conditions initiales normalisées :", initial_conditions)
+pos_norm_base = initial_conditions[0]
+vit_norm_base = initial_conditions[1]
+
+
+vitesse_thermique = 40000
+vitesse_thermique_norm = parameters.normalize_velocity(
+    Vector([vitesse_thermique, 0, 0])
+)[0]
+
 
 N_particules = 10
-
-vitesse_vent_lent = Vector([40.0, 40.0, 40.0])
-vitesse_vent_rapide = Vector([65.0, 65.0, 65.0])
-
-vitesse_thermique = 0.01
-facteur_conversion = parameters.R0 / parameters.T
-vitesse_termique_nomr = vitesse_thermique * facteur_conversion
-
-vitesse_moyenne_norm = parameters.normalize_velocity(vitesse_vent_lent)
-
-
 liste_conditions_initiales = []
 
 
 for i in range(N_particules):
-    # vx = np.random.normal(loc=vitesse_moyenne_norm[0], scale=vitesse_termique_nomr)
-    # vy = np.random.normal(loc=vitesse_moyenne_norm[0], scale=vitesse_termique_nomr)
-    # vz = np.random.normal(loc=vitesse_moyenne_norm[0], scale=vitesse_termique_nomr)
-    vx = np.random.normal(loc=initial_vitesse_norm[1], scale=vitesse_termique_nomr)
-    vy = np.random.normal(loc=initial_vitesse_norm[1], scale=vitesse_termique_nomr)
-    vz = np.random.normal(loc=initial_vitesse_norm[1], scale=vitesse_termique_nomr)
+    vx = np.random.normal(loc=vit_norm_base[0], scale=vitesse_thermique_norm)
+    vy = np.random.normal(loc=vit_norm_base[1], scale=vitesse_thermique_norm)
+    vz = np.random.normal(loc=vit_norm_base[2], scale=vitesse_thermique_norm)
 
     vitesse_particule = Vector([vx, vy, vz])
-
-    ci_particule = Vector([initial_conditions[0], vitesse_particule])
+    ci_particule = Vector([pos_norm_base, vitesse_particule])
     liste_conditions_initiales.append(ci_particule)
 
 print(f"CI de {N_particules} particules générées avec succès !\n")
 
-# for i in range(5):
-#     print(f"ci pour la {i}eme particule :")
-#     print(f"- position : {liste_conditions_initiales[0][0]}")
-#     print(f"- vitesse : {liste_conditions_initiales[0][1]}\n")
+for i in range(5):
+    print(f"ci pour la {i}eme particule :")
+    print(f"- position : {liste_conditions_initiales[i][0]}")
+    print(f"- vitesse : {liste_conditions_initiales[i][1]}\n")
 
 liste_solutions = []
 
@@ -66,9 +60,9 @@ for i in range(len(liste_conditions_initiales)):
     solution_normalized, time_normalized = compute_solution_trash_points(
         RK4,
         differential_equation_normalized,
-        20000,
+        200000,
         0,
-        10000000,
+        1000000,
         liste_conditions_initiales[i],
         False,
         1,
@@ -78,4 +72,4 @@ for i in range(len(liste_conditions_initiales)):
     print(f"Point de {i+1}eme particule générés avec succès !\n")
 
 # fonction à completer dans generate_solutions
-plot_3d_multi(liste_solutions[0])
+plot_3d_multi(liste_solutions)
