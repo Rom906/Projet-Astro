@@ -727,9 +727,9 @@ def plot_3d_collisions(positions: List[Vector], collisions_positions: List[Vecto
 
     # Plot collisions
     for collision in collisions_positions:
-        x = collisions_positions[0]
-        y = collisions_positions[1]
-        z = collisions_positions[2]
+        x = [collision[0]]
+        y = [collision[1]]
+        z = [collision[2]]
         figure.add_trace(
             go.Scatter3d(
                 x=x,

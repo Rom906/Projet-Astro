@@ -16,10 +16,13 @@ initial_velocity = RT * Vector([1, 0, 0])
 initial_conditions = convert_to_normalized(initial_position, initial_velocity, parameters)
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 
-solution, collision_points = compute_collisional_trajectory(initial_conditions, differential_equation_normalized, 0.01, 100)
+solution, collision_points = compute_collisional_trajectory(initial_conditions, differential_equation_normalized, 0.01, 100000)
 
-trajectory = []
+trajectory_cartesian = []
 for vector in solution:
-    trajectory.append(convert_spherical_to_cartesian(vector[0]))
+    trajectory_cartesian.append(convert_spherical_to_cartesian(vector[0]))
+collision_cartesian = []
+for collision_pt in collision_points:
+    collision_cartesian.append(convert_spherical_to_cartesian(collision_pt))
 
-plot_3d_collisions(trajectory, collision_points)
+plot_3d_collisions(trajectory_cartesian, collision_cartesian)
