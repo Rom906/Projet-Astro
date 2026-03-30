@@ -1,5 +1,5 @@
 from aurores import compute_collisional_trajectory
-from generate_solutions import plot_3d
+from generate_solutions import plot_3d_collisions
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
@@ -22,4 +22,4 @@ trajectory = []
 for vector in solution:
     trajectory.append(convert_spherical_to_cartesian(vector[0]))
 
-plot_3d(trajectory)
+plot_3d_collisions(trajectory, collision_points)
