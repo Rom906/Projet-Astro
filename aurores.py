@@ -6,8 +6,8 @@ from integration_functions import RK4
 from generate_solutions import plot_3d
 
 def collision_test(position: Vector):
-    trial_value = random() * atm_model(position)["n"]
-    return trial_value > 0.99
+    collision_probability = atm_model(position)["n"]
+    return random() > collision_probability
 
 H0 = 8000 #m
 p0 = 130025 #Pa
@@ -15,7 +15,7 @@ R = 8.314 #J.K-1.mol-1
 T0 = 273.15 #K
 
 def atm_model(position: float):
-    n = p0 * (1 - exp(-(position[0] - RT)/ H0)) / (R * T0) #assuming spherical coords
+    n = p0 * (1 + exp(-(position[0] - RT)/ H0)) / (R * T0) #assuming spherical coords
     return {"n": n}
 
 def compute_collisional_trajectory(initial_conditions: Vector, differential_equation, h, max_collisions):
