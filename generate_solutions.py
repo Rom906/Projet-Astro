@@ -43,7 +43,7 @@ def compute_solution(
     number_of_steps: int = 1,
     variable_steps: bool = False,
     minimum_variation: int = 0.01,
-    maximum_variation: int = 0.02
+    tolerated_variation: int = 0.02
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps
@@ -132,8 +132,7 @@ def compute_solution_trash_points(
     number_of_steps: int = 1,
     ratio: int = 1,
     variable_steps: bool = False,
-    minimum_variation: int = 0.8,
-    maximum_variation: int = 0.2
+    tolerated_variation: int = 0.1,
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
@@ -160,8 +159,8 @@ def compute_solution_trash_points(
     :type variable_steps: bool
     :param minimum_variation: if the step size is variable, it is the minimum tolerated variation between steps without which the step size is unchanged
     :type minimum_variation: int
-    :param maximum_variation: if the step size is variable, it is the maximum tolerated variation between steps without which the step size is unchanged
-    :type maximum_variation: int
+    :param tolerated_variation: if the step size is variable, it is the maximum tolerated variation between steps without which the step size is unchanged
+    :type tolerated_variation: int
     :return: a list of "steps" approximated value of the differential equation solution
     :rtype: List[Vector]
     """
@@ -203,18 +202,18 @@ def compute_solution_trash_points(
                 variation = abs(new_step_pos_large[i] - new_step_pos_fine[i])
                 if variation > max_variation:
                     max_variation = variation
-            print(max_variation)
-            if max_variation != 0:
-                h *= 0.9 * (maximum_variation/max_variation)**(1/5)
-            if max_variation > maximum_variation:
-                new_step = model(vector_list, differential_equation, ti, h, number_of_steps)
-                ti += h
-                solution.append(new_step)
-                time_index.append(ti)
-            else:
+            if max_variation < tolerated_variation:
                 solution.append(new_step_large)
+                ti += h
                 time_index.append(ti)
-
+            if max_variation != 0:
+                h *= 0.9 * (tolerated_variation/max_variation)**(1/5)
+            if max_variation >= tolerated_variation:
+                new_step = model(vector_list, differential_equation, ti, h, number_of_steps)
+                solution.append(new_step)
+                ti += h
+                time_index.append(ti)
+            
         if treshold >= 0:
             treshold -= 1
         else:
