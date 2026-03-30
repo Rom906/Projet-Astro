@@ -392,10 +392,15 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
 
 
 def plot_3d_multi(
-    positions_list: List[List[Vector]], magnetic_moment: Vector = None
+    positions_list: List[List[Vector]], magnetic_moment: Vector = None, initial_position: Vector = None, initial_reference_velocity: Vector = None
 ) -> None:
     """
     3D plot of multiple particle trajectories in magnetic field with magnetic dipole moment vector.
+    
+    :param positions_list: List of particle trajectories
+    :param magnetic_moment: Magnetic moment vector (optional)
+    :param initial_position: Initial position common to all particles (optional)
+    :param initial_reference_velocity: Initial reference velocity for particles (optional)
     """
     from constants import mu
     import matplotlib.cm as cm
@@ -498,6 +503,41 @@ def plot_3d_multi(
             showlegend=True,
         )
     )
+
+    # Add initial position marker (green) if provided
+    if initial_position is not None:
+        figure.add_trace(
+            go.Scatter3d(
+                x=[initial_position[0]],
+                y=[initial_position[1]],
+                z=[initial_position[2]],
+                mode="markers",
+                marker=dict(size=10, color="green"),
+                name="Initial Position",
+                showlegend=True,
+            )
+        )
+
+    # Add annotation with initial conditions if provided
+    if initial_position is not None or initial_reference_velocity is not None:
+        annotation_text = "Initial Conditions:<br>"
+        if initial_position is not None:
+            annotation_text += f"Position:<br>x={initial_position[0]:.4f}<br>y={initial_position[1]:.4f}<br>z={initial_position[2]:.4f}<br>"
+        if initial_reference_velocity is not None:
+            annotation_text += f"Reference Velocity:<br>vx={initial_reference_velocity[0]:.4f}<br>vy={initial_reference_velocity[1]:.4f}<br>vz={initial_reference_velocity[2]:.4f}"
+        
+        figure.add_annotation(
+            text=annotation_text,
+            xref="paper",
+            yref="paper",
+            x=0.02,
+            y=0.98,
+            showarrow=False,
+            bgcolor="rgba(200, 255, 200, 0.8)",
+            bordercolor="green",
+            borderwidth=2,
+            font=dict(size=10),
+        )
 
     figure.update_layout(
         scene=dict(

@@ -62,7 +62,7 @@ for i in range(len(liste_conditions_initiales)):
         differential_equation_normalized,
         200000,
         0,
-        1000000,
+        4000000,
         liste_conditions_initiales[i],
         False,
         1,
@@ -72,4 +72,4 @@ for i in range(len(liste_conditions_initiales)):
     print(f"Point de {i+1}eme particule générés avec succès !\n")
 
 # fonction à completer dans generate_solutions
-plot_3d_multi(liste_solutions)
+plot_3d_multi(liste_solutions, initial_position=pos_norm_base, initial_reference_velocity=vit_norm_base)
