@@ -101,7 +101,6 @@ def compute_solution(
         last_step_pos = solution[-1][0]
         if variable_steps:
             variation_btw_steps = max([(new_step_pos[i] - last_step_pos[i]) / last_step_pos[i] for i in range(len(new_step_pos.coordinates))])
-            print("hiyah", ti, variation_btw_steps)
             if variation_btw_steps < minimum_variation:
                 h *= 1.1
             elif variation_btw_steps > maximum_variation:
@@ -168,6 +167,7 @@ def compute_solution_trash_points(
     """
     start_time = time.time()
     solution: List[Vector] = [initial_conditions]
+    time_index = [0]
     h = (maximum - minimum) / (steps - 1)
     start = minimum + h
 
@@ -179,6 +179,7 @@ def compute_solution_trash_points(
             solution.append(
                 model(vector_list, differential_equation, minimum + h * i, h, i)
             )
+            time_index.append(minimum + h * i)
         start = minimum - h * number_of_steps
 
     intervall = [minimum] + get_intervall(steps, start, maximum)
@@ -195,14 +196,19 @@ def compute_solution_trash_points(
         new_step_pos = new_step[0]
         last_step_pos = solution[-1][0]
         if variable_steps:
-            print(last_step_pos)
-            variation_btw_steps = max([abs(new_step_pos[i] - last_step_pos[i]) / last_step_pos[i] for i in range(len(new_step_pos.coordinates))])
-            if variation_btw_steps < minimum_variation:
+            max_variation_btw_steps = 0
+            for i in range(len(new_step_pos.coordinates)):
+                if last_step_pos[i] != 0:
+                    variation = abs(new_step_pos[i] - last_step_pos[i]) / last_step_pos[i]
+                    if variation > max_variation_btw_steps:
+                        max_variation_btw_steps = variation
+            if max_variation_btw_steps < minimum_variation:
                 h *= 1.1
-            elif variation_btw_steps > maximum_variation:
+            elif max_variation_btw_steps > maximum_variation:
                 h /= 1.1
-        ti += h
         solution.append(new_step)
+        time_index.append(ti)
+        ti += h
 
         if treshold >= 0:
             treshold -= 1
@@ -211,14 +217,15 @@ def compute_solution_trash_points(
                 counter = 1
                 for i in range(ratio - 1):
                     solution.pop(len(solution) - 2 * ratio + i)
-                    time_index_deleted.append(len(solution) - 2 * ratio + i)
+                    time_index_deleted.append(time_index[len(solution) - 2 * ratio + i])
+                    time_index.pop(len(solution) - 2 * ratio + i)
 
             else:
                 counter += 1
 
     for i in range(len(time_index_deleted) - 1, -1, -1):
         intervall.pop(time_index_deleted[i])
-
+        
     comp_time = time.time() - start_time
     print("\n=== Computation Statistics ===")
     print(f"Method: {model.__name__}")
@@ -226,7 +233,7 @@ def compute_solution_trash_points(
     print(f"Computation time: {comp_time:.4f} s")
     print("==============================\n")
 
-    return solution, intervall
+    return solution, time_index
 
 
 def plot_x_solution(time: List[float], solution: List[Vector]) -> None:
