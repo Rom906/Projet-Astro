@@ -12,7 +12,7 @@ from math import inf
 
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
-initial_position = Vector([-2 * RT, -1 * RT, 0])
+initial_position = Vector([-2 * RT, -4 * RT, -6 * RT])
 initial_velocity = RT * Vector([0.01, 0.01, 0.01])
 initial_conditions = convert_to_normalized(initial_position, initial_velocity, parameters)
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
@@ -20,9 +20,9 @@ print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution_trash_points(
     RK4,
     differential_equation_normalized,
-    100000,
+    1000000,
     0,
-    1000,
+    1000000 ,
     initial_conditions=initial_conditions,
     ratio=1,
     variable_steps=True

@@ -132,8 +132,8 @@ def compute_solution_trash_points(
     number_of_steps: int = 1,
     ratio: int = 1,
     variable_steps: bool = False,
-    minimum_variation: int = 0.05,
-    maximum_variation: int = 0.1
+    minimum_variation: int = 0.8,
+    maximum_variation: int = 0.2
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
@@ -192,23 +192,28 @@ def compute_solution_trash_points(
         vector_list = []
         for i in range(number_of_steps):
             vector_list.append(solution[-1 - i])
-        new_step = model(vector_list, differential_equation, ti, h, number_of_steps)
-        new_step_pos = new_step[0]
-        last_step_pos = solution[-1][0]
+        new_step_large = model(vector_list, differential_equation, ti, h, number_of_steps)
+        new_step_pos_large = new_step_large[0]
+        half_step_fine = model(vector_list, differential_equation, ti, h/2, number_of_steps)
+        new_step_fine = model([half_step_fine], differential_equation, ti+h/2, h/2, number_of_steps)
+        new_step_pos_fine = new_step_fine[0]
         if variable_steps:
             max_variation = 0
-            for i in range(len(new_step_pos.coordinates)):
-                if last_step_pos[i] != 0:
-                    variation = abs(new_step_pos[i] - last_step_pos[i]) / last_step_pos[i]
-                    if variation > max_variation:
-                        max_variation = variation
-            if max_variation < minimum_variation:
-                h *= 2
-            elif max_variation > maximum_variation:
-                h /= 2
-            solution.append(new_step)
-            time_index.append(ti)
-            ti += h
+            for i in range(len(new_step_pos_large.coordinates)):
+                variation = abs(new_step_pos_large[i] - new_step_pos_fine[i])
+                if variation > max_variation:
+                    max_variation = variation
+            print(max_variation)
+            if max_variation != 0:
+                h *= 0.9 * (maximum_variation/max_variation)**(1/5)
+            if max_variation > maximum_variation:
+                new_step = model(vector_list, differential_equation, ti, h, number_of_steps)
+                ti += h
+                solution.append(new_step)
+                time_index.append(ti)
+            else:
+                solution.append(new_step_large)
+                time_index.append(ti)
 
         if treshold >= 0:
             treshold -= 1
