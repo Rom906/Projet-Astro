@@ -43,7 +43,7 @@ def compute_solution(
     number_of_steps: int = 1,
     variable_steps: bool = False,
     minimum_variation: int = 0.01,
-    maximum_variation: int = 0.02
+    tolerated_variation: int = 0.02
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps
@@ -101,7 +101,6 @@ def compute_solution(
         last_step_pos = solution[-1][0]
         if variable_steps:
             variation_btw_steps = max([(new_step_pos[i] - last_step_pos[i]) / last_step_pos[i] for i in range(len(new_step_pos.coordinates))])
-            print("hiyah", ti, variation_btw_steps)
             if variation_btw_steps < minimum_variation:
                 h *= 1.1
             elif variation_btw_steps > maximum_variation:
@@ -133,8 +132,7 @@ def compute_solution_trash_points(
     number_of_steps: int = 1,
     ratio: int = 1,
     variable_steps: bool = False,
-    minimum_variation: int = 0.01,
-    maximum_variation: int = 0.02
+    tolerated_variation: int = 0.1,
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
@@ -161,13 +159,14 @@ def compute_solution_trash_points(
     :type variable_steps: bool
     :param minimum_variation: if the step size is variable, it is the minimum tolerated variation between steps without which the step size is unchanged
     :type minimum_variation: int
-    :param maximum_variation: if the step size is variable, it is the maximum tolerated variation between steps without which the step size is unchanged
-    :type maximum_variation: int
+    :param tolerated_variation: if the step size is variable, it is the maximum tolerated variation between steps without which the step size is unchanged
+    :type tolerated_variation: int
     :return: a list of "steps" approximated value of the differential equation solution
     :rtype: List[Vector]
     """
     start_time = time.time()
     solution: List[Vector] = [initial_conditions]
+    time_index = [0]
     h = (maximum - minimum) / (steps - 1)
     start = minimum + h
 
@@ -179,6 +178,7 @@ def compute_solution_trash_points(
             solution.append(
                 model(vector_list, differential_equation, minimum + h * i, h, i)
             )
+            time_index.append(minimum + h * i)
         start = minimum - h * number_of_steps
 
     intervall = [minimum] + get_intervall(steps, start, maximum)
@@ -191,19 +191,29 @@ def compute_solution_trash_points(
         vector_list = []
         for i in range(number_of_steps):
             vector_list.append(solution[-1 - i])
-        new_step = model(vector_list, differential_equation, ti, h, number_of_steps)
-        new_step_pos = new_step[0]
-        last_step_pos = solution[-1][0]
+        new_step_large = model(vector_list, differential_equation, ti, h, number_of_steps)
+        new_step_pos_large = new_step_large[0]
+        half_step_fine = model(vector_list, differential_equation, ti, h/2, number_of_steps)
+        new_step_fine = model([half_step_fine], differential_equation, ti+h/2, h/2, number_of_steps)
+        new_step_pos_fine = new_step_fine[0]
         if variable_steps:
-            variation_btw_steps = max([(new_step_pos[i] - last_step_pos[i]) / last_step_pos[i] for i in range(len(new_step_pos.coordinates))])
-            print("hiyah", ti, variation_btw_steps)
-            if variation_btw_steps < minimum_variation:
-                h *= 1.1
-            elif variation_btw_steps > maximum_variation:
-                h /= 1.1
-        ti += h
-        solution.append(new_step)
-
+            max_variation = 0
+            for i in range(len(new_step_pos_large.coordinates)):
+                variation = abs(new_step_pos_large[i] - new_step_pos_fine[i])
+                if variation > max_variation:
+                    max_variation = variation
+            if max_variation < tolerated_variation:
+                solution.append(new_step_large)
+                ti += h
+                time_index.append(ti)
+            if max_variation != 0:
+                h *= 0.9 * (tolerated_variation/max_variation)**(1/5)
+            if max_variation >= tolerated_variation:
+                new_step = model(vector_list, differential_equation, ti, h, number_of_steps)
+                solution.append(new_step)
+                ti += h
+                time_index.append(ti)
+            
         if treshold >= 0:
             treshold -= 1
         else:
@@ -211,14 +221,15 @@ def compute_solution_trash_points(
                 counter = 1
                 for i in range(ratio - 1):
                     solution.pop(len(solution) - 2 * ratio + i)
-                    time_index_deleted.append(len(solution) - 2 * ratio + i)
+                    time_index_deleted.append(time_index[len(solution) - 2 * ratio + i])
+                    time_index.pop(len(solution) - 2 * ratio + i)
 
             else:
                 counter += 1
 
     for i in range(len(time_index_deleted) - 1, -1, -1):
         intervall.pop(time_index_deleted[i])
-
+        
     comp_time = time.time() - start_time
     print("\n=== Computation Statistics ===")
     print(f"Method: {model.__name__}")
@@ -226,7 +237,7 @@ def compute_solution_trash_points(
     print(f"Computation time: {comp_time:.4f} s")
     print("==============================\n")
 
-    return solution, intervall
+    return solution, time_index
 
 
 def plot_x_solution(time: List[float], solution: List[Vector]) -> None:
