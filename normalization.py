@@ -19,7 +19,7 @@ Where:
 
 NORMALIZATION SCALES:
 =====================
-- Length scale: R₀ (Earth radius) 
+- Length scale: R₀ (Earth radius)
 - Time scale: T = 4πmₚR₀³/(qμ₀m₀)
 - Spatial coordinate: r = R₀ * u
 - Temporal coordinate: t = T * τ
@@ -97,7 +97,9 @@ class NormalizationParameters:
         else:
             return Vector((u_prime_norm * scale).tolist())
 
-    def dimensionalize_velocity_time_only(self, u_prime_norm: Vector | np.ndarray) -> Vector:
+    def dimensionalize_velocity_time_only(
+        self, u_prime_norm: Vector | np.ndarray
+    ) -> Vector:
         """Convert normalized velocity u' to dimensional v = (1/T)·u'."""
         scale = 1 / self.T
         if isinstance(u_prime_norm, Vector):
@@ -113,7 +115,9 @@ class NormalizationParameters:
         else:
             return Vector((v_dim * scale).tolist())
 
-    def rescale_normalized_time_intervall(self, norm_intervall: List[float]) -> List[float]:
+    def rescale_normalized_time_intervall(
+        self, norm_intervall: List[float]
+    ) -> List[float]:
         denormalized_intervall = []
         for i in range(len(norm_intervall)):
             denormalized_intervall.append(norm_intervall[i] * self.T)
@@ -301,8 +305,9 @@ def differential_equation_normalized(
 
     u_mag_sq = np.dot(u_array, u_array)
 
-    if u_mag_sq < 1e-20:
-        return Vector([v_norm, Vector([0.0, 0.0, 0.0])])
+    if u_mag_sq <= 1.0:
+        # On fige totalement la particule (Vitesse = 0, Accélération = 0)
+        return Vector([Vector([0.0, 0.0, 0.0]), Vector([0.0, 0.0, 0.0])])
 
     u_mag = np.sqrt(u_mag_sq)
     u_cubed = u_mag_sq * u_mag

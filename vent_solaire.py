@@ -16,60 +16,88 @@ from normalization import (
 )
 from generate_solutions import compute_solution_trash_points, plot_3d_multi
 
-parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
-initial_position = Vector([-4 * RT, -1 * RT, -6 * RT])
-initial_velocity = RT * Vector([0.0628, 0, 0])
-initial_conditions = convert_to_normalized(
-    initial_position, initial_velocity, parameters
-)
-initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
-print("Conditions initiales normalisées :", initial_conditions)
-pos_norm_base = initial_conditions[0]
-vit_norm_base = initial_conditions[1]
 
+def plot_multi_particules(
+    N_particules=10,
+    cercle=3,
+    distance_cercle=5,
+    nombre_points=1000,
+    intervalle_temps=100000,
+    ratio_sur_100=1,
+):
 
-vitesse_thermique = 40000
-vitesse_thermique_norm = parameters.normalize_velocity(
-    Vector([vitesse_thermique, 0, 0])
-)[0]
+    parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
 
+    rayon_cercle = cercle * RT
 
-N_particules = 10
-liste_conditions_initiales = []
+    # initial_position = Vector([-6 * RT, -3 * RT, -10 * RT])
+    initial_velocity = Vector([400000, 0, 0])
 
+    vitesse_thermique = 40000  # m/s
 
-for i in range(N_particules):
-    vx = np.random.normal(loc=vit_norm_base[0], scale=vitesse_thermique_norm)
-    vy = np.random.normal(loc=vit_norm_base[1], scale=vitesse_thermique_norm)
-    vz = np.random.normal(loc=vit_norm_base[2], scale=vitesse_thermique_norm)
+    liste_conditions_initiales = []
 
-    vitesse_particule = Vector([vx, vy, vz])
-    ci_particule = Vector([pos_norm_base, vitesse_particule])
-    liste_conditions_initiales.append(ci_particule)
+    for i in range(N_particules):
+        x = -distance_cercle * RT
+        r_alea = rayon_cercle * np.sqrt(np.random.uniform(0, 1))
+        theta_aleatoire = np.random.uniform(0, 2 * np.pi)
+        y = r_alea * np.cos(theta_aleatoire)
+        z = r_alea * np.sin(theta_aleatoire)
 
-print(f"CI de {N_particules} particules générées avec succès !\n")
+        vx = np.random.normal(loc=initial_velocity[0], scale=vitesse_thermique)
+        vy = np.random.normal(loc=initial_velocity[1], scale=vitesse_thermique)
+        vz = np.random.normal(loc=initial_velocity[2], scale=vitesse_thermique)
 
-for i in range(5):
-    print(f"ci pour la {i}eme particule :")
-    print(f"- position : {liste_conditions_initiales[i][0]}")
-    print(f"- vitesse : {liste_conditions_initiales[i][1]}\n")
+        pos_particule = Vector([x, y, z])
+        vitesse_particule = Vector([vx, vy, vz])
+        ci_particule = Vector([pos_particule, vitesse_particule])
+        liste_conditions_initiales.append(ci_particule)
 
-liste_solutions = []
+    for i in range(len(liste_conditions_initiales)):
+        ci = liste_conditions_initiales[i]
+        ci_normalized = convert_to_normalized(ci[0], ci[1], parameters)
+        liste_conditions_initiales[i] = Vector([ci_normalized[0], ci_normalized[1]])
 
-for i in range(len(liste_conditions_initiales)):
-    solution_normalized, time_normalized = compute_solution_trash_points(
-        RK4,
-        differential_equation_normalized,
-        200000,
-        0,
-        4000000,
-        liste_conditions_initiales[i],
-        False,
-        1,
-        100,
+    print(f"CI de {N_particules} particules générées avec succès !\n")
+
+    for i in range(5):
+        print(f"ci pour la {i}eme particule :")
+        print(f"- position : {liste_conditions_initiales[i][0]}")
+        print(f"- vitesse : {liste_conditions_initiales[i][1]}\n")
+
+    liste_solutions = []
+
+    for i in range(len(liste_conditions_initiales)):
+        solution_normalized, time_normalized = compute_solution_trash_points(
+            RK4,
+            differential_equation_normalized,
+            nombre_points,
+            0,
+            intervalle_temps,
+            liste_conditions_initiales[i],
+            False,
+            ratio_sur_100,
+            100,
+        )
+        liste_solutions.append(solution_normalized)
+        print(f"Point de {i+1}eme particule générés avec succès !\n")
+
+    plot_3d_multi(
+        liste_solutions,
+        cercle=cercle,
+        distance_cercle=distance_cercle,
+        nombre_points=nombre_points,
+        intervalle_temps=intervalle_temps,
+        ratio_sur_100=ratio_sur_100,
     )
-    liste_solutions.append(solution_normalized)
-    print(f"Point de {i+1}eme particule générés avec succès !\n")
 
-# fonction à completer dans generate_solutions
-plot_3d_multi(liste_solutions, initial_position=pos_norm_base, initial_reference_velocity=vit_norm_base)
+
+if __name__ == "__main__":
+    plot_multi_particules(
+        N_particules=20,
+        cercle=5,
+        distance_cercle=8,
+        nombre_points=4000,
+        intervalle_temps=1000000,
+        ratio_sur_100=1,
+    )

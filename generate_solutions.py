@@ -392,11 +392,17 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
 
 
 def plot_3d_multi(
-    positions_list: List[List[Vector]], magnetic_moment: Vector = None, initial_position: Vector = None, initial_reference_velocity: Vector = None
+    positions_list: List[List[Vector]],
+    magnetic_moment: Vector = None,
+    cercle: float = None,
+    distance_cercle: float = None,
+    nombre_points: int = None,
+    intervalle_temps: float = None,
+    ratio_sur_100: int = None,
 ) -> None:
     """
     3D plot of multiple particle trajectories in magnetic field with magnetic dipole moment vector.
-    
+
     :param positions_list: List of particle trajectories
     :param magnetic_moment: Magnetic moment vector (optional)
     :param initial_position: Initial position common to all particles (optional)
@@ -437,7 +443,7 @@ def plot_3d_multi(
                 y=y,
                 z=z,
                 mode="lines",
-                line=dict(color=color_hex, width=0.5, dash="solid"),
+                line=dict(color="blue", width=0.6, dash="solid"),
                 showlegend=False,
                 hoverinfo="skip",
             )
@@ -450,7 +456,7 @@ def plot_3d_multi(
                 y=[positions[0][0][1]],
                 z=[positions[0][0][2]],
                 mode="markers",
-                marker=dict(size=3, color=color_hex),
+                marker=dict(size=3, color="green"),
                 showlegend=False,
                 hoverinfo="skip",
             )
@@ -463,12 +469,49 @@ def plot_3d_multi(
                 y=[positions[-1][0][1]],
                 z=[positions[-1][0][2]],
                 mode="markers",
-                marker=dict(size=3, color=color_hex),
+                marker=dict(size=3, color="red"),
                 showlegend=False,
                 hoverinfo="skip",
             )
         )
 
+        # Vecteur vitesse initiale
+        vx, vy, vz = positions[0][1][0], positions[0][1][1], positions[0][1][2]
+        norm_v = (vx**2 + vy**2 + vz**2) ** 0.5
+        v_scale = 1.5 / norm_v  # Facteur d'échelle pour l'affichage visuel du vecteur
+        figure.add_trace(
+            go.Scatter3d(
+                x=[positions[0][0][0], positions[0][0][0] + vx * v_scale],
+                y=[positions[0][0][1], positions[0][0][1] + vy * v_scale],
+                z=[positions[0][0][2], positions[0][0][2] + vz * v_scale],
+                mode="lines",
+                line=dict(color="red", width=3),
+                showlegend=False,
+                hoverinfo="skip",
+            )
+        )
+
+    if cercle is not None and distance_cercle is not None:
+        theta_c = np.linspace(0, 2 * pi, 50)
+        y_c = cercle * np.cos(theta_c)
+        z_c = cercle * np.sin(theta_c)
+        x_c = np.full_like(y_c, -distance_cercle)
+
+        figure.add_trace(
+            go.Scatter3d(
+                x=x_c,
+                y=y_c,
+                z=z_c,
+                mode="lines",
+                line=dict(color="gray", width=2),
+                surfaceaxis=0,  # Remplit l'intérieur du cercle
+                surfacecolor="rgba(150, 150, 150, 0.2)",
+                name="Zone d'injection",
+                showlegend=True,
+            )
+        )
+
+    # Earth
     r = 1
     phi = get_intervall(30, 0, 2 * pi)
     theta = get_intervall(15, 0, pi)
@@ -504,28 +547,18 @@ def plot_3d_multi(
         )
     )
 
-    # Add initial position marker (green) if provided
-    if initial_position is not None:
-        figure.add_trace(
-            go.Scatter3d(
-                x=[initial_position[0]],
-                y=[initial_position[1]],
-                z=[initial_position[2]],
-                mode="markers",
-                marker=dict(size=10, color="green"),
-                name="Initial Position",
-                showlegend=True,
-            )
-        )
-
     # Add annotation with initial conditions if provided
-    if initial_position is not None or initial_reference_velocity is not None:
-        annotation_text = "Initial Conditions:<br>"
-        if initial_position is not None:
-            annotation_text += f"Position:<br>x={initial_position[0]:.4f}<br>y={initial_position[1]:.4f}<br>z={initial_position[2]:.4f}<br>"
-        if initial_reference_velocity is not None:
-            annotation_text += f"Reference Velocity:<br>vx={initial_reference_velocity[0]:.4f}<br>vy={initial_reference_velocity[1]:.4f}<br>vz={initial_reference_velocity[2]:.4f}"
-        
+    if cercle is not None:
+        annotation_text = "Initial Area:<br>"
+        annotation_text += f"Cercle radius: {cercle} RT<br>"
+        annotation_text += f"Distance from Earth: {distance_cercle} RT<br>"
+        if nombre_points is not None:
+            annotation_text += f"Number of points: {nombre_points}<br>"
+        if intervalle_temps is not None:
+            annotation_text += f"Time interval: {intervalle_temps} s<br>"
+        if ratio_sur_100 is not None:
+            annotation_text += f"Points kept ratio: {ratio_sur_100}/100<br>"
+
         figure.add_annotation(
             text=annotation_text,
             xref="paper",
@@ -541,10 +574,10 @@ def plot_3d_multi(
 
     figure.update_layout(
         scene=dict(
-            xaxis=dict(title="x/RT", showgrid=True, zeroline=True),
-            yaxis=dict(title="y/RT", showgrid=True, zeroline=True),
-            zaxis=dict(title="z/RT", showgrid=True, zeroline=True),
-            aspectmode="data",
+            xaxis=dict(title="x/RT", showgrid=True, zeroline=True, range=[-15, 15]),
+            yaxis=dict(title="y/RT", showgrid=True, zeroline=True, range=[-15, 15]),
+            zaxis=dict(title="z/RT", showgrid=True, zeroline=True, range=[-15, 15]),
+            aspectmode="cube",  # Force la zone d'affichage à rester un cube parfait
         ),
         title="Multiple Particle Trajectories in Magnetic Field",
         showlegend=True,
