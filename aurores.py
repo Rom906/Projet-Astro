@@ -7,7 +7,7 @@ from generate_solutions import plot_3d
 
 def collision_test(position: Vector):
     collision_probability = atm_model(position)["n"] * atm_model(position)["eff_sec"]
-    return random() > 0.0001
+    return random() < 0.00001
 
 H0 = 8000 #m
 p0 = 130025 #Pa
@@ -30,10 +30,10 @@ def compute_collisional_trajectory(initial_conditions: Vector, differential_equa
         t += h
         if collision_test(new[0]): 
             for i in range(3):
-                new[1][i] = new[1][i]
+                new[1][i] = -new[1][i]
             collision_positions.append(new[0])
             n_collisions += 1
-            print(n_collisions)
+        print(n_collisions)
         solution.append(new)
 
     return solution, collision_positions
