@@ -682,3 +682,55 @@ def plot_2d_projections(positions_list, velocities_list=None, title="Projections
 
     plt.tight_layout()
     plt.show()
+
+
+def plot_kinetic_energy_v2(
+    velocity: List["Vector"], time_list: List[float], mp: float
+) -> None:
+
+    # --- Compute Ke/m
+    ke = np.array([0.5 * (abs(v) ** 2) for v in velocity])
+
+    # --- Scale from first value
+    ke0 = ke[0]
+    exponent = int(np.floor(np.log10(abs(ke0))))
+    scale = 10 ** exponent
+
+    ke_scaled = ke / scale
+
+    # --- Reliable zone
+    critical_index = len(ke) - 1
+    for i, val in enumerate(ke):
+        if abs(val - ke0) / ke0 > 0.1:
+            critical_index = i - 1
+            break
+
+    critical_time = time_list[critical_index]
+
+    # --- Plot
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    ax.axvspan(time_list[0], critical_time,
+               alpha=0.3, color='lightgreen',
+               label='Reliable zone (<10%)')
+
+    ax.plot(time_list, ke_scaled, linewidth=2, label='Ke/m')
+
+    # Labels
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel(f'Ke/m (×10^{exponent})')
+    ax.set_title(f'Kinetic Energy per mass (m = {mp})')
+
+    # force global scale
+    ax.set_ylim(0, np.max(ke_scaled) * 1.1)
+
+    # Remove offset
+    ax.ticklabel_format(axis='y', style='plain', useOffset=False)
+
+    # Legend outside
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout(rect=[0, 0, 0.8, 1])
+    plt.show()
