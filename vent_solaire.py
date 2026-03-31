@@ -49,10 +49,10 @@ for i in range(N_particules):
 
 print(f"CI de {N_particules} particules générées avec succès !\n")
 
-for i in range(5):
-    print(f"ci pour la {i}eme particule :")
-    print(f"- position : {liste_conditions_initiales[i][0]}")
-    print(f"- vitesse : {liste_conditions_initiales[i][1]}\n")
+# for i in range(5):
+#     print(f"ci pour la {i}eme particule :")
+#     print(f"- position : {liste_conditions_initiales[i][0]}")
+#     print(f"- vitesse : {liste_conditions_initiales[i][1]}\n")
 
 liste_solutions = []
 
@@ -60,9 +60,9 @@ for i in range(len(liste_conditions_initiales)):
     solution_normalized, time_normalized = compute_solution_trash_points(
         RK4,
         differential_equation_normalized,
-        200000,
+        800000,
         0,
-        4000000,
+        16000000,
         liste_conditions_initiales[i],
         False,
         1,
@@ -71,5 +71,4 @@ for i in range(len(liste_conditions_initiales)):
     liste_solutions.append(solution_normalized)
     print(f"Point de {i+1}eme particule générés avec succès !\n")
 
-# fonction à completer dans generate_solutions
 plot_3d_multi(liste_solutions, initial_position=pos_norm_base, initial_reference_velocity=vit_norm_base)
