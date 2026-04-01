@@ -76,9 +76,7 @@ def compute_solution(
             for j in range(i):
                 vector_list.append(solution[-i])
             solution.append(
-                model(
-                    vector_list, differential_equation, minimum + h * i, h, i
-                )
+                model(vector_list, differential_equation, minimum + h * i, h, i)
             )
         start = minimum - h * number_of_steps
 
@@ -152,9 +150,7 @@ def compute_solution_trash_points(
             for j in range(i):
                 vector_list.append(solution[-i])
             solution.append(
-                model(
-                    vector_list, differential_equation, minimum + h * i, h, i
-                )
+                model(vector_list, differential_equation, minimum + h * i, h, i)
             )
         start = minimum - h * number_of_steps
 
@@ -266,9 +262,7 @@ def plot_error(
     """
     error = []
     for i in range(len(exact_solution)):
-        error.append(
-            abs(approximated_solution[i][0] - exact_solution[i][0]) ** 2
-        )
+        error.append(abs(approximated_solution[i][0] - exact_solution[i][0]) ** 2)
     sb.lineplot(x=time, y=error)
     plt.title("Model error during time")
     plt.grid(True)
@@ -349,9 +343,7 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
-    figure.add_trace(
-        go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth")
-    )
+    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
     position_x = round(positions[0][0], 3)
     position_y = round(positions[0][1], 3)
     position_z = round(positions[0][2], 3)
@@ -528,9 +520,7 @@ def plot_3d_v2(
             # Reduce ocean coverage at certain latitudes (where continents exist)
             if -60 <= lat_deg <= 75:
                 # Apply continent pattern more strongly
-                continent_presence = base_noise + 0.15 * sin(
-                    lat_deg * pi / 180
-                )
+                continent_presence = base_noise + 0.15 * sin(lat_deg * pi / 180)
 
                 if continent_presence > -0.1:
                     # Progressively map noise to terrain values
@@ -573,9 +563,7 @@ def plot_3d_v2(
             cmax=1,
             showscale=False,
             name="Earth",
-            lighting=dict(
-                ambient=0.6, diffuse=0.6, roughness=0.9, specular=0.1
-            ),
+            lighting=dict(ambient=0.6, diffuse=0.6, roughness=0.9, specular=0.1),
             lightposition=dict(x=100, y=200, z=0),
         )
     )
@@ -781,15 +769,11 @@ def plot_kinetic_energy_multiple(velocity_list, time_list, mp):
 
         ke_final = ke[: critical_index + 1]
         time_final = (
-            time_list[sol_idx][: critical_index + 1]
-            if sol_idx < len(time_list)
-            else []
+            time_list[sol_idx][: critical_index + 1] if sol_idx < len(time_list) else []
         )
         valid_mask = ke_final > 0
         ke_valid = ke_final[valid_mask]
-        time_valid = (
-            np.array(time_final)[valid_mask] if len(time_final) > 0 else []
-        )
+        time_valid = np.array(time_final)[valid_mask] if len(time_final) > 0 else []
 
         if len(ke_valid) > 0:
             all_ke_final.extend(ke_valid)
@@ -814,9 +798,7 @@ def plot_kinetic_energy_multiple(velocity_list, time_list, mp):
     plt.show()
 
 
-def plot_2d_projections(
-    positions_list, velocities_list=None, title="Projections 2D"
-):
+def plot_2d_projections(positions_list, velocities_list=None, title="Projections 2D"):
     """
     Generates 3 stacked 2D projection plots.
 
@@ -1023,13 +1005,13 @@ def plot_3d_multi(
     for particle_idx, positions in enumerate(positions_list):
         # Compute color for this particle on the plasma gradient
         color_val = (
-            particle_idx / max(1, num_particles - 1)
-            if num_particles > 1
-            else 0.5
+            particle_idx / max(1, num_particles - 1) if num_particles > 1 else 0.5
         )
         rgba = plasma_colors(color_val)
         # Convert RGBA to hex color for plotly
-        color_hex = f"rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 0.8)"
+        color_hex = (
+            f"rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 0.8)"
+        )
 
         # Extract coordinates
         x = []
@@ -1097,9 +1079,7 @@ def plot_3d_multi(
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
-    figure.add_trace(
-        go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth")
-    )
+    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
 
     # Add magnetic moment vector at North Pole (0, 0, 1)
     mu_normalized = magnetic_moment.normalized()

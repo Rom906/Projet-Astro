@@ -1,36 +1,44 @@
-from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points, plot_kinetic_energy_v2, plot_kinetic_energy_multiple
+from generate_solutions import (
+    compute_solution,
+    plot_3d,
+    compute_solution_trash_points,
+    plot_kinetic_energy_v2,
+    plot_kinetic_energy_multiple,
+)
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
     convert_to_dimensional_time_only,
-    convert_to_normalized
+    convert_to_normalized,
 )
 from integration_functions import adams, euler, RK4, dormand_prince
 from utils import Vector
 from constants import RT, mp, MO, qe, mu
 from math import inf
 
-N=5
+N = 5
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
 initial_position = Vector([-4 * RT, -1 * RT, -6 * RT])
 initial_velocity = RT * Vector([0.01, 0.01, 0.01])
-initial_conditions = convert_to_normalized(initial_position, initial_velocity, parameters)
+initial_conditions = convert_to_normalized(
+    initial_position, initial_velocity, parameters
+)
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)
-velocity_kinetic = [[]for i in range(N)]
+velocity_kinetic = [[] for i in range(N)]
 time_list = []  # Accumule les temps pour chaque solution
 print(velocity_kinetic)
 for j in range(N):
     solution_normalized, time_noramlized = compute_solution_trash_points(
         RK4,
         differential_equation_normalized,
-        10000*j,
+        10000 * j,
         0,
         2000000,
         initial_conditions,
         False,
         1,
-        100
+        100,
     )
 
     print(len(solution_normalized))
@@ -38,10 +46,15 @@ for j in range(N):
     position = []
     velocity = []
     for i in range(len(solution_normalized)):
-        position_denormalize, velocity_denormalized = solution_normalized[i][0], solution_normalized[i][1]
+        position_denormalize, velocity_denormalized = (
+            solution_normalized[i][0],
+            solution_normalized[i][1],
+        )
         position.append(position_denormalize)
         velocity.append(parameters.dimensionalize_velocity(velocity_denormalized))
-        velocity_kinetic[j].append(parameters.dimensionalize_velocity(velocity_denormalized))
+        velocity_kinetic[j].append(
+            parameters.dimensionalize_velocity(velocity_denormalized)
+        )
 
     max_x = position[0][0]
     max_y = position[0][1]

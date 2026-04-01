@@ -5,7 +5,7 @@ from generate_solutions import (
     compute_solution_trash_points,
     plot_kinetic_energy_v2,
     plot_kinetic_energy,
-    plot_2d_projections
+    plot_2d_projections,
 )
 from normalization import (
     NormalizationParameters,
