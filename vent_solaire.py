@@ -94,10 +94,10 @@ def plot_multi_particules(
 
 if __name__ == "__main__":
     plot_multi_particules(
-        N_particules=20,
+        N_particules=1000,
         cercle=5,
         distance_cercle=8,
-        nombre_points=4000,
-        intervalle_temps=1000000,
+        nombre_points=100000,
+        intervalle_temps=10000000,
         ratio_sur_100=1,
     )

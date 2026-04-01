@@ -443,7 +443,7 @@ def plot_3d_multi(
                 y=y,
                 z=z,
                 mode="lines",
-                line=dict(color="blue", width=0.6, dash="solid"),
+                line=dict(color="blue", width=0.4, dash="solid"),
                 showlegend=False,
                 hoverinfo="skip",
             )
@@ -694,7 +694,7 @@ def plot_kinetic_energy_v2(
     # --- Scale from first value
     ke0 = ke[0]
     exponent = int(np.floor(np.log10(abs(ke0))))
-    scale = 10 ** exponent
+    scale = 10**exponent
 
     ke_scaled = ke / scale
 
@@ -710,25 +710,29 @@ def plot_kinetic_energy_v2(
     # --- Plot
     fig, ax = plt.subplots(figsize=(12, 6))
 
-    ax.axvspan(time_list[0], critical_time,
-               alpha=0.3, color='lightgreen',
-               label='Reliable zone (<10%)')
+    ax.axvspan(
+        time_list[0],
+        critical_time,
+        alpha=0.3,
+        color="lightgreen",
+        label="Reliable zone (<10%)",
+    )
 
-    ax.plot(time_list, ke_scaled, linewidth=2, label='Ke/m')
+    ax.plot(time_list, ke_scaled, linewidth=2, label="Ke/m")
 
     # Labels
-    ax.set_xlabel('Time (s)')
-    ax.set_ylabel(f'Ke/m (×10^{exponent})')
-    ax.set_title(f'Kinetic Energy per mass (m = {mp})')
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel(f"Ke/m (×10^{exponent})")
+    ax.set_title(f"Kinetic Energy per mass (m = {mp})")
 
     # force global scale
     ax.set_ylim(0, np.max(ke_scaled) * 1.1)
 
     # Remove offset
-    ax.ticklabel_format(axis='y', style='plain', useOffset=False)
+    ax.ticklabel_format(axis="y", style="plain", useOffset=False)
 
     # Legend outside
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 
     ax.grid(True, alpha=0.3)
 
