@@ -132,7 +132,7 @@ def compute_solution_trash_points(
     number_of_steps: int = 1,
     ratio: int = 1,
     variable_steps: bool = False,
-    tolerated_variation: int = 0.1,
+    tolerated_variation: int = 0.05,
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
@@ -181,8 +181,6 @@ def compute_solution_trash_points(
             time_index.append(minimum + h * i)
         start = minimum - h * number_of_steps
 
-    intervall = [minimum] + get_intervall(steps, start, maximum)
-
     counter = 0
     treshold = ratio
     time_index_deleted = []
@@ -193,10 +191,10 @@ def compute_solution_trash_points(
             vector_list.append(solution[-1 - i])
         new_step_large = model(vector_list, differential_equation, ti, h, number_of_steps)
         new_step_pos_large = new_step_large[0]
-        half_step_fine = model(vector_list, differential_equation, ti, h/2, number_of_steps)
-        new_step_fine = model([half_step_fine], differential_equation, ti+h/2, h/2, number_of_steps)
-        new_step_pos_fine = new_step_fine[0]
         if variable_steps:
+            half_step_fine = model(vector_list, differential_equation, ti, h/2, number_of_steps)
+            new_step_fine = model([half_step_fine], differential_equation, ti+h/2, h/2, number_of_steps)
+            new_step_pos_fine = new_step_fine[0]
             max_variation = 0
             for i in range(len(new_step_pos_large.coordinates)):
                 variation = abs(new_step_pos_large[i] - new_step_pos_fine[i])
@@ -213,6 +211,10 @@ def compute_solution_trash_points(
                 solution.append(new_step)
                 ti += h
                 time_index.append(ti)
+        else:
+            solution.append(new_step_large)
+            ti += h
+            time_index.append(ti)
             
         if treshold >= 0:
             treshold -= 1
@@ -226,9 +228,6 @@ def compute_solution_trash_points(
 
             else:
                 counter += 1
-
-    for i in range(len(time_index_deleted) - 1, -1, -1):
-        intervall.pop(time_index_deleted[i])
         
     comp_time = time.time() - start_time
     print("\n=== Computation Statistics ===")
