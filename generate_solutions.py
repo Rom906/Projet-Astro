@@ -44,6 +44,7 @@ def compute_solution(
     variable_steps: bool = False,
     minimum_variation: int = 0.01,
     tolerated_variation: int = 0.02
+    tolerated_variation: int = 0.02
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps
@@ -161,11 +162,14 @@ def compute_solution_trash_points(
     :type minimum_variation: int
     :param tolerated_variation: if the step size is variable, it is the maximum tolerated variation between steps without which the step size is unchanged
     :type tolerated_variation: int
+    :param tolerated_variation: if the step size is variable, it is the maximum tolerated variation between steps without which the step size is unchanged
+    :type tolerated_variation: int
     :return: a list of "steps" approximated value of the differential equation solution
     :rtype: List[Vector]
     """
     start_time = time.time()
     solution: List[Vector] = [initial_conditions]
+    time_index = [0]
     time_index = [0]
     h = (maximum - minimum) / (steps - 1)
     start = minimum + h
@@ -178,6 +182,7 @@ def compute_solution_trash_points(
             solution.append(
                 model(vector_list, differential_equation, minimum + h * i, h, i)
             )
+            time_index.append(minimum + h * i)
             time_index.append(minimum + h * i)
         start = minimum - h * number_of_steps
 
@@ -225,6 +230,8 @@ def compute_solution_trash_points(
                     solution.pop(len(solution) - 2 * ratio + i)
                     time_index_deleted.append(time_index[len(solution) - 2 * ratio + i])
                     time_index.pop(len(solution) - 2 * ratio + i)
+                    time_index_deleted.append(time_index[len(solution) - 2 * ratio + i])
+                    time_index.pop(len(solution) - 2 * ratio + i)
 
             else:
                 counter += 1
@@ -236,6 +243,7 @@ def compute_solution_trash_points(
     print(f"Computation time: {comp_time:.4f} s")
     print("==============================\n")
 
+    return solution, time_index
     return solution, time_index
 
 
