@@ -32,7 +32,8 @@ def get_intervall(steps: int, minimum: float, maximum: float) -> List[float]:
 
 def compute_solution(
     model: Callable[
-        [List[Vector], Callable[[float, Vector], Vector], float, float, int], Vector
+        [List[Vector], Callable[[float, Vector], Vector], float, float, int],
+        Vector,
     ],
     differential_equation: Callable[[float, Vector], Vector],
     steps: int,
@@ -75,7 +76,9 @@ def compute_solution(
             for j in range(i):
                 vector_list.append(solution[-i])
             solution.append(
-                model(vector_list, differential_equation, minimum + h * i, h, i)
+                model(
+                    vector_list, differential_equation, minimum + h * i, h, i
+                )
             )
         start = minimum - h * number_of_steps
 
@@ -102,7 +105,8 @@ def compute_solution(
 
 def compute_solution_trash_points(
     model: Callable[
-        [List[Vector], Callable[[float, Vector], Vector], float, float, int], Vector
+        [List[Vector], Callable[[float, Vector], Vector], float, float, int],
+        Vector,
     ],
     differential_equation: Callable[[float, Vector], Vector],
     steps: int,
@@ -148,7 +152,9 @@ def compute_solution_trash_points(
             for j in range(i):
                 vector_list.append(solution[-i])
             solution.append(
-                model(vector_list, differential_equation, minimum + h * i, h, i)
+                model(
+                    vector_list, differential_equation, minimum + h * i, h, i
+                )
             )
         start = minimum - h * number_of_steps
 
@@ -246,7 +252,9 @@ def plot_z_solution(time: List[float], solution: List[Vector]) -> None:
 
 
 def plot_error(
-    approximated_solution: List[Vector], exact_solution: List[Vector], time: List[float]
+    approximated_solution: List[Vector],
+    exact_solution: List[Vector],
+    time: List[float],
 ) -> None:
     """
     plot the error on the position during time of the computed solution compared to an exact (or almost exact) solution
@@ -258,7 +266,9 @@ def plot_error(
     """
     error = []
     for i in range(len(exact_solution)):
-        error.append(abs(approximated_solution[i][0] - exact_solution[i][0]) ** 2)
+        error.append(
+            abs(approximated_solution[i][0] - exact_solution[i][0]) ** 2
+        )
     sb.lineplot(x=time, y=error)
     plt.title("Model error during time")
     plt.grid(True)
@@ -339,7 +349,9 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
-    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
+    figure.add_trace(
+        go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth")
+    )
     position_x = round(positions[0][0], 3)
     position_y = round(positions[0][1], 3)
     position_z = round(positions[0][2], 3)
@@ -400,7 +412,11 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     figure.show()
 
 
-def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magnetic_moment: Vector = None) -> None:
+def plot_3d_v2(
+    positions: List[Vector],
+    initial_velocity: Vector = None,
+    magnetic_moment: Vector = None,
+) -> None:
     """
     Enhanced 3D plot of particle trajectory in magnetic field with magnetic dipole moment vector.
     Includes initial position/velocity information, start/end point markers, and magnetic moment visualization.
@@ -413,12 +429,12 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
     :type magnetic_moment: Vector or None
     """
     from constants import mu
-    
+
     if magnetic_moment is None:
         magnetic_moment = mu
-    
+
     figure = go.Figure()
-    
+
     # Plot the trajectory
     x = []
     y = []
@@ -472,7 +488,7 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
     ye = []
     ze = []
     sc = []  # surfacecolor (0..1) to map to terrain types
-    
+
     for i in range(len(phi)):
         row_x = []
         row_y = []
@@ -482,40 +498,44 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
             # Convert spherical coords to Cartesian
             lon = phi[i]  # longitude [0, 2π]
             lat = theta[j]  # latitude [0, π], where π/2 is equator
-            
+
             px = r * cos(lon) * sin(lat)
             py = r * sin(lon) * sin(lat)
             pz = r * cos(lat)
-            
+
             row_x.append(px)
             row_y.append(py)
             row_z.append(pz)
-            
+
             # --- Realistic terrain generation with harmonious continents ---
             # Convert latitude to degrees (-90 to +90)
             lat_deg = (lat - pi / 2) * 180 / pi  # Range: [-90°, 90°]
             # Convert longitude to degrees (0 to 360)
             lon_deg = lon * 180 / pi
-            
+
             # Start with OCEAN (default)
             terrain = 0.15
-            
+
             # --- Simplified Perlin-like noise for natural continents ---
             # Create a base continental noise pattern
-            base_noise = (0.4 * sin(lon_deg * pi / 180) * cos(lat_deg * pi / 180)
-                         + 0.3 * sin(2 * lon_deg * pi / 180)
-                         + 0.2 * cos(3 * lat_deg * pi / 180)
-                         + 0.1 * sin(5 * lon_deg * pi / 180))
-            
+            base_noise = (
+                0.4 * sin(lon_deg * pi / 180) * cos(lat_deg * pi / 180)
+                + 0.3 * sin(2 * lon_deg * pi / 180)
+                + 0.2 * cos(3 * lat_deg * pi / 180)
+                + 0.1 * sin(5 * lon_deg * pi / 180)
+            )
+
             # Reduce ocean coverage at certain latitudes (where continents exist)
             if -60 <= lat_deg <= 75:
                 # Apply continent pattern more strongly
-                continent_presence = base_noise + 0.15 * sin(lat_deg * pi / 180)
-                
+                continent_presence = base_noise + 0.15 * sin(
+                    lat_deg * pi / 180
+                )
+
                 if continent_presence > -0.1:
                     # Progressively map noise to terrain values
                     terrain = 0.50 + continent_presence * 0.25
-            
+
             # --- Make polar regions slightly higher terrain (greenland-like) ---
             if lat_deg > 75:
                 if base_noise > -0.2:
@@ -523,11 +543,11 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
             elif lat_deg < -75:
                 if base_noise > -0.2:
                     terrain = 0.70  # Greenish at far south
-            
+
             # Clamp to [0, 1]
             terrain = max(0.15, min(1.0, terrain))
             row_sc.append(terrain)
-        
+
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
@@ -535,11 +555,11 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
 
     # Enhanced colorscale - Blue and Green only (no white)
     earth_colorscale = [
-        [0.00, "rgb(0, 30, 100)"],    # Deep ocean
+        [0.00, "rgb(0, 30, 100)"],  # Deep ocean
         [0.25, "rgb(20, 100, 180)"],  # Ocean blue
-        [0.50, "rgb(60, 150, 50)"],   # Green forest
-        [0.75, "rgb(80, 180, 80)"],   # Light green
-        [1.00, "rgb(100, 200, 100)"], # Bright green
+        [0.50, "rgb(60, 150, 50)"],  # Green forest
+        [0.75, "rgb(80, 180, 80)"],  # Light green
+        [1.00, "rgb(100, 200, 100)"],  # Bright green
     ]
 
     figure.add_trace(
@@ -553,11 +573,13 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
             cmax=1,
             showscale=False,
             name="Earth",
-            lighting=dict(ambient=0.6, diffuse=0.6, roughness=0.9, specular=0.1),
+            lighting=dict(
+                ambient=0.6, diffuse=0.6, roughness=0.9, specular=0.1
+            ),
             lightposition=dict(x=100, y=200, z=0),
         )
     )
-    
+
     # Add magnetic moment vector at North Pole (0, 0, 1)
     # Normalize and scale the magnetic moment for visualization
     mu_normalized = magnetic_moment.normalized()
@@ -565,10 +587,10 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
     # Scale factor for visualization (proportional to magnitude but visible on plot)
     scale_factor = 2.0
     mu_scaled = mu_normalized * scale_factor
-    
+
     north_pole = [0, 0, 1]
     mu_end = [north_pole[i] + mu_scaled[i] for i in range(3)]
-    
+
     figure.add_trace(
         go.Scatter3d(
             x=[north_pole[0], mu_end[0]],
@@ -581,11 +603,11 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
             showlegend=True,
         )
     )
-    
+
     position_x = round(positions[0][0], 3)
     position_y = round(positions[0][1], 3)
     position_z = round(positions[0][2], 3)
-    
+
     # Add annotations for initial conditions
     initial_pos_text = f"Initial Position (en RT):<br>x={position_x:.3f}<br>y={position_y:.3f}<br>z={position_z:.3f}"
     if initial_velocity is not None:
@@ -596,9 +618,11 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
             f"vz={ScientificNotation(initial_velocity[2], 'm').to_scientific_notation()}"
         )
         initial_pos_text += velocity_text
-    
+
     # Add magnetic moment information
-    mu_magnitude_formatted = ScientificNotation(mu_magnitude, 'A·m²').to_scientific_notation()
+    mu_magnitude_formatted = ScientificNotation(
+        mu_magnitude, "A·m²"
+    ).to_scientific_notation()
     magnetic_moment_text = f"<br><br>Magnetic Moment: {mu_magnitude_formatted}"
     initial_pos_text += magnetic_moment_text
 
@@ -663,7 +687,7 @@ def plot_kinetic_energy(
     kinetic_energy = []
     for i in range(len(velocity)):
         kinetic_energy.append(1 / 2 * mp * abs(velocity[i]) ** 2)
-    
+
     sb.lineplot(x=time_list, y=kinetic_energy)
     plt.title("System kinetic energy during time")
     plt.grid(True)
@@ -673,6 +697,7 @@ def plot_kinetic_energy(
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import List
+
 
 def plot_kinetic_energy_v2(
     velocity: List["Vector"], time_list: List[float], mp: float
@@ -684,7 +709,7 @@ def plot_kinetic_energy_v2(
     # --- Scale from first value
     ke0 = ke[0]
     exponent = int(np.floor(np.log10(abs(ke0))))
-    scale = 10 ** exponent
+    scale = 10**exponent
 
     ke_scaled = ke / scale
 
@@ -700,30 +725,35 @@ def plot_kinetic_energy_v2(
     # --- Plot
     fig, ax = plt.subplots(figsize=(12, 6))
 
-    ax.axvspan(time_list[0], critical_time,
-               alpha=0.3, color='lightgreen',
-               label='Reliable zone (<10%)')
+    ax.axvspan(
+        time_list[0],
+        critical_time,
+        alpha=0.3,
+        color="lightgreen",
+        label="Reliable zone (<10%)",
+    )
 
-    ax.plot(time_list, ke_scaled, linewidth=2, label='Ke/m')
+    ax.plot(time_list, ke_scaled, linewidth=2, label="Ke/m")
 
     # Labels
-    ax.set_xlabel('Time (s)')
-    ax.set_ylabel(f'Ke/m (×10^{exponent})')
-    ax.set_title(f'Kinetic Energy per mass (m = {mp})')
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel(f"Ke/m (×10^{exponent})")
+    ax.set_title(f"Kinetic Energy per mass (m = {mp})")
 
     # force global scale
     ax.set_ylim(0, np.max(ke_scaled) * 1.1)
 
     # Remove offset
-    ax.ticklabel_format(axis='y', style='plain', useOffset=False)
+    ax.ticklabel_format(axis="y", style="plain", useOffset=False)
 
     # Legend outside
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 
     ax.grid(True, alpha=0.3)
 
     plt.tight_layout(rect=[0, 0, 0.8, 1])
     plt.show()
+
 
 def plot_kinetic_energy_multiple(velocity_list, time_list, mp):
 
@@ -749,28 +779,44 @@ def plot_kinetic_energy_multiple(velocity_list, time_list, mp):
                     critical_index = j - 1
                     break
 
-        ke_final = ke[:critical_index+1] 
-        time_final = time_list[sol_idx][:critical_index+1] if sol_idx < len(time_list) else []
+        ke_final = ke[: critical_index + 1]
+        time_final = (
+            time_list[sol_idx][: critical_index + 1]
+            if sol_idx < len(time_list)
+            else []
+        )
         valid_mask = ke_final > 0
         ke_valid = ke_final[valid_mask]
-        time_valid = np.array(time_final)[valid_mask] if len(time_final) > 0 else []
+        time_valid = (
+            np.array(time_final)[valid_mask] if len(time_final) > 0 else []
+        )
 
         if len(ke_valid) > 0:
             all_ke_final.extend(ke_valid)
-            ax.plot(time_valid, ke_valid, linewidth=2, marker='o', markersize=3, label=f'Solution {sol_idx+1}')
+            ax.plot(
+                time_valid,
+                ke_valid,
+                linewidth=2,
+                marker="o",
+                markersize=3,
+                label=f"Solution {sol_idx+1}",
+            )
 
-    ax.set_xlabel('Time (s)')
-    ax.set_ylabel(f'Ke/m (×10^{exponent})')
-    ax.set_yscale('log')
-    ax.set_xscale('log')  
-    ax.set_title(f'Kinetic Energy per mass (m = {mp})')
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel(f"Ke/m (×10^{exponent})")
+    ax.set_yscale("log")
+    ax.set_xscale("log")
+    ax.set_title(f"Kinetic Energy per mass (m = {mp})")
 
-    ax.grid(True, alpha=0.3, which='both', linestyle='-', linewidth=0.5)
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.grid(True, alpha=0.3, which="both", linestyle="-", linewidth=0.5)
+    ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     plt.tight_layout(rect=[0, 0, 0.8, 1])
     plt.show()
 
-def plot_2d_projections(positions_list, velocities_list=None, title="Projections 2D"):
+
+def plot_2d_projections(
+    positions_list, velocities_list=None, title="Projections 2D"
+):
     """
     Generates 3 stacked 2D projection plots.
 
@@ -867,7 +913,12 @@ def saved_plot_kinetic_energy(
     plt.savefig(save_name)
 
 
-def saved_plot_2d_projections(positions_list, save_name: str, velocities_list=None, title="Projections 2D"):
+def saved_plot_2d_projections(
+    positions_list,
+    save_name: str,
+    velocities_list=None,
+    title="Projections 2D",
+):
     """
     Generates 3 stacked 2D projection plots.
 
@@ -943,7 +994,9 @@ def saved_plot_2d_projections(positions_list, save_name: str, velocities_list=No
     plt.savefig(save_name)
 
 
-def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = None) -> None:
+def plot_3d_multi(
+    positions_list: List[List[Vector]], magnetic_moment: Vector = None
+) -> None:
     """
     3D plot of multiple particle trajectories in magnetic field with magnetic dipole moment vector.
     Trajectories are colored with a plasma gradient to distinguish between particles.
@@ -956,24 +1009,28 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
     """
     from constants import mu
     import matplotlib.cm as cm
-    
+
     if magnetic_moment is None:
         magnetic_moment = mu
-    
+
     figure = go.Figure()
-    
+
     # Generate plasma colormap for particles
     num_particles = len(positions_list)
-    plasma_colors = cm.get_cmap('plasma')
-    
+    plasma_colors = cm.get_cmap("plasma")
+
     # Plot each trajectory
     for particle_idx, positions in enumerate(positions_list):
         # Compute color for this particle on the plasma gradient
-        color_val = particle_idx / max(1, num_particles - 1) if num_particles > 1 else 0.5
+        color_val = (
+            particle_idx / max(1, num_particles - 1)
+            if num_particles > 1
+            else 0.5
+        )
         rgba = plasma_colors(color_val)
         # Convert RGBA to hex color for plotly
-        color_hex = f'rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 0.8)'
-        
+        color_hex = f"rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 0.8)"
+
         # Extract coordinates
         x = []
         y = []
@@ -982,7 +1039,7 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
             x.append(pos[0])
             y.append(pos[1])
             z.append(pos[2])
-        
+
         # Plot trajectory with reduced line width
         figure.add_trace(
             go.Scatter3d(
@@ -995,7 +1052,7 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
                 hoverinfo="skip",
             )
         )
-        
+
         # Add starting point (smaller)
         figure.add_trace(
             go.Scatter3d(
@@ -1008,7 +1065,7 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
                 hoverinfo="skip",
             )
         )
-        
+
         # Add ending point (smaller)
         figure.add_trace(
             go.Scatter3d(
@@ -1021,7 +1078,7 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
                 hoverinfo="skip",
             )
         )
-    
+
     # Add Earth sphere
     r = 1
     phi = get_intervall(30, 0, 2 * pi)
@@ -1040,16 +1097,18 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
-    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
-    
+    figure.add_trace(
+        go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth")
+    )
+
     # Add magnetic moment vector at North Pole (0, 0, 1)
     mu_normalized = magnetic_moment.normalized()
     scale_factor = 2.0
     mu_scaled = mu_normalized * scale_factor
-    
+
     north_pole = [0, 0, 1]
     mu_end = [north_pole[i] + mu_scaled[i] for i in range(3)]
-    
+
     figure.add_trace(
         go.Scatter3d(
             x=[north_pole[0], mu_end[0]],
@@ -1062,7 +1121,7 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
             showlegend=True,
         )
     )
-    
+
     # Set parameters
     figure.update_layout(
         scene=dict(
@@ -1075,6 +1134,6 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
         showlegend=True,
         legend=dict(x=0.7, y=0.9),
     )
-    
+
     # Show figure
     figure.show()
