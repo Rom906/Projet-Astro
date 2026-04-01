@@ -24,6 +24,8 @@ def plot_multi_particules(
     nombre_points=1000,
     intervalle_temps=100000,
     ratio_sur_100=1,
+    variable_steps=True,
+    tolerated_variation=0.05,
 ):
 
     parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
@@ -78,9 +80,40 @@ def plot_multi_particules(
             False,
             ratio_sur_100,
             100,
+            variable_steps,
+            tolerated_variation=0.05,
         )
         liste_solutions.append(solution_normalized)
         print(f"Point de {i+1}eme particule générés avec succès !\n")
+
+    return (
+        liste_solutions,
+        cercle,
+        distance_cercle,
+        nombre_points,
+        intervalle_temps,
+        ratio_sur_100,
+    )
+
+
+if __name__ == "__main__":
+    (
+        liste_solutions,
+        cercle,
+        distance_cercle,
+        nombre_points,
+        intervalle_temps,
+        ratio_sur_100,
+    ) = plot_multi_particules(
+        N_particules=5,
+        cercle=5,
+        distance_cercle=8,
+        nombre_points=5000,
+        intervalle_temps=10000000,
+        ratio_sur_100=1,
+        variable_steps=True,
+        tolerated_variation=0.05,
+    )
 
     plot_3d_multi(
         liste_solutions,
@@ -89,15 +122,4 @@ def plot_multi_particules(
         nombre_points=nombre_points,
         intervalle_temps=intervalle_temps,
         ratio_sur_100=ratio_sur_100,
-    )
-
-
-if __name__ == "__main__":
-    plot_multi_particules(
-        N_particules=1000,
-        cercle=5,
-        distance_cercle=8,
-        nombre_points=100000,
-        intervalle_temps=10000000,
-        ratio_sur_100=1,
     )

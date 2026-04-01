@@ -110,6 +110,8 @@ def compute_solution_trash_points(
     multiple_steps_method: bool = False,
     number_of_steps: int = 1,
     ratio: int = 1,
+    variable_steps: bool = False,
+    tolerated_variation: int = 0.05,
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
@@ -132,11 +134,21 @@ def compute_solution_trash_points(
     :type number_of_step: int
     :param ratio: number of point keeped during computation. If 1 all points will be keeped, if 2 only one out of 2, ...
     :type ratio: int
+    :param variable_steps: if true, means that the steps sise adapts to change
+    :type variable_steps: bool
+    :param minimum_variation: if the step size is variable, it is the minimum tolerated variation between steps without which the step size is unchanged
+    :type minimum_variation: int
+    :param tolerated_variation: if the step size is variable, it is the maximum tolerated variation between steps without which the step size is unchanged
+    :type tolerated_variation: int
+    :param tolerated_variation: if the step size is variable, it is the maximum tolerated variation between steps without which the step size is unchanged
+    :type tolerated_variation: int
     :return: a list of "steps" approximated value of the differential equation solution
     :rtype: List[Vector]
     """
     start_time = time.time()
     solution: List[Vector] = [initial_conditions]
+    time_index = [0]
+    time_index = [0]
     h = (maximum - minimum) / (steps - 1)
     start = minimum + h
 
@@ -148,36 +160,71 @@ def compute_solution_trash_points(
             solution.append(
                 model(vector_list, differential_equation, minimum + h * i, h, i)
             )
+            time_index.append(minimum + h * i)
+            time_index.append(minimum + h * i)
         start = minimum - h * number_of_steps
 
-    intervall = [minimum] + get_intervall(steps, start, maximum)
-
     counter = 0
-    treesold = ratio
+    treshold = ratio
     time_index_deleted = []
-    for i in range(1, len(intervall)):
-        ti = intervall[i]
+    ti = 0
+    while ti < maximum:
         vector_list = []
         for i in range(number_of_steps):
             vector_list.append(solution[-1 - i])
-        solution.append(
-            model(vector_list, differential_equation, ti, h, number_of_steps)
+        new_step_large = model(
+            vector_list, differential_equation, ti, h, number_of_steps
         )
+        new_step_pos_large = new_step_large[0]
+        if variable_steps:
+            half_step_fine = model(
+                vector_list, differential_equation, ti, h / 2, number_of_steps
+            )
+            new_step_fine = model(
+                [half_step_fine],
+                differential_equation,
+                ti + h / 2,
+                h / 2,
+                number_of_steps,
+            )
+            new_step_pos_fine = new_step_fine[0]
+            max_variation = 0
+            for i in range(len(new_step_pos_large.coordinates)):
+                variation = abs(new_step_pos_large[i] - new_step_pos_fine[i])
+                if variation > max_variation:
+                    max_variation = variation
+            if max_variation < tolerated_variation:
+                solution.append(new_step_large)
+                ti += h
+                time_index.append(ti)
+            if max_variation != 0:
+                h *= 0.9 * (tolerated_variation / max_variation) ** (1 / 5)
+            if max_variation >= tolerated_variation:
+                new_step = model(
+                    vector_list, differential_equation, ti, h, number_of_steps
+                )
+                solution.append(new_step)
+                ti += h
+                time_index.append(ti)
+        else:
+            solution.append(new_step_large)
+            ti += h
+            time_index.append(ti)
 
-        if treesold >= 0:
-            treesold -= 1
+        if treshold >= 0:
+            treshold -= 1
         else:
             if counter >= ratio:
                 counter = 1
                 for i in range(ratio - 1):
                     solution.pop(len(solution) - 2 * ratio + i)
-                    time_index_deleted.append(len(solution) - 2 * ratio + i)
+                    time_index_deleted.append(time_index[len(solution) - 2 * ratio + i])
+                    time_index.pop(len(solution) - 2 * ratio + i)
+                    time_index_deleted.append(time_index[len(solution) - 2 * ratio + i])
+                    time_index.pop(len(solution) - 2 * ratio + i)
 
             else:
                 counter += 1
-
-    for i in range(len(time_index_deleted) - 1, -1, -1):
-        intervall.pop(time_index_deleted[i])
 
     comp_time = time.time() - start_time
     print("\n=== Computation Statistics ===")
@@ -186,7 +233,7 @@ def compute_solution_trash_points(
     print(f"Computation time: {comp_time:.4f} s")
     print("==============================\n")
 
-    return solution, intervall
+    return solution, time_index
 
 
 def plot_x_solution(time: List[float], solution: List[Vector]) -> None:
