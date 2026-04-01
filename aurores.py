@@ -5,7 +5,7 @@ from random import random, uniform
 from integration_functions import RK4
 from generate_solutions import plot_3d
 
-def collision_test(position: Vector):
+def collision(position: Vector):
     collision_probability = atm_model(position)["n"] * atm_model(position)["eff_sec"]
     return random() < 0.00001
 
