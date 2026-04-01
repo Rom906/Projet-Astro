@@ -1,4 +1,4 @@
-from constants import UNIT
+from constants import UNIT, UNIT_V
 
 
 class ScientificNotation:
@@ -23,7 +23,7 @@ class ScientificNotation:
         self.number = number
         self.unit = unit
 
-    def to_scientific_notation(self):
+    def to_scientific_notation(self, velocity=False):
         """
         Convert the number to scientific notation with unit adjustment.
         
@@ -38,33 +38,62 @@ class ScientificNotation:
             str: Formatted string in scientific notation (e.g., "6.37 x 10^3 km")
         """
         # Special case: zero
-        if self.number == 0:
-            return "0"
-    
-        exponent = 0
-        mantissa = self.number
+        if not velocity:
+            if self.number == 0:
+                return "0"
         
-        # STEP 1: Initial normalization - get mantissa between 1 and 10
-        while abs(mantissa) >= 10:
-            mantissa /= 10
-            exponent += 1
+            exponent = 0
+            mantissa = self.number
+            
+            # STEP 1: Initial normalization - get mantissa between 1 and 10
+            while abs(mantissa) >= 10:
+                mantissa /= 10
+                exponent += 1
+            
+            # STEP 2: Adjust units upward (km) if exponent >= 3
+            # Changing from m → km reduces exponent by 3
+            while exponent >= 3 and self.unit in UNIT and self.unit != "km":
+                    self.unit = UNIT[UNIT.index(self.unit) - 1]  # Index -1 = larger unit
+                    exponent -= 3
+                    
+            # STEP 3: Fine normalization - if mantissa < 1, adjust
+            while abs(mantissa) < 1:
+                mantissa *= 10
+                exponent -= 1
+            
+            # STEP 4: Adjust units downward (mm) if exponent < -3
+            # Changing from m → um increases exponent by 3
+            while exponent < -3 and self.unit in UNIT and self.unit != "mm":
+                    self.unit = UNIT[UNIT.index(self.unit) + 1]  # Index +1 = smaller unit
+                    exponent += 3
+        else:
+            if self.number == 0:
+                return "0"
         
-        # STEP 2: Adjust units upward (km) if exponent >= 3
-        # Changing from m → km reduces exponent by 3
-        while exponent >= 3 and self.unit in UNIT and self.unit != "km":
-                self.unit = UNIT[UNIT.index(self.unit) - 1]  # Index -1 = larger unit
-                exponent -= 3
-                
-        # STEP 3: Fine normalization - if mantissa < 1, adjust
-        while abs(mantissa) < 1:
-            mantissa *= 10
-            exponent -= 1
-        
-        # STEP 4: Adjust units downward (mm) if exponent < -3
-        # Changing from m → um increases exponent by 3
-        while exponent < -3 and self.unit in UNIT and self.unit != "mm":
-                self.unit = UNIT[UNIT.index(self.unit) + 1]  # Index +1 = smaller unit
-                exponent += 3
+            exponent = 0
+            mantissa = self.number
+            
+            # STEP 1: Initial normalization - get mantissa between 1 and 10
+            while abs(mantissa) >= 10:
+                mantissa /= 10
+                exponent += 1
+            
+            # STEP 2: Adjust units upward (km.s^-1) if exponent >= 3
+            # Changing from m.s^-1 → km.s^-1 reduces exponent by 3
+            while exponent >= 3 and self.unit in UNIT_V and self.unit != "km.s^-1":
+                    self.unit = UNIT_V[UNIT_V.index(self.unit) - 1]  # Index -1 = larger unit
+                    exponent -= 3
+                    
+            # STEP 3: Fine normalization - if mantissa < 1, adjust
+            while abs(mantissa) < 1:
+                mantissa *= 10
+                exponent -= 1
+            
+            # STEP 4: Adjust units downward (mm.s^-1) if exponent < -3
+            # Changing from m.s^-1 → um.s^-1 increases exponent by 3
+            while exponent < -3 and self.unit in UNIT_V and self.unit != "mm.s^-1":
+                    self.unit = UNIT_V[UNIT_V.index(self.unit) + 1]  # Index +1 = smaller unit
+                    exponent += 3
     
         # Return formatted string with 2 decimal places for mantissa
         return f"{mantissa:.2f} x 10^{exponent} {self.unit}"

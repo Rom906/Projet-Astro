@@ -84,7 +84,4 @@ time = parameters.rescale_normalized_time_intervall(time_noramlized)
 # save_time_interval(time, "debug_time.csv")
 
 # plot_3d(position)
-plot_3d_v2(position, magnetic_moment=mu)
-plot_kinetic_energy(velocity, time, mp)
-plot_kinetic_energy_v2(velocity, time, mp)
-plot_2d_projections(position, velocity)
+plot_3d_v2(position, initial_velocity, magnetic_moment=mu)

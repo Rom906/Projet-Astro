@@ -613,9 +613,9 @@ def plot_3d_v2(
     if initial_velocity is not None:
         velocity_text = (
             f"<br>Initial Velocity:<br>"
-            f"vx={ScientificNotation(initial_velocity[0], 'm').to_scientific_notation()}<br>"
-            f"vy={ScientificNotation(initial_velocity[1], 'm').to_scientific_notation()}<br>"
-            f"vz={ScientificNotation(initial_velocity[2], 'm').to_scientific_notation()}"
+            f"vx={ScientificNotation(initial_velocity[0], 'm.s^-1').to_scientific_notation()}<br>"
+            f"vy={ScientificNotation(initial_velocity[1], 'm.s^-1').to_scientific_notation()}<br>"
+            f"vz={ScientificNotation(initial_velocity[2], 'm.s^-1').to_scientific_notation()}"
         )
         initial_pos_text += velocity_text
 

@@ -10,4 +10,5 @@ mu = -7.94e22 * Vector([cos(phi), sin(phi), sin(theta)])  # Earth's magnetic mom
 ROdip = Vector([0.0, 0.0, 0.0])  # Dipole location
 MO = 1.0e-7  # mu0/4pi
 er = Vector([1, 0, 0])  # first unitay vector of the basis for spherical coordinates
-UNIT=["km", "m", "mm", "um", "nm", "pm"] #Units for the scientific notation, from the biggest to the smallest
+UNIT=["km", "m", "mm", "um", "nm", "pm"] 
+UNIT_V=["km.s^-1", "m.s^-1", "mm.s^-1", "um.s^-1", "nm.s^-1", "pm.s^-1"]#Units for the scientific notation, from the biggest to the smallest
