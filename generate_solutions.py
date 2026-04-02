@@ -518,131 +518,215 @@ def saved_plot_kinetic_energy(
     plt.savefig(save_name)
 
 
-def saved_plot_2d_projections(positions_list, save_name: str, velocities_list=None, title="Projections 2D", coordinate_system="cartesian", save=True):
+def saved_plot_2d_projections_color(
+    positions_list: List[Vector], 
+    save_name: str, 
+    velocities_list: List[Vector] = None, 
+    title: str = "2D Projections", 
+    coordinate_system: str = "cartesian", 
+    save: bool = True, 
+    time_list: List[float] = None
+) -> None:
     """
-    Generates 3 stacked 2D projection plots.
+    Generates and saves (or displays) a figure containing three 2D projection plots. 
+    Depending on the mode, it visualizes either Phase Space trajectories (Velocity vs Position) 
+    or Geometric Projections (Position vs Position). 
+    
+    In Phase Space mode, trajectories are rendered as continuous lines with a color gradient 
+    representing the evolution of time, using Matplotlib LineCollections for performance. 
+    In Geometric mode, trajectories are rendered as scatter plots.
 
-    :param positions_list: List of Vectors [x, y, z]
-    :param velocities_list: List of Vectors [vx, vy, vz] (Optional).
-                            If provided, displays phase space plots (v vs pos).
-                            If absent, displays geometric projections (y vs x).
+    :param positions_list: List of position vectors (Vector objects) representing the trajectory coordinates.
+    :type positions_list: List[Vector]
+    :param save_name: Base name of the file to save the figure (without extension). Ignored if save=False.
+    :type save_name: str
+    :param velocities_list: List of velocity vectors (Vector objects). If provided, enables Phase Space mode.
+    :type velocities_list: List[Vector], optional
+    :param title: Main title displayed at the top of the figure.
+    :type title: str, optional
+    :param coordinate_system: Coordinate system to use for projection. Options: "cartesian", "spherical", or "intrinsic".
+    :type coordinate_system: str, optional
+    :param save: If True, saves the figure to disk as '{save_name}.png'. If False, displays the figure interactively.
+    :type save: bool, optional
+    :param time_list: List of time values corresponding to each position/velocity point. Required for color gradient in Phase Space mode and mandatory for "intrinsic" mode.
+    :type time_list: List[float], optional
+    :raises ValueError: If "intrinsic" mode is selected but time_list or velocities_list are missing.
     """
-    # Extracting data
-    x = np.array([p.coordinates[0] for p in positions_list])
-    y = np.array([p.coordinates[1] for p in positions_list])
-    z = np.array([p.coordinates[2] for p in positions_list])
+    
+    # --- Handle Intrinsic Mode (not pertinent now and not realy finished) ---
+    
+    if coordinate_system == "intrinsic":
+        s, vs = None, None
+        if time_list is None:
+            raise ValueError("Intrinsic mode requires the 'time_list' parameter (list of dt).")
+        if velocities_list is None:
+            raise ValueError("Intrinsic mode requires 'velocities_list' to calculate velocity magnitude.")
+        
+        s, vs = calculate_curvilinear_coordinates(positions_list, velocities_list, time_list)
+        
+        # Replace x, y, z with s for the 3 plots.
+        x, y, z = s, s, s
+        vx, vy, vz = vs, vs, vs
+        
+        labels_pos = [r"$s$ [RT]", r"$s$ [RT]", r"$s$ [RT]"]
+        labels_vel = [r"$v_s$ [RT]", r"$v_s$ [RT]", r"$v_s$ [RT]"]
+        titles = [r"Intrinsic Phase Space: $v_s$ vs $s$", r"(Identical View)", r"(Identical View)"]
+        
+    # --- Handle Spherical Mode --- (Most pertinent)
+    elif coordinate_system == "spherical":
+        # Extract base Cartesian data
+        x = np.array([p.coordinates[0] for p in positions_list])
+        y = np.array([p.coordinates[1] for p in positions_list])
+        z = np.array([p.coordinates[2] for p in positions_list])
 
-    fig, axs = plt.subplots(3, 1, figsize=(10, 12), sharex=False)
+        if coordinate_system == "spherical":
+            # --- Conversion from Cartesian to Spherical --- (an amelioration is to use a function)
+            orig_x = x
+            orig_y = y
+            orig_z = z
+            
+            rho = np.sqrt(orig_x**2 + orig_y**2)
+            r = np.sqrt(orig_x**2 + orig_y**2 + orig_z**2)
+            
+            # Avoid division by zero
+            r = np.where(r == 0, 1e-9, r)
+            rho = np.where(rho == 0, 1e-9, rho)
+
+            # Position Coordinates (r, theta, phi)
+            x = r
+            y = np.arccos(orig_z / r)           # theta (Colatitude)
+            z = np.arctan2(orig_y, orig_x)      # phi (Longitude)
+
+            if velocities_list:
+                vx = np.array([v.coordinates[0] for v in velocities_list])
+                vy = np.array([v.coordinates[1] for v in velocities_list])
+                vz = np.array([v.coordinates[2] for v in velocities_list])
+
+                # Radial Speed (vr)
+                vr = (orig_x * vx + orig_y * vy + orig_z * vz) / r
+
+                # Colatitudinal Speed (v_theta)
+                v_theta = (orig_z * (orig_x * vx + orig_y * vy) / rho - rho * vz) / r
+                
+                # Azimuthal Speed (v_phi)
+                v_phi = (orig_x * vy - orig_y * vx) / rho
+
+                vx, vy, vz = vr, v_theta, v_phi
+
+                labels_pos = [r"$r$ [$R_T$]", r"$\theta$ [rad]", r"$\phi$ [rad]"]
+                labels_vel = [r"$v_r$ [$R_T$]", r"$v_\theta$ [$R_T$]", r"$v_\phi$ [$R_T$]"]
+                titles = [r"Phase Space: $v_r$ vs $r$", r"Phase Space: $v_\theta$ vs $\theta$", r"Phase Space: $v_\phi$ vs $\phi$"]
+            else:
+                labels_pos = [r"$r$ [$R_T$]", r"$\theta$ [rad]", r"$\phi$ [rad]"]
+                titles = [r"Projection: $\theta$ vs $r$", r"Projection: $\phi$ vs $\theta$", r"Projection: $\phi$ vs $r$"]
+
+        # --- Handle Cartesian Mode --- (can be useful)
+        else: # cartesian
+            if velocities_list:
+                vx = np.array([v.coordinates[0] for v in velocities_list])
+                vy = np.array([v.coordinates[1] for v in velocities_list])
+                vz = np.array([v.coordinates[2] for v in velocities_list])
+
+            labels_pos = [r"$x$ [$R_T$]", r"$y$ [$R_T$]", r"$z$ [$R_T$]"]
+            labels_vel = [r"$v_x$", r"$v_y$", r"$v_z$"]
+            titles = [r"Phase Space Projection: $v_x$ vs $x$", r"Phase Space Projection: $v_y$ vs $y$", r"Phase Space Projection: $v_z$ vs $z$"]
+
+    # --- Plot Configuration ---
+    # To add time in the graph we want a series of segments (posn,veln) -> (posn+1, veln+1) and attribute one color to each segment. We will plot a series of segments
+    
+    # Normalise time_list and set color tab
+    time_list=np.array(time_list)
+    norm = Normalize(vmin=time_list.min(), vmax=time_list.max())
+    cmap = plt.cm.viridis
+
+    # Create array of couples (pos,vel) for all tree graphs
+    points_graph1 = np.array([x, vx]).T.reshape(-1, 1, 2)
+    points_graph2 = np.array([y, vy]).T.reshape(-1, 1, 2)
+    points_graph3 = np.array([z, vz]).T.reshape(-1, 1, 2)
+    # Create the segments
+    segments1 = np.concatenate([points_graph1[:-1], points_graph1[1:]], axis=1)
+    segments2 = np.concatenate([points_graph2[:-1], points_graph2[1:]], axis=1)
+    segments3 = np.concatenate([points_graph3[:-1], points_graph3[1:]], axis=1)
+    
+
+    # -- Creation of Collections --- (plt.plot can't change colors so we use collections)
+    lc1 = LineCollection(segments1, cmap=cmap, norm=norm)
+    lc1.set_array(time_list[:-1]) # Set color to the segments
+    lc2 = LineCollection(segments2, cmap=cmap, norm=norm)
+    lc2.set_array(time_list[:-1])
+    lc3 = LineCollection(segments3, cmap=cmap, norm=norm)
+    lc3.set_array(time_list[:-1])
+
+    # --- Define plot and axes ---
+    fig, axs = plt.subplots(3, 1, figsize=(10, 12), sharex=False, constrained_layout=True)
     fig.suptitle(title, fontsize=16)
 
-    # Color and style
+    # --- Point color and size definition --- (for the last part, don't know if it's pertinent to keep)
     color = "navy"
     point_size = 0.5
 
-    if coordinate_system == "spherical":
-        # --- Conversion from cartesian to spherical system ---
+    # --- Plot graphs vel in fonction of position --- (With color to show the time)
+    if velocities_list or coordinate_system == "intrinsic":
+        # --- Phase Space Mode (v vs pos) ---
 
-        #r and rho
-        rho = np.sqrt(x**2 + y**2)
-        r = np.sqrt(x**2 + y**2 + z**2)
-        
-        # To not divide by 0 (remplace any 0 in the array)
-        r = np.where(r == 0, 1e-9, r)
-        rho = np.where(rho == 0, 1e-9, rho)
-
-        # Coordinates Position (r, theta, phi)
-        r_pos = r
-        theta = np.arccos(z / r)          # Colatitude (0 = North, pi = South)
-        phi = np.arctan2(y, x)            # Longitude
-
-        # Speed coordinates if present
-        if velocities_list:
-            vx = np.array([v.coordinates[0] for v in velocities_list])
-            vy = np.array([v.coordinates[1] for v in velocities_list])
-            vz = np.array([v.coordinates[2] for v in velocities_list])
-
-            # Radial Speed (vr)
-            vr = (x * vx + y * vy + z * vz) / r
-
-            # Colatitudinal Speed (v_theta)
-            # Projection on u_theta: (z/rho * urho - u_z) watch out for signs
-            v_theta = (z * (x * vx + y * vy) / rho - rho * vz) / r
-            
-            # Vitesse Azimutale (v_phi)
-            v_phi = (x * vy - y * vx) / rho
-
-            # We replace the variables for the rest of the code
-            x, y, z = r_pos, theta, phi
-            vx, vy, vz = vr, v_theta, v_phi
-
-            labels_pos = [r"$r$ [$R_T$]", r"$\theta$ [rad]", r"$\phi$ [rad]"]
-            labels_vel = [r"$v_r$ [$R_T$/unit]", r"$v_\theta$ [$R_T$/unit]", r"$v_\phi$ [$R_T$/unit]"]
-            titles = [r"Espace des phases: $v_r$ vs $r$", r"Espace des phases: $v_\theta$ vs $\theta$", r"Espace des phases: $v_\phi$ vs $\phi$"]
-        else:
-            labels_pos = [r"$r$ [$R_T$]", r"$\theta$ [rad]", r"$\phi$ [rad]"]
-            # Pour le mode géométrique sphérique, on projette souvent theta vs phi, etc.
-            titles = [r"Projection: $\theta$ vs $r$", r"Projection: $\phi$ vs $\theta$", r"Projection: $\phi$ vs $r$"]
-        
-    else: #cartesian
-        if velocities_list:
-            vx = np.array([v.coordinates[0] for v in velocities_list])
-            vy = np.array([v.coordinates[1] for v in velocities_list])
-            vz = np.array([v.coordinates[2] for v in velocities_list])
-
-        labels_pos = [r"$x$ [$R_T$]", r"$y$ [$R_T$]", r"$z$ [$R_T$]"]
-        labels_vel = [r"$v_x$", r"$v_y$", r"$v_z$"]
-        titles = [r"Projection Phase Space: $v_x$ vs $x$", r"Projection Phase Space: $v_y$ vs $y$", r"Projection Phase Space: $v_z$ vs $z$"]
-
-    if velocities_list:
-        # It's possible let just none for the velocity list but the result will be just 2D position
-        # --- Space mode phase (v vs pos) ---
-
-        # Graph 1: vx vs x or
-        axs[0].plot(x, vx, ".", markersize=point_size, color=color, alpha=0.5)
+        # Graph 1
+        axs[0].add_collection(lc1)
         axs[0].set_ylabel(labels_vel[0])
         axs[0].set_title(titles[0])
         axs[0].grid(True, alpha=0.3)
+        axs[0].set_xlim(x.min(), x.max())
+        axs[0].set_ylim(vx.min(), vx.max())
 
-        # Graph 2: vy vs y or 
-        axs[1].plot(y, vy, ".", markersize=point_size, color=color, alpha=0.5)
+        # Graph 2
+        axs[1].add_collection(lc2)
         axs[1].set_ylabel(labels_vel[1])
         axs[1].set_title(titles[1])
         axs[1].grid(True, alpha=0.3)
+        axs[1].set_xlim(y.min(), y.max())
+        axs[1].set_ylim(vy.min(), vy.max())
 
-        # Graph 3: vz vs z or 
-        axs[2].plot(z, vz, ".", markersize=point_size, color=color, alpha=0.5)
+        # Graph 3
+        axs[2].add_collection(lc3)
         axs[2].set_ylabel(labels_vel[2])
-        axs[2].set_xlabel(r"Position ($R_T$)")
+        axs[2].set_xlabel(labels_pos[2]) # Display position unit on X axis
         axs[2].set_title(titles[2])
         axs[2].grid(True, alpha=0.3)
+        axs[2].set_xlim(z.min(), z.max())
+        axs[2].set_ylim(vz.min(), vz.max())
 
     else:
-        # --- Projection mode geometrical (pos vs pos) ---
-
-        # Graph 1: y vs x (top view)
+        # --- Geometric Projection Mode (pos vs pos) ---
+        
+        # Graph 1: y vs x
         axs[0].plot(x, y, ".", markersize=point_size, color=color, alpha=0.5)
-        axs[0].set_ylabel(labels_pos[0])
+        axs[0].set_xlabel(labels_pos[0])
+        axs[0].set_ylabel(labels_pos[1])
         axs[0].set_title(titles[0])
         axs[0].grid(True, alpha=0.3)
         axs[0].set_aspect("equal")
 
-        # Graph 2: z vs y (side view)
+        # Graph 2: z vs y
         axs[1].plot(y, z, ".", markersize=point_size, color=color, alpha=0.5)
-        axs[1].set_ylabel(labels_pos[1])
+        axs[1].set_xlabel(labels_pos[1])
+        axs[1].set_ylabel(labels_pos[2])
         axs[1].set_title(titles[1])
         axs[1].grid(True, alpha=0.3)
         axs[1].set_aspect("equal")
 
-        # Graph3: z vs x (front view)
+        # Graph 3: z vs x
         axs[2].plot(x, z, ".", markersize=point_size, color=color, alpha=0.5)
+        axs[2].set_xlabel(labels_pos[0])
         axs[2].set_ylabel(labels_pos[2])
-        axs[2].set_xlabel(titles[2])
-        axs[2].set_title(r"Projection Plan XZ (Front View)")
+        axs[2].set_title(r"Projection XZ Plane (Front View)")
         axs[2].grid(True, alpha=0.3)
         axs[2].set_aspect("equal")
 
-    plt.tight_layout()
+    # --- Add color bar ---
+    cbar = fig.colorbar(lc1, ax=axs.tolist(), shrink=0.95) 
+    cbar.set_label('Temps (s)')
+
+    # --- Save as a file or show --- (to change the save location don't hesitate, add ../ or any type of redirection)
     if save:
-        plt.savefig(f"../{save_name}.png")
+        plt.savefig(f"{save_name}.png")
     else:
-        plt.show
+        plt.show()
