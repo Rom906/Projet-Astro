@@ -218,8 +218,6 @@ def compute_solution_trash_points(
                 for i in range(ratio - 1):
                     solution.pop(len(solution) - 2 * ratio + i)
                     time_index_deleted.append(time_index[len(solution) - 2 * ratio + i])
-                    time_index.pop(len(solution) - 2 * ratio + i)
-
             else:
                 counter += 1
 
