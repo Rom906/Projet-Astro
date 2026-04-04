@@ -434,6 +434,7 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
 
 
 def plot_3d_multi(
+    N_particules: int,
     positions_list: List[List[Vector]],
     magnetic_moment: Vector = None,
     cercle: float = None,
@@ -441,6 +442,8 @@ def plot_3d_multi(
     nombre_points: int = None,
     intervalle_temps: float = None,
     ratio_sur_100: int = None,
+    color: str = "blue",
+    epaisseur: int = 1,
 ) -> None:
     """
     3D plot of multiple particle trajectories in magnetic field with magnetic dipole moment vector.
@@ -467,8 +470,9 @@ def plot_3d_multi(
         )
         rgba = plasma_colors(color_val)
         color_hex = (
-            f"rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 0.8)"
+            f"rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 1.0)"
         )
+        couleur = color_hex if color == "multi" else color
 
         # 1. CORRECTION ICI : Extraction des nombres (pas des objets Vector)
         x = []
@@ -485,7 +489,7 @@ def plot_3d_multi(
                 y=y,
                 z=z,
                 mode="lines",
-                line=dict(color="blue", width=0.4, dash="solid"),
+                line=dict(color=couleur, width=epaisseur, dash="solid"),
                 showlegend=False,
                 hoverinfo="skip",
             )
@@ -592,6 +596,7 @@ def plot_3d_multi(
     # Add annotation with initial conditions if provided
     if cercle is not None:
         annotation_text = "Initial Area:<br>"
+        annotation_text += f"Numbre of particles: {N_particules}<br>"
         annotation_text += f"Cercle radius: {cercle} RT<br>"
         annotation_text += f"Distance from Earth: {distance_cercle} RT<br>"
         if nombre_points is not None:

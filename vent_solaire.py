@@ -88,6 +88,7 @@ def plot_multi_particules(
         print(f"Point de {i+1}eme particule générés avec succès !\n")
 
     return (
+        N_particules,
         liste_solutions,
         cercle,
         distance_cercle,
@@ -99,6 +100,7 @@ def plot_multi_particules(
 
 if __name__ == "__main__":
     (
+        N_particules,
         liste_solutions,
         cercle,
         distance_cercle,
@@ -106,21 +108,24 @@ if __name__ == "__main__":
         intervalle_temps,
         ratio_sur_100,
     ) = plot_multi_particules(
-        N_particules=1,
+        N_particules=100,
         cercle=3,
         distance_cercle=3,
-        nombre_points=10000000,
-        intervalle_temps=1000000,
+        nombre_points=10000,
+        intervalle_temps=10000000,
         ratio_sur_100=1,
         variable_steps=True,
         tolerated_variation=0.05,
     )
 
     plot_3d_multi(
+        N_particules,
         liste_solutions,
         cercle=cercle,
         distance_cercle=distance_cercle,
         nombre_points=nombre_points,
         intervalle_temps=intervalle_temps,
         ratio_sur_100=ratio_sur_100,
+        color="multi",
+        epaisseur=1,
     )
