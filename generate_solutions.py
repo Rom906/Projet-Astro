@@ -161,7 +161,6 @@ def compute_solution_trash_points(
                 model(vector_list, differential_equation, minimum + h * i, h, i)
             )
             time_index.append(minimum + h * i)
-            time_index.append(minimum + h * i)
         start = minimum - h * number_of_steps
 
     counter = 0
@@ -218,8 +217,6 @@ def compute_solution_trash_points(
                 counter = 1
                 for i in range(ratio - 1):
                     solution.pop(len(solution) - 2 * ratio + i)
-                    time_index_deleted.append(time_index[len(solution) - 2 * ratio + i])
-                    time_index.pop(len(solution) - 2 * ratio + i)
                     time_index_deleted.append(time_index[len(solution) - 2 * ratio + i])
                     time_index.pop(len(solution) - 2 * ratio + i)
 

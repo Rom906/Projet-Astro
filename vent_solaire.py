@@ -62,10 +62,11 @@ def plot_multi_particules(
 
     print(f"CI de {N_particules} particules générées avec succès !\n")
 
-    for i in range(5):
-        print(f"ci pour la {i}eme particule :")
-        print(f"- position : {liste_conditions_initiales[i][0]}")
-        print(f"- vitesse : {liste_conditions_initiales[i][1]}\n")
+    if N_particules > 5:
+        for i in range(5):
+            print(f"ci pour la {i}eme particule :")
+            print(f"- position : {liste_conditions_initiales[i][0]}")
+            print(f"- vitesse : {liste_conditions_initiales[i][1]}\n")
 
     liste_solutions = []
 
@@ -78,10 +79,10 @@ def plot_multi_particules(
             intervalle_temps,
             liste_conditions_initiales[i],
             False,
+            1,
             ratio_sur_100,
-            100,
             variable_steps,
-            tolerated_variation=0.05,
+            tolerated_variation,
         )
         liste_solutions.append(solution_normalized)
         print(f"Point de {i+1}eme particule générés avec succès !\n")
@@ -105,11 +106,11 @@ if __name__ == "__main__":
         intervalle_temps,
         ratio_sur_100,
     ) = plot_multi_particules(
-        N_particules=5,
-        cercle=5,
-        distance_cercle=8,
-        nombre_points=5000,
-        intervalle_temps=10000000,
+        N_particules=1,
+        cercle=3,
+        distance_cercle=3,
+        nombre_points=10000000,
+        intervalle_temps=1000000,
         ratio_sur_100=1,
         variable_steps=True,
         tolerated_variation=0.05,
