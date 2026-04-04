@@ -20,9 +20,9 @@ print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution_trash_points(
     RK4,
     differential_equation_normalized,
-    100000000,
+    1000,
     0,
-    300000000,
+    200,
     initial_conditions=initial_conditions,
     ratio=1,
     variable_steps=False

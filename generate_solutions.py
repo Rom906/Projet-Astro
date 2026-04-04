@@ -44,7 +44,6 @@ def compute_solution(
     variable_steps: bool = False,
     minimum_variation: int = 0.01,
     tolerated_variation: int = 0.02
-    tolerated_variation: int = 0.02
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps
@@ -243,7 +242,6 @@ def compute_solution_trash_points(
     print(f"Computation time: {comp_time:.4f} s")
     print("==============================\n")
 
-    return solution, time_index
     return solution, time_index
 
 
@@ -452,7 +450,17 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
         legend=dict(x=0.7, y=0.9),
     )
 
-    # Show figure
+    figure.update_layout(
+        scene=dict(
+            xaxis=dict(title="x/RT", showgrid=True, zeroline=True, range=[-15, 15]),
+            yaxis=dict(title="y/RT", showgrid=True, zeroline=True, range=[-15, 15]),
+            zaxis=dict(title="z/RT", showgrid=True, zeroline=True, range=[-15, 15]),
+            aspectmode="cube",  # Force la zone d'affichage à rester un cube parfait
+        ),
+        title="Multiple Particle Trajectories in Magnetic Field",
+        showlegend=True,
+        legend=dict(x=0.7, y=0.9),
+    )
     figure.show()
 
 
