@@ -601,7 +601,7 @@ def plot_3d_multi(
         if intervalle_temps is not None:
             annotation_text += f"Time interval: {intervalle_temps} s<br>"
         if ratio_sur_100 is not None:
-            annotation_text += f"Points kept ratio: {ratio_sur_100}/100<br>"
+            annotation_text += f"Points kept ratio: {ratio_sur_100}<br>"
 
         figure.add_annotation(
             text=annotation_text,
