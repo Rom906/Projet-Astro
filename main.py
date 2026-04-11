@@ -27,9 +27,12 @@ initial_conditions = convert_to_normalized(
 )
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)
+
 solution_normalized, time_noramlized = compute_solution_trash_points(
     RK4,
-    differential_equation_normalized,
+    lambda tau, Y: differential_equation_normalized(
+        tau, Y, mu_direction=mu.normalized(), add_tail=True
+    ),
     35000,
     0,
     200000,

@@ -4,9 +4,15 @@ Normalized (Dimensionless) Equations Module
 This module implements the normalized differential equation for charged particle motion
 in a magnetic dipole field as derived in 'demo_changement_variables_dipole.md'.
 
-NORMALIZED EQUATION:
-====================
+NORMALIZED EQUATION (dipole seul):
+===================================
 du'/dτ² = (1/u³) * u' × [3(μ·û)û - μ]
+
+NORMALIZED EQUATION (avec queue de Luhmann):
+=============================================
+du'/dτ² = u' × { (1/u³) * [3(μ·û)û - μ] + BT * sign(μ·û) * x̂ }
+
+Où BT = 0.00015 dans le système normalisé de Luhmann (r en RT).
 
 Where:
   - u: normalized position (dimensionless)
@@ -130,58 +136,70 @@ class NormalizationParameters:
         return norm_intervall
 
 
-def magnetic_dipole_field_normalized(u, mu_normalized=np.array([0.0, 0.0, 1.0])):
+def magnetic_dipole_field_normalized(u, mu_normalized=np.array([0.0, 0.0, 1.0]),
+                                     add_tail: bool = False):
     """
-    Normalized magnetic dipole field B_norm.
+    Normalized magnetic field B_norm with optional Luhmann magnetotail term.
 
-    Formula from eq. 9 of the derivation:
-    B_norm = (1/u³) * [3(μ·û)û - μ]
+    Formula (dipole only):
+        B_norm = (1/u³) * [3(μ·û)û - μ]
 
-    Where:
-    - u: normalized position vector
-    - B_norm: normalized magnetic field
-    - μ: unit magnetic moment vector (default: z-axis)
-    - û: unit position vector
-    - u = ||u||: magnitude of position
+    Formula (dipole + Luhmann tail, eq. 1 du papier):
+        B_norm = (1/u³) * [3(μ·û)û - μ] + BT * sign(μ·û) * x̂
+
+    Où BT = 0.00015 est dans le système normalisé de Luhmann (r en RT),
+    cohérent avec μ = 0.31. Pas de conversion nécessaire car le facteur
+    de normalisation μ₀/(4π) * m_oplus / RT³ est le même pour les deux termes.
 
     Parameters:
     -----------
     u : np.ndarray or Vector
-        Normalized position vector
-    mu_normalized : np.ndarray or Vector
-        Unit magnetic moment vector (default: [0, 0, 1])
+        Normalized position vector (en RT)
+    mu_normalized : np.ndarray
+        Unit magnetic moment vector (default: z-axis [0, 0, 1])
+    add_tail : bool
+        If True, adds the Luhmann magnetotail term (eq. 1 Luhmann & Friesen 1979)
 
     Returns:
     --------
     np.ndarray
         Normalized magnetic field vector
     """
-    # Convert Vector to numpy if needed
     if isinstance(u, Vector):
         u = np.array(u.coordinates)
     if isinstance(mu_normalized, Vector):
         mu_normalized = np.array(mu_normalized.coordinates)
 
-    u_mag_squared = np.dot(u, u)
-
-    if u_mag_squared < 1e-20:  # Avoid division by zero
+    u_mag_sq = np.dot(u, u)
+    if u_mag_sq < 1e-20:
         return np.array([0.0, 0.0, 0.0])
 
-    u_mag = np.sqrt(u_mag_squared)
-    u_cubed = u_mag_squared * u_mag
-
-    # Unit position vector
+    u_mag = np.sqrt(u_mag_sq)
+    u_cubed = u_mag_sq * u_mag
     u_hat = u / u_mag
 
-    # B_norm = (1/u³) * [3(μ·û)û - μ]
+    # Terme dipolaire normalisé
     mu_dot_u_hat = np.dot(mu_normalized, u_hat)
     B_field = (1.0 / u_cubed) * (3.0 * mu_dot_u_hat * u_hat - mu_normalized)
+
+    # Terme queue de Luhmann (eq. 1 du papier Luhmann & Friesen 1979)
+    if add_tail:
+        BT = 0.00015  # dans le système normalisé de Luhmann (RT), sans conversion
+
+        # BT > 0 hémisphère nord (μ·û > 0), BT < 0 hémisphère sud (μ·û < 0)
+        hemisphere = np.sign(mu_dot_u_hat)
+
+        x_hat = np.array([1.0, 0.0, 0.0])  # direction vers le Soleil
+
+        B_field = B_field + hemisphere * BT * x_hat
 
     return B_field
 
 
 def create_normalized_differential_equation(
-    params: NormalizationParameters = None, mu_direction=np.array([0.0, 0.0, 1.0])
+    params: NormalizationParameters = None,
+    mu_direction=np.array([0.0, 0.0, 1.0]),
+    add_tail: bool = False,
 ):
     """
     Factory function creating the normalized ODE system.
@@ -189,9 +207,10 @@ def create_normalized_differential_equation(
     Returns a function implementing the system:
 
     du/dτ = v
-    dv/dτ = (1/u³) * v × [3(μ·û)û - μ]
+    dv/dτ = v × B_norm
 
-    This is the normalized equation from section 9 of the derivation.
+    Où B_norm est le champ dipolaire normalisé avec optionnellement le terme
+    de queue de Luhmann (BT = 0.00015 dans le système normalisé en RT).
 
     Parameters:
     -----------
@@ -199,6 +218,8 @@ def create_normalized_differential_equation(
         Not used in the normalized system (already dimensionless)
     mu_direction : np.ndarray
         Unit vector for magnetic moment direction (default: z-axis)
+    add_tail : bool
+        If True, adds the Luhmann magnetotail term to B_norm
 
     Returns:
     --------
@@ -210,10 +231,10 @@ def create_normalized_differential_equation(
 
     def f_normalized(tau: float, Y: Vector) -> Vector:
         """
-        Normalized ODE system from equation 9.
+        Normalized ODE system.
 
         du/dτ = v
-        dv/dτ = (1/u³) * v × [3(μ·û)û - μ]
+        dv/dτ = v × B_norm
 
         Parameters:
         -----------
@@ -221,47 +242,31 @@ def create_normalized_differential_equation(
             Normalized time
         Y : Vector
             State vector [u, v] where u is position, v is velocity
-            Both are Vector objects with 3D coordinates
 
         Returns:
         --------
         Vector
             Derivative [du/dτ, dv/dτ]
         """
-        # Extract state components
-        u_norm: Vector = Y[0]  # normalized position
-        v_norm: Vector = Y[1]  # normalized velocity
+        u_norm: Vector = Y[0]
+        v_norm: Vector = Y[1]
 
-        # Convert to numpy for calculations
         u_array = np.array(u_norm.coordinates)
-        v_array = np.array(v_norm.coordinates)
 
-        # Compute magnitude and check for singularity
         u_mag_sq = np.dot(u_array, u_array)
 
-        if u_mag_sq < 1e-20:  # Singular point avoided
-            acceleration = Vector([0.0, 0.0, 0.0])
-        else:
-            u_mag = np.sqrt(u_mag_sq)
-            u_cubed = u_mag_sq * u_mag
+        if u_mag_sq < 1e-20:
+            return Vector([v_norm, Vector([0.0, 0.0, 0.0])])
 
-            # Unit position vector: û = u/|||u|||
-            u_hat = u_array / u_mag
+        # Calcul du champ B normalisé (dipôle + queue si add_tail=True)
+        B_field = magnetic_dipole_field_normalized(
+            u_array, mu_normalized=mu_direction, add_tail=add_tail
+        )
+        B_vector = Vector(B_field.tolist())
 
-            # Magnetic field from eq. 9: B = (1/u³)[3(μ·û)û - μ]
-            mu_dot_u_hat = np.dot(mu_direction, u_hat)
-            B_field = (1.0 / u_cubed) * (3.0 * mu_dot_u_hat * u_hat - mu_direction)
+        # Accélération : v × B
+        acceleration = v_norm @ B_vector
 
-            # Convert to Vector for cross product
-            B_vector = Vector(B_field.tolist())
-
-            # Cross product: v × B = (v₁, v₂, v₃) × (B₁, B₂, B₃)
-            v_cross_B = v_norm @ B_vector
-
-            # Acceleration is the result (magnitude is already scaled by 1/u³)
-            acceleration = v_cross_B
-
-        # Return state derivatives: [du/dτ, dv/dτ]
         return Vector([v_norm, acceleration])
 
     return f_normalized
@@ -272,14 +277,17 @@ def differential_equation_normalized(
     Y: Vector,
     params: NormalizationParameters = None,
     mu_direction=mu.normalized(),
+    add_tail: bool = False,
 ) -> Vector:
     """
     Direct evaluation of normalized differential equation.
 
-    Implements: du'/dτ² = (1/u³) * u' × [3(μ·û)û - μ]
-    As a first-order system:
-    du/dτ = v
-    dv/dτ = (1/u³) * v × [3(μ·û)û - μ]
+    Implements:
+        du/dτ = v
+        dv/dτ = v × B_norm
+
+    Où B_norm = (1/u³)[3(μ·û)û - μ] + BT * sign(μ·û) * x̂  (si add_tail=True)
+    avec BT = 0.00015 dans le système normalisé de Luhmann (r en RT).
 
     Parameters:
     -----------
@@ -288,9 +296,11 @@ def differential_equation_normalized(
     Y : Vector
         State vector [u, v]
     params : NormalizationParameters, optional
-        Normalization parameters (not required for normalized equation)
+        Not used (équation déjà normalisée)
     mu_direction : np.ndarray
-        Magnetic moment direction
+        Magnetic moment direction (unit vector)
+    add_tail : bool
+        If True, adds the Luhmann magnetotail term
 
     Returns:
     --------
@@ -301,23 +311,19 @@ def differential_equation_normalized(
     v_norm: Vector = Y[1]
 
     u_array = np.array(u_norm.coordinates)
-    v_array = np.array(v_norm.coordinates)
 
     u_mag_sq = np.dot(u_array, u_array)
 
     if u_mag_sq < 1e-20:
         return Vector([v_norm, Vector([0.0, 0.0, 0.0])])
 
-    u_mag = np.sqrt(u_mag_sq)
-    u_cubed = u_mag_sq * u_mag
-    u_hat = u_array / u_mag
-
-    # Compute B_norm
-    mu_dot_u_hat = np.dot(mu_direction, u_hat)
-    B_field = (1.0 / u_cubed) * (3.0 * mu_dot_u_hat * u_hat - mu_direction)
+    # Calcul du champ B normalisé (dipôle + queue si add_tail=True)
+    B_field = magnetic_dipole_field_normalized(
+        u_array, mu_normalized=mu_direction, add_tail=add_tail
+    )
     B_vector = Vector(B_field.tolist())
 
-    # Compute acceleration
+    # Accélération : v × B
     acceleration = v_norm @ B_vector
 
     return Vector([v_norm, acceleration])
@@ -339,7 +345,6 @@ def convert_to_normalized(r_dim, v_dim, params: NormalizationParameters):
     v_dim : np.ndarray or Vector
         Dimensional velocity [m/s]
     params : NormalizationParameters
-        Normalization parameters containing R0 and T
 
     Returns:
     --------
@@ -362,7 +367,6 @@ def convert_to_dimensional(u_norm, v_norm, params: NormalizationParameters):
     v_norm : np.ndarray or Vector
         Normalized velocity
     params : NormalizationParameters
-        Normalization parameters containing R0 and T
 
     Returns:
     --------
@@ -385,7 +389,6 @@ def convert_to_dimensional_time_only(u_norm, v_norm, params: NormalizationParame
     v_norm : np.ndarray or Vector
         Normalized velocity
     params : NormalizationParameters
-        Normalization parameters containing R0 and T
 
     Returns:
     --------
