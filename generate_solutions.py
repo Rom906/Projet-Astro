@@ -737,6 +737,7 @@ def plot_3d_collisions(positions: List[Vector], collisions_positions: List[Vecto
                 z=z,
                 mode="markers",
                 marker=dict(size=1, color="yellow"),
+                opacity=0.1,
                 name="collisions",
                 showlegend=True,
             )
