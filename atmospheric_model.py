@@ -59,7 +59,7 @@ def gamma_i(molecular_index: int) -> float:
 
 
 def concentration_ni_z0(molecular_index: int) -> float:
-    ni_z0 = [1 * (10 ** 17) / Na, 3 * (10 ** 17) / Na, 1 * (10 ** 13) / Na, 2 * (10 ** 17) / Na, 10 ** 12 / Na, 1 * (10 ** 15) / Na]  # We need to find better values
+    ni_z0 = [4.43 * (10 ** 16) / Na, 2.83 * (10 ** 17) / Na, 3.48 * (10 ** 13) / Na, 5.51 * (10 ** 16) / Na, 4.77 ** 12 / Na, 1.42 * (10 ** 15) / Na]  # From NRLMSIS 2.0 nominal 05/04/2026 55°/45°
     return ni_z0[molecular_index]
 
 
