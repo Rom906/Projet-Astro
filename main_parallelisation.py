@@ -1,4 +1,4 @@
-from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points, saved_plot_kinetic_energy, saved_plot_2d_projections
+from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points_by_steps, saved_plot_kinetic_energy, saved_plot_2d_projections
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
@@ -12,18 +12,15 @@ from multiprocessing import Pool
 
 
 def compute_solution_specific(initial_conditions: Vector, parameters: NormalizationParameters, save_name_KE: str, save_name_phase: str, save_name_position: str, save_name_velocity: str, save_name_time_intervall: str):
-    solution_normalized, time_noramlized = compute_solution_trash_points(
-        RK4,
-        differential_equation_normalized,
-        100000,
-        0,
-        20000,
-        initial_conditions,
-        False,
-        1,
-        100,
-        variable_steps=True
-    )
+    solution_normalized, time_noramlized = compute_solution_trash_points_by_steps(
+    RK4,
+    differential_equation_normalized,
+    initial_conditions,
+    10000,
+    1,
+    ratio=1,
+    variable_steps=True
+)
 
     position = []
     velocity = []
@@ -34,6 +31,7 @@ def compute_solution_specific(initial_conditions: Vector, parameters: Normalizat
 
     time = parameters.rescale_normalized_time_intervall(time_noramlized)
 
+    plot_3d(position, initial_velocity=initial_velocity)
     saved_plot_kinetic_energy(velocity, time, mp, save_name_KE)
     saved_plot_2d_projections(position, save_name_phase, velocity)
     save_to_csv(position, save_name_position)

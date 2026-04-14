@@ -1,11 +1,11 @@
-from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points, plot_kinetic_energy
+from generate_solutions import compute_solution, plot_3d, compute_solution_trash_points_by_steps, saved_plot_kinetic_energy, saved_plot_2d_projections
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
     convert_to_dimensional_time_only,
     convert_to_normalized
 )
-from Integrate_fonctions import adams, euler, RK4, dormand_prince
+from Integrate_fonctions import adams, euler, RK4, dormand_prince, Heun
 from utils import Vector
 from constants import RT, mp, MO, qe, mu
 from math import inf
@@ -17,15 +17,15 @@ initial_velocity = RT * Vector([0.01, 0.01, 0.01])
 initial_conditions = convert_to_normalized(initial_position, initial_velocity, parameters)
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)
-solution_normalized, time_noramlized = compute_solution_trash_points(
+solution_normalized, time_noramlized = compute_solution_trash_points_by_steps(
     RK4,
     differential_equation_normalized,
-    1000,
-    0,
-    200,
-    initial_conditions=initial_conditions,
+    initial_conditions,
+    50000,
+    1,
+    multiple_steps_method=True,
     ratio=1,
-    variable_steps=False
+    variable_steps=True,
 )
 
 print(len(solution_normalized))
@@ -66,4 +66,5 @@ print(min_z, max_z)
 time = parameters.rescale_normalized_time_intervall(time_noramlized)
 
 plot_3d(position, initial_velocity=initial_velocity)
-plot_kinetic_energy(velocity, time, mp)
+saved_plot_kinetic_energy(velocity, time, mp, "plot_ek.png")
+saved_plot_2d_projections(position, "plot_phase_space.png", velocity)
