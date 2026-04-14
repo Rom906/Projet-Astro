@@ -907,3 +907,202 @@ def plot_3d_collisions(positions: List[Vector], collisions_positions: List[Vecto
 
     # Show figure
     figure.show()
+
+def plot_3d_multi(
+    N_particules: int,
+    positions_list: List[List[Vector]],
+    magnetic_moment: Vector = None,
+    cercle: float = None,
+    distance_cercle: float = None,
+    nombre_points: int = None,
+    intervalle_temps: float = None,
+    ratio_sur_100: int = None,
+    color: str = "blue",
+    epaisseur: int = 1,
+) -> None:
+    """
+    3D plot of multiple particle trajectories in magnetic field with magnetic dipole moment vector.
+
+    :param positions_list: List of particle trajectories
+    :param magnetic_moment: Magnetic moment vector (optional)
+    :param initial_position: Initial position common to all particles (optional)
+    :param initial_reference_velocity: Initial reference velocity for particles (optional)
+    """
+    from constants import mu
+    import matplotlib.cm as cm
+
+    if magnetic_moment is None:
+        magnetic_moment = mu
+
+    figure = go.Figure()
+
+    num_particles = len(positions_list)
+    plasma_colors = cm.get_cmap("plasma")
+
+    for particle_idx, positions in enumerate(positions_list):
+        color_val = (
+            particle_idx / max(1, num_particles - 1) if num_particles > 1 else 0.5
+        )
+        rgba = plasma_colors(color_val)
+        color_hex = (
+            f"rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 1.0)"
+        )
+        couleur = color_hex if color == "multi" else color
+
+        # 1. CORRECTION ICI : Extraction des nombres (pas des objets Vector)
+        x = []
+        y = []
+        z = []
+        for pos in positions:
+            x.append(pos[0][0])
+            y.append(pos[0][1])
+            z.append(pos[0][2])
+
+        figure.add_trace(
+            go.Scatter3d(
+                x=x,
+                y=y,
+                z=z,
+                mode="lines",
+                line=dict(color=couleur, width=epaisseur, dash="solid"),
+                showlegend=False,
+                hoverinfo="skip",
+            )
+        )
+
+        # 2. CORRECTION ICI : Point de départ
+        figure.add_trace(
+            go.Scatter3d(
+                x=[positions[0][0][0]],
+                y=[positions[0][0][1]],
+                z=[positions[0][0][2]],
+                mode="markers",
+                marker=dict(size=3, color="green"),
+                showlegend=False,
+                hoverinfo="skip",
+            )
+        )
+
+        # 3. CORRECTION ICI : Point d'arrivée
+        figure.add_trace(
+            go.Scatter3d(
+                x=[positions[-1][0][0]],
+                y=[positions[-1][0][1]],
+                z=[positions[-1][0][2]],
+                mode="markers",
+                marker=dict(size=3, color="red"),
+                showlegend=False,
+                hoverinfo="skip",
+            )
+        )
+
+        # Vecteur vitesse initiale
+        vx, vy, vz = positions[0][1][0], positions[0][1][1], positions[0][1][2]
+        norm_v = (vx**2 + vy**2 + vz**2) ** 0.5
+        v_scale = 1.5 / norm_v  # Facteur d'échelle pour l'affichage visuel du vecteur
+        figure.add_trace(
+            go.Scatter3d(
+                x=[positions[0][0][0], positions[0][0][0] + vx * v_scale],
+                y=[positions[0][0][1], positions[0][0][1] + vy * v_scale],
+                z=[positions[0][0][2], positions[0][0][2] + vz * v_scale],
+                mode="lines",
+                line=dict(color="red", width=3),
+                showlegend=False,
+                hoverinfo="skip",
+            )
+        )
+
+    if cercle is not None and distance_cercle is not None:
+        theta_c = np.linspace(0, 2 * pi, 50)
+        y_c = cercle * np.cos(theta_c)
+        z_c = cercle * np.sin(theta_c)
+        x_c = np.full_like(y_c, -distance_cercle)
+
+        figure.add_trace(
+            go.Scatter3d(
+                x=x_c,
+                y=y_c,
+                z=z_c,
+                mode="lines",
+                line=dict(color="gray", width=2),
+                surfaceaxis=0,  # Remplit l'intérieur du cercle
+                surfacecolor="rgba(150, 150, 150, 0.2)",
+                name="Zone d'injection",
+                showlegend=True,
+            )
+        )
+
+    # Earth
+    r = 1
+    phi = get_intervall(30, 0, 2 * pi)
+    theta = get_intervall(15, 0, pi)
+    xe, ye, ze = [], [], []
+    for i in range(len(phi)):
+        row_x, row_y, row_z = [], [], []
+        for j in range(len(theta)):
+            row_x.append(r * cos(phi[i]) * sin(theta[j]))
+            row_y.append(r * sin(phi[i]) * sin(theta[j]))
+            row_z.append(r * cos(theta[j]))
+        xe.append(row_x)
+        ye.append(row_y)
+        ze.append(row_z)
+    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
+
+    mu_normalized = magnetic_moment.normalized()
+    scale_factor = 2.0
+    mu_scaled = mu_normalized * scale_factor
+
+    north_pole = [0, 0, 1]
+    mu_end = [north_pole[i] + mu_scaled[i] for i in range(3)]
+
+    figure.add_trace(
+        go.Scatter3d(
+            x=[north_pole[0], mu_end[0]],
+            y=[north_pole[1], mu_end[1]],
+            z=[north_pole[2], mu_end[2]],
+            mode="lines+markers",
+            line=dict(color="purple", width=4),
+            marker=dict(size=8, color="purple"),
+            name="Magnetic Moment",
+            showlegend=True,
+        )
+    )
+
+    # Add annotation with initial conditions if provided
+    if cercle is not None:
+        annotation_text = "Initial Area:<br>"
+        annotation_text += f"Numbre of particles: {N_particules}<br>"
+        annotation_text += f"Cercle radius: {cercle} RT<br>"
+        annotation_text += f"Distance from Earth: {distance_cercle} RT<br>"
+        if nombre_points is not None:
+            annotation_text += f"Number of points: {nombre_points}<br>"
+        if intervalle_temps is not None:
+            annotation_text += f"Time interval: {intervalle_temps} s<br>"
+        if ratio_sur_100 is not None:
+            annotation_text += f"Points kept ratio: {ratio_sur_100}<br>"
+
+        figure.add_annotation(
+            text=annotation_text,
+            xref="paper",
+            yref="paper",
+            x=0.02,
+            y=0.98,
+            showarrow=False,
+            bgcolor="rgba(200, 255, 200, 0.8)",
+            bordercolor="green",
+            borderwidth=2,
+            font=dict(size=10),
+        )
+
+    figure.update_layout(
+        scene=dict(
+            xaxis=dict(title="x/RT", showgrid=True, zeroline=True, range=[-15, 15]),
+            yaxis=dict(title="y/RT", showgrid=True, zeroline=True, range=[-15, 15]),
+            zaxis=dict(title="z/RT", showgrid=True, zeroline=True, range=[-15, 15]),
+            aspectmode="cube",  # Force la zone d'affichage à rester un cube parfait
+        ),
+        title="Multiple Particle Trajectories in Magnetic Field",
+        showlegend=True,
+        legend=dict(x=0.7, y=0.9),
+    )
+    figure.show()

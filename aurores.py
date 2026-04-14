@@ -5,9 +5,15 @@ from random import random, uniform
 from integration_functions import RK4
 from generate_solutions import plot_3d
 
-def collision(position: Vector):
-    collision_probability = atm_model(position)["n"] * atm_model(position)["eff_sec"]
-    return random() < 0.00001
+def collision_test(conditions: Vector, concentration_ni, molecule: dict, ):
+    n = concentration_ni(abs(conditions[0]), molecule["index"])
+    s = molecule["cross_section"]
+    v = conditions[i] - maxwell_boltzmann()
+    collision_rate = n * s *v
+    return uniform() > collision_rate
+
+def maxwell_boltzmann():
+    return Vector([0, 0, 0])
 
 H0 = 8000 #m
 p0 = 130025 #Pa

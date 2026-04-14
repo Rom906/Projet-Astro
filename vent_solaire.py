@@ -6,15 +6,13 @@ from utils import (
     load_time_interval,
     load_from_csv,
 )
-from Integrate_fonctions import adams, RK4, euler, dormand_prince, Heun, velocity_verlet
-
-from constants import RT, qe, mp, MO, mu
+from integration_functions import RK4
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
     convert_to_normalized,
 )
-from generate_solutions import compute_solution_trash_points, plot_3d_multi
+from generate_solutions import compute_solution, plot_3d_multi
 
 
 def plot_multi_particules(
@@ -71,13 +69,11 @@ def plot_multi_particules(
     liste_solutions = []
 
     for i in range(len(liste_conditions_initiales)):
-        solution_normalized, time_normalized = compute_solution_trash_points(
+        solution_normalized, time_index_normalized = compute_solution_trash_points(
             RK4,
             differential_equation_normalized,
-            nombre_points,
-            0,
-            intervalle_temps,
             liste_conditions_initiales[i],
+            nombre_points,
             False,
             1,
             ratio_sur_100,
@@ -85,6 +81,7 @@ def plot_multi_particules(
             tolerated_variation,
         )
         liste_solutions.append(solution_normalized)
+        liste_tps.append(time_index_normalized)
         print(f"Point de {i+1}eme particule générés avec succès !\n")
 
     return (
@@ -96,6 +93,16 @@ def plot_multi_particules(
         intervalle_temps,
         ratio_sur_100,
     )
+
+def collision_test(conditions: Vector, concentration_ni, molecule: dict, ):
+    n = concentration_ni(abs(conditions[0]), molecule["index"])
+    s = molecule["cross_section"]
+    v = conditions[i] - maxwell_boltzmann()
+    collision_rate = n * s *v
+    return uniform() > collision_rate
+
+def maxwell_boltzmann():
+    return Vector([0, 0, 0])
 
 
 if __name__ == "__main__":
