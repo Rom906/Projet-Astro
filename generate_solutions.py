@@ -35,39 +35,48 @@ def compute_solution(
         [List[Vector], Callable[[float, Vector], Vector], float, float, int], Vector
     ],
     differential_equation: Callable[[float, Vector], Vector],
-    steps: int,
-    minimum: float,
-    maximum: float,
     initial_conditions: Vector,
+    max_n_steps: int,
+    initial_step_size: int,
     multiple_steps_method: bool = False,
-    number_of_steps: int = 1,
+    model_n_steps: int = 1,
+    model_order: int = 4,
+    ratio: int = 1,
+    variable_steps: bool = False,
+    tolerated_variation: int = 0.05
 ) -> Tuple[List[Vector], List[float]]:
     """
-    compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps
+    compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
 
     :param model: function representing the model used to approximate the solution. It needs to take a specified amount of previous steps to calculate the next one
     :type model: Callable[[List[Vector], differential_equation_type, float, float, int], Vector]
     :param differential_equation: represent the differential equation system to approximate. It is a function which represent the f in the equation y' = f(y, t)
     :type differential_equation: Callable[[Vector, float], Vector]
-    :param steps: number of steps used to approximate the solution
-    :type steps: int
-    :param minimum: the value where we start to compute the approximate solution of the differential equation
-    :type minimum: float
-    :param maximum: the value where we stop to compute the approximate solution of the differential equation
-    :type maximum: float
     :param initial_conditions: the initial values of the differential equation system
     :type initial_conditions: Vector
+    :param max_n_steps: number of steps used to approximate the solution
+    :type max_n_steps: int
+    :param initial_step_size: initial guess for appropriate step nice, not modified if non-variable steps
+    :type initial_step_size: int/float
     :param multiple_steps_method: if true, means that the model used is using multiple steps to compute the solution
     :type multiple_steps_method: bool
-    :param number_of_steps: if the method is using multiple steps, it is the maximum number of step used by it
-    :type number_of_step: int
+    :param model_n_steps: if the method is using multiple steps, it is the maximum number of step used by it
+    :type model_n_steps: int
+    :param model_order: convergence order of the model
+    :type model_order: int
+    :param ratio: number of point keeped during computation. If 1 all points will be keeped, if 2 only one out of 2, ...
+    :type ratio: int
+    :param variable_steps: if true, means that the steps sise adapts to change
+    :type variable_steps: bool
+    :param tolerated_variation: if the step size is variable, it is the maximum tolerated variation between steps without which the step size is unchanged
+    :type tolerated_variation: float
     :return: a list of "steps" approximated value of the differential equation solution
     :rtype: List[Vector]
     """
     start_time = time.time()
     solution: List[Vector] = [initial_conditions]
-    h = (maximum - minimum) / (steps - 1)
-    start = minimum + h
+    time_index = [0]
+    h = initial_step_size
 
     if multiple_steps_method:
         for i in range(1, number_of_steps):
@@ -77,18 +86,70 @@ def compute_solution(
             solution.append(
                 model(vector_list, differential_equation, minimum + h * i, h, i)
             )
-        start = minimum - h * number_of_steps
+            time_index.append(minimum + h * i)
 
-    intervall_not_full = get_intervall(steps - 1, start, maximum)
-    intervall = [minimum] + intervall_not_full
-
-    for ti in intervall:
+    counter = 0
+    treshold = ratio
+    time_index_deleted = []
+    n_steps = 0
+    ti = 0
+    while n_steps < max_n_steps - 1:
+        print(n_steps, h)
         vector_list = []
         for i in range(number_of_steps):
             vector_list.append(solution[-1 - i])
-        solution.append(
-            model(vector_list, differential_equation, ti, h, number_of_steps)
+        new_step_large = model(
+            vector_list, differential_equation, ti, h, number_of_steps
         )
+        new_step_pos_large = new_step_large[0]
+        if variable_steps:
+            half_step_fine = model(
+                vector_list, differential_equation, ti, h / 2, number_of_steps
+            )
+            new_step_fine = model(
+                [half_step_fine],
+                differential_equation,
+                ti + h / 2,
+                h / 2,
+                number_of_steps,
+            )
+            new_step_pos_fine = new_step_fine[0]
+            max_variation = 0
+            for i in range(len(new_step_pos_large.coordinates)):
+                variation = abs(new_step_pos_large[i] - new_step_pos_fine[i])
+                if variation > max_variation:
+                    max_variation = variation
+            if max_variation < tolerated_variation:
+                solution.append(new_step_large)
+                n_steps += 1
+                ti += h
+                time_index.append(ti)
+            if max_variation != 0:
+                h *= 0.9 * (tolerated_variation / max_variation) ** (1 / (model_order + 1))
+            if max_variation >= tolerated_variation:
+                new_step = model(
+                    vector_list, differential_equation, ti, h, number_of_steps
+                )
+                solution.append(new_step)
+                n_steps += 1
+                ti += h
+                time_index.append(ti)
+        else:
+            solution.append(new_step_large)
+            n_steps += 1
+            ti += h
+            time_index.append(ti)
+
+        if treshold >= 0:
+            treshold -= 1
+        else:
+            if counter >= ratio:
+                counter = 1
+                for i in range(ratio - 1):
+                    solution.pop(len(solution) - 2 * ratio + i)
+                    time_index.pop(len(solution) - 2 * ratio + i)
+            else:
+                counter += 1
 
     comp_time = time.time() - start_time
     print("\n=== Computation Statistics ===")
@@ -97,7 +158,7 @@ def compute_solution(
     print(f"Computation time: {comp_time:.4f} s")
     print("==============================\n")
 
-    return solution, intervall
+    return solution, time_index
 
 
 def compute_solution_trash_points(
