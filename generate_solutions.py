@@ -249,11 +249,11 @@ def compute_solution_trash_points_by_steps(
     max_n_steps: int,
     initial_step_size: int,
     multiple_steps_method: bool = False,
-    number_of_steps: int = 1,
+    model_n_steps: int = 1,
+    model_order: int = 4,
     ratio: int = 1,
     variable_steps: bool = False,
-    tolerated_variation: int = 0.05,
-    model_order: int = 4
+    tolerated_variation: int = 0.05
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
@@ -262,18 +262,18 @@ def compute_solution_trash_points_by_steps(
     :type model: Callable[[List[Vector], differential_equation_type, float, float, int], Vector]
     :param differential_equation: represent the differential equation system to approximate. It is a function which represent the f in the equation y' = f(y, t)
     :type differential_equation: Callable[[Vector, float], Vector]
-    :param steps: number of steps used to approximate the solution
-    :type steps: int
-    :param minimum: the value where we start to compute the approximate solution of the differential equation
-    :type minimum: float
-    :param maximum: the value where we stop to compute the approximate solution of the differential equation
-    :type maximum: float
     :param initial_conditions: the initial values of the differential equation system
     :type initial_conditions: Vector
+    :param max_n_steps: number of steps used to approximate the solution
+    :type max_n_steps: int
+    :param initial_step_size: initial guess for appropriate step nice, not modified if non-variable steps
+    :type initial_step_size: int/float
     :param multiple_steps_method: if true, means that the model used is using multiple steps to compute the solution
     :type multiple_steps_method: bool
-    :param number_of_steps: if the method is using multiple steps, it is the maximum number of step used by it
-    :type number_of_step: int
+    :param model_n_steps: if the method is using multiple steps, it is the maximum number of step used by it
+    :type model_n_steps: int
+    :param model_order: convergence order of the model
+    :type model_order: int
     :param ratio: number of point keeped during computation. If 1 all points will be keeped, if 2 only one out of 2, ...
     :type ratio: int
     :param variable_steps: if true, means that the steps sise adapts to change
@@ -357,8 +357,7 @@ def compute_solution_trash_points_by_steps(
                 counter = 1
                 for i in range(ratio - 1):
                     solution.pop(len(solution) - 2 * ratio + i)
-                    time_index_deleted.append(time_index[len(solution) - 2 * ratio + i])
-                    time_index.pop(time_index[len(solution) - 2 * ratio + i])
+                    time_index.pop(len(solution) - 2 * ratio + i)
             else:
                 counter += 1
 

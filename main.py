@@ -24,7 +24,7 @@ solution_normalized, time_noramlized = compute_solution_trash_points_by_steps(
     50000,
     1,
     multiple_steps_method=True,
-    ratio=1,
+    ratio=2,
     variable_steps=True,
 )
 
