@@ -1,4 +1,4 @@
-from math import e, exp, pi, atan
+from math import e, exp, pi
 
 
 T_inf = 900  # K, can be modified considering different solar activity
@@ -66,6 +66,7 @@ def C(z: float) -> float:
 
 def T(z: float) -> float:
     return T_inf - (T_inf - T_x) * e ** (-D * x(z))
+
 
 def gamma_i(molecular_index: int) -> float:
     return M_i(molecular_index) * g_ax / (R * D * T_inf)

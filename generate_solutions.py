@@ -43,7 +43,7 @@ def compute_solution(
     model_order: int = 4,
     ratio: int = 1,
     variable_steps: bool = False,
-    tolerated_variation: int = 0.05
+    tolerated_variation: float = 0.05
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
@@ -326,7 +326,7 @@ def plot_error(
     plt.show()
 
 
-def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
+def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:  # type: ignore
     """
     make a 3D plot of an ordonated liste of position to represent the trajectory of the studied system.
     Includes initial position/velocity information and start/end point markers.
@@ -476,16 +476,12 @@ def plot_kinetic_energy(
     kinetic_energy = []
     for i in range(len(velocity)):
         kinetic_energy.append(1 / 2 * mp * abs(velocity[i]) ** 2)
-    
+
     sb.lineplot(x=time_list, y=kinetic_energy)
     plt.title("System kinetic energy during time")
     plt.grid(True)
     plt.show()
 
-
-import matplotlib.pyplot as plt
-import numpy as np
-from typing import List
 
 def plot_kinetic_energy_v2(
     velocity: List["Vector"], time_list: List[float], mp: float
@@ -535,8 +531,9 @@ def plot_kinetic_energy_v2(
 
     ax.grid(True, alpha=0.3)
 
-    plt.tight_layout(rect=[0, 0, 0.8, 1])
+    plt.tight_layout(rect=(0, 0, 0.8, 1))
     plt.show()
+
 
 def plot_kinetic_energy_multiple(velocity_list, time_list, mp):
 
@@ -562,26 +559,27 @@ def plot_kinetic_energy_multiple(velocity_list, time_list, mp):
                     critical_index = j - 1
                     break
 
-        ke_final = ke[:critical_index+1] 
-        time_final = time_list[sol_idx][:critical_index+1] if sol_idx < len(time_list) else []
+        ke_final = ke[:critical_index + 1] 
+        time_final = time_list[sol_idx][:critical_index + 1] if sol_idx < len(time_list) else []
         valid_mask = ke_final > 0
         ke_valid = ke_final[valid_mask]
         time_valid = np.array(time_final)[valid_mask] if len(time_final) > 0 else []
 
         if len(ke_valid) > 0:
             all_ke_final.extend(ke_valid)
-            ax.plot(time_valid, ke_valid, linewidth=2, marker='o', markersize=3, label=f'Solution {sol_idx+1}')
+            ax.plot(time_valid, ke_valid, linewidth=2, marker='o', markersize=3, label=f'Solution {sol_idx + 1}')
 
     ax.set_xlabel('Time (s)')
     ax.set_ylabel(f'Ke/m (×10^{exponent})')
     ax.set_yscale('log')
-    ax.set_xscale('log')  
+    ax.set_xscale('log')
     ax.set_title(f'Kinetic Energy per mass (m = {mp})')
 
     ax.grid(True, alpha=0.3, which='both', linestyle='-', linewidth=0.5)
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    plt.tight_layout(rect=[0, 0, 0.8, 1])
+    plt.tight_layout(rect=(0, 0, 0.8, 1))
     plt.show()
+
 
 def plot_2d_projections(positions_list, velocities_list=None, title="Projections 2D"):
     """
@@ -756,7 +754,7 @@ def saved_plot_2d_projections(positions_list, save_name: str, velocities_list=No
     plt.savefig(save_name)
 
 
-def plot_3d_collisions(positions: List[Vector], collisions_positions: List[Vector], initial_velocity: Vector = None) -> None:
+def plot_3d_collisions(positions: List[Vector], collisions_positions: List[Vector], initial_velocity: Vector = None) -> None:  # type: ignore
     """
     make a 3D plot of an ordonated liste of position to represent the trajectory of the studied system.
     Includes initial position/velocity information and start/end point markers.
@@ -908,15 +906,16 @@ def plot_3d_collisions(positions: List[Vector], collisions_positions: List[Vecto
     # Show figure
     figure.show()
 
+
 def plot_3d_multi(
     N_particules: int,
     positions_list: List[List[Vector]],
-    magnetic_moment: Vector = None,
-    cercle: float = None,
-    distance_cercle: float = None,
-    nombre_points: int = None,
-    intervalle_temps: float = None,
-    ratio_sur_100: int = None,
+    magnetic_moment: Vector = None,  # type: ignore
+    cercle: float = None,  # type: ignore
+    distance_cercle: float = None,  # type: ignore
+    nombre_points: int = None,  # type: ignore
+    intervalle_temps: float = None,  # type: ignore
+    ratio_sur_100: int = None,  # type: ignore
     color: str = "blue",
     epaisseur: int = 1,
 ) -> None:
@@ -945,7 +944,7 @@ def plot_3d_multi(
         )
         rgba = plasma_colors(color_val)
         color_hex = (
-            f"rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 1.0)"
+            f"rgba({int(rgba[0] * 255)}, {int(rgba[1] * 255)}, {int(rgba[2] * 255)}, 1.0)"
         )
         couleur = color_hex if color == "multi" else color
 
@@ -1050,7 +1049,7 @@ def plot_3d_multi(
 
     mu_normalized = magnetic_moment.normalized()
     scale_factor = 2.0
-    mu_scaled = mu_normalized * scale_factor
+    mu_scaled: Vector = mu_normalized * scale_factor  # type: ignore
 
     north_pole = [0, 0, 1]
     mu_end = [north_pole[i] + mu_scaled[i] for i in range(3)]
@@ -1105,4 +1104,88 @@ def plot_3d_multi(
         showlegend=True,
         legend=dict(x=0.7, y=0.9),
     )
+    figure.show()
+
+
+def plot_3d_collisions_only(collisions_positions: List[Vector], molecules: List[int]) -> None:  # type: ignore
+    """
+    make a 3D plot of an ordonated liste of position to represent the trajectory of the studied system.
+    Includes initial position/velocity information and start/end point markers.
+
+    :param positions: the list of the different position
+    :type positions: List[Vector]
+    :param initial_velocity: optional initial velocity vector for display
+    :type initial_velocity: Vector or None
+    """
+    figure = go.Figure()
+
+    # Plot collisions
+    ploted = []
+    for i in range(len(collisions_positions)):
+        collision = collisions_positions[i]
+        x = [collision[0]]
+        y = [collision[1]]
+        z = [collision[2]]
+        if molecules[i] not in ploted:
+            ploted.append(molecules[i])
+            figure.add_trace(
+                go.Scatter3d(
+                    x=x,
+                    y=y,
+                    z=z,
+                    mode="markers",
+                    marker=dict(size=1, color="yellow"),
+                    opacity=0.1,
+                    name="collisions",
+                    showlegend=True,
+                )
+            )
+        else:
+            figure.add_trace(
+                go.Scatter3d(
+                    x=x,
+                    y=y,
+                    z=z,
+                    mode="markers",
+                    marker=dict(size=1, color="yellow"),
+                    opacity=0.1,
+                    showlegend=True,
+                )
+            )
+
+    # Add a sphere at (0, 0, 0) representing earth
+    r = 1
+    phi = get_intervall(30, 0, 2 * pi)
+    theta = get_intervall(15, 0, pi)
+    xe = []
+    ye = []
+    ze = []
+    for i in range(len(phi)):
+        row_x = []
+        row_y = []
+        row_z = []
+        for j in range(len(theta)):
+            row_x.append(r * cos(phi[i]) * sin(theta[j]))
+            row_y.append(r * sin(phi[i]) * sin(theta[j]))
+            row_z.append(r * cos(theta[j]))
+        xe.append(row_x)
+        ye.append(row_y)
+        ze.append(row_z)
+    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
+
+    # Set parameters
+    figure.update_traces(showlegend=True)
+    figure.update_layout(
+        scene=dict(
+            xaxis=dict(title="x/RT", showgrid=True, zeroline=True),
+            yaxis=dict(title="y/RT", showgrid=True, zeroline=True),
+            zaxis=dict(title="z/RT", showgrid=True, zeroline=True),
+            aspectmode="data",
+        ),
+        title="Particle Trajectory in Magnetic Field",
+        showlegend=True,
+        legend=dict(x=0.7, y=0.9),
+    )
+
+    # Show figure
     figure.show()
