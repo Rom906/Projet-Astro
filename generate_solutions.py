@@ -289,7 +289,7 @@ def compute_solution_trash_points_by_steps(
     h = initial_step_size
 
     if multiple_steps_method:
-        for i in range(1, number_of_steps):
+        for i in range(1, model_n_steps):
             vector_list = []
             for j in range(i):
                 vector_list.append(solution[-i])
@@ -306,22 +306,22 @@ def compute_solution_trash_points_by_steps(
     while n_steps < max_n_steps - 1:
         print(n_steps, h)
         vector_list = []
-        for i in range(number_of_steps):
+        for i in range(model_n_steps):
             vector_list.append(solution[-1 - i])
         new_step_large = model(
-            vector_list, differential_equation, ti, h, number_of_steps
+            vector_list, differential_equation, ti, h, model_n_steps
         )
         new_step_pos_large = new_step_large[0]
         if variable_steps:
             half_step_fine = model(
-                vector_list, differential_equation, ti, h / 2, number_of_steps
+                vector_list, differential_equation, ti, h / 2, model_n_steps
             )
             new_step_fine = model(
                 [half_step_fine],
                 differential_equation,
                 ti + h / 2,
                 h / 2,
-                number_of_steps,
+                model_n_steps,
             )
             new_step_pos_fine = new_step_fine[0]
             max_variation = 0
@@ -338,7 +338,7 @@ def compute_solution_trash_points_by_steps(
                 h *= 0.9 * (tolerated_variation / max_variation) ** (1 / (model_order + 1))
             if max_variation >= tolerated_variation:
                 new_step = model(
-                    vector_list, differential_equation, ti, h, number_of_steps
+                    vector_list, differential_equation, ti, h, model_n_steps
                 )
                 solution.append(new_step)
                 n_steps += 1
@@ -701,7 +701,7 @@ def saved_plot_kinetic_energy(
     kinetic_energy = []
     for i in range(len(velocity)):
         kinetic_energy.append(1 / 2 * mp * abs(velocity[i]) ** 2)
-    sb.lineplot(x=time_list, y=kinetic_energy)
+    sb.lineplot(x=time_list[100:], y=kinetic_energy[100:])
     plt.title("System kinetic energy during time")
     plt.grid(True)
     plt.savefig(save_name)
