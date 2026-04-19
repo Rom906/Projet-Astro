@@ -100,7 +100,7 @@ def compute_solution_trash_points_by_steps(
             denormalized_posvel = convert_to_dimensional(pos_vel[0], pos_vel[1], params)
             conditions = Vector([denormalized_posvel[0], denormalized_posvel[1]])
             
-            if collision_test(conditions, 292e-12, molecule_index):
+            if collision_test(conditions, molecule_index):
                 collisions = True
                 molecule = molecule_index
         if n_steps > max_n_steps:
