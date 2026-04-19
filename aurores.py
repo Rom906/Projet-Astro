@@ -6,10 +6,11 @@ from random import uniform
 from integration_functions import RK4
 from atmospheric_model import concentration_ni, O2, O, N2, H, HE, AR
 
+molecules_index = [O, O2, H, HE, AR, N2]
 
-def collision_test(conditions: List[Vector], molecule_cross_section: float, molecule_index) -> bool:
-    n = concentration_ni(abs(conditions[0]), molecule_index)
-    s = molecule_cross_section
+def collision_test(conditions: List[Vector], molecule_index) -> bool:
+    n = concentration_ni(abs(conditions[0]), molecules_index[molecule_index])
+    s = cross_section(molecules_index[molecule_index], 0)
     v = conditions[1] - maxwell_boltzmann()
     collision_rate = n * s * abs(v)
     return uniform(0, 1) < collision_rate.real
