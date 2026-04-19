@@ -1239,8 +1239,9 @@ def plot_3d_collisions_only(collisions_positions: List[Vector], molecules: List[
     """
     figure = go.Figure()
 
-    molecules_color = ["red", "blue", "yellow", "green", "purple", "cyan"]
-    molecules_name = ["O2", "N2", "He", "O", "H", "Ar"]
+    molecules_color = ["red", "blue", "yellow", "green", "purple", "cyan", "black"]
+    molecules_name = ["O2", "N2", "He", "O", "H", "Ar", "nothing"]
+    print(set(molecules))
 
     # Plot collisions
     ploted = []
@@ -1293,10 +1294,9 @@ def plot_3d_collisions_only(collisions_positions: List[Vector], molecules: List[
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
-    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
+    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth", showlegend=True))
 
     # Set parameters
-    figure.update_traces(showlegend=True)
     figure.update_layout(
         scene=dict(
             xaxis=dict(title="x/RT", showgrid=True, zeroline=True),

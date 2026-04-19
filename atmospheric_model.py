@@ -79,6 +79,3 @@ def concentration_ni_z0(molecular_index: int) -> float:
 
 def concentration_ni(z: float, molecular_index: int) -> float:
     return concentration_ni_z0(molecular_index) * (((1 - a) / (1 - a * e ** (-D * x(z)))) ** (1 + alpha_i(molecular_index) + gamma_i(molecular_index))) * e ** (-D * gamma_i(molecular_index) * x(z))  # à changer aavec ni_zx
-
-
-print(concentration_ni(500000, H) * Na)

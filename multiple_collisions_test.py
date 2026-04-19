@@ -1,5 +1,5 @@
 from generate_solutions import plot_3d_collisions_only
-from normalization import NormalizationParameters, differential_equation_normalized, convert_to_normalized
+from normalization import NormalizationParameters, differential_equation_normalized, convert_to_normalized, convert_to_dimensional
 from integration_functions import RK4
 from utils import Vector
 from constants import RT, mp, MO, qe, mu
@@ -10,6 +10,7 @@ from atmospheric_model import O, O2, H, HE, AR, N2
 from random import randrange
 from multiprocessing import Pool
 
+NA = 6
 molecules_index = [O, O2, H, HE, AR, N2]
 
 
@@ -21,6 +22,7 @@ def compute_solution_trash_points_by_steps(
     initial_conditions: Vector,
     max_n_steps: int,
     initial_step_size: int,
+    params: NormalizationParameters,
     model_n_steps: int = 1,
     model_order: int = 4,
     tolerated_variation: float = 0.05
@@ -95,11 +97,17 @@ def compute_solution_trash_points_by_steps(
             n_steps += 1
             ti += h
         for molecule_index in molecules_index:
-            if collision_test(pos_vel, 292e-12, molecule_index):
+            denormalized_posvel = convert_to_dimensional(pos_vel[0], pos_vel[1], params)
+            conditions = Vector([denormalized_posvel[0], denormalized_posvel[1]])
+            
+            if collision_test(conditions, 292e-12, molecule_index):
                 collisions = True
                 molecule = molecule_index
         if n_steps > max_n_steps:
-            molecule = 1
+            molecule = NA
+            break
+        if abs(pos_vel[0]) > 50:
+            molecule = NA
             break
 
     comp_time = time.time() - start_time
@@ -109,24 +117,24 @@ def compute_solution_trash_points_by_steps(
     print(f"Computation time: {comp_time:.4f} s")
     print("==============================\n")
 
-    return pos_vel, ti, molecule_index
+    return pos_vel, ti, molecule
 
 
 if __name__ == "__main__":
     parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
     initial_conditions = []
     for i in range(32):
-        x_start = 5
+        x_start = 10
         y_start = randrange(-5, 6)
         z_start = randrange(-5, 6)
-        vx_start = randrange(1, 11) / 100
-        vy_start = randrange(-10, 11) / 100
-        vz_start = randrange(-10, 11) / 100
+        vx_start = -randrange(1, 11) / 100
+        vy_start = randrange(-1, 1) / 100
+        vz_start = randrange(-1, 1) / 100
         initial_position = RT * Vector([x_start, y_start, z_start])
         initial_velocity = RT * Vector([vx_start, vy_start, vz_start])
         initial_condition = convert_to_normalized(initial_position, initial_velocity, parameters)
         initial_condition = Vector([initial_condition[0], initial_condition[1]])
-        initial_conditions.append((RK4, differential_equation_normalized, initial_condition, 100000, 1))
+        initial_conditions.append((RK4, differential_equation_normalized, initial_condition, 100000, 1, parameters))
 
     with Pool() as p:
         results = p.starmap(compute_solution_trash_points_by_steps, initial_conditions)
