@@ -3,14 +3,15 @@ from math import exp
 from constants import RT
 from random import uniform
 from integration_functions import RK4
+from atmospheric_model import concentration_ni, O2, O, N2, H, HE, AR
 
 
-def collision_test(conditions: Vector, concentration_ni, molecule: dict, ):
-    n = concentration_ni(abs(conditions[0]), molecule["index"])
-    s = molecule["cross_section"]
-    v = conditions[i] - maxwell_boltzmann()
-    collision_rate = n * s * v
-    return uniform() > collision_rate
+def collision_test(conditions: Vector, molecule_cross_section: float, molecule_index):
+    n = concentration_ni(abs(conditions[0]), molecule_index)
+    s = molecule_cross_section
+    v = conditions[1] - maxwell_boltzmann()
+    collision_rate = n * s * abs(v)
+    return uniform(0, 1) < collision_rate.real
 
 
 def maxwell_boltzmann():

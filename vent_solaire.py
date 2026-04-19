@@ -13,6 +13,7 @@ from normalization import (
     convert_to_normalized,
 )
 from generate_solutions import compute_solution, plot_3d_multi
+from random import uniform
 
 
 def plot_multi_particules(
