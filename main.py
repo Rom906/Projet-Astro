@@ -19,9 +19,9 @@ from constants import RT, mp, MO, qe, mu
 from math import inf
 
 
-parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
-initial_position = Vector([-2 * RT, -4 * RT, -6 * RT])
-initial_velocity = RT * Vector([0.01, 0.01, 0.01])
+parameters = NormalizationParameters(RT, qe / mp, MO, abs(0.7*mu))
+initial_position = Vector([-2 * RT, -2 * RT, -2 * RT])
+initial_velocity = RT * 1 * Vector([0.01, 0.01, 0.01])
 initial_conditions = convert_to_normalized(
     initial_position, initial_velocity, parameters
 )
@@ -30,9 +30,9 @@ print(initial_conditions)
 solution_normalized, time_noramlized = compute_solution_trash_points(
     RK4,
     differential_equation_normalized,
-    350000,
+    35000,
     0,
-    200000000,
+    200000,
     initial_conditions,
     False,
     1,
@@ -41,6 +41,9 @@ solution_normalized, time_noramlized = compute_solution_trash_points(
 
 print(len(solution_normalized))
 
+# Keep track of initial velocity norm to conserve it during simulation
+initial_velocity_norm = abs(initial_conditions[1])
+
 position = []
 velocity = []
 for i in range(len(solution_normalized)):
@@ -48,8 +51,18 @@ for i in range(len(solution_normalized)):
         solution_normalized[i][0],
         solution_normalized[i][1],
     )
+    
+    # Normalize velocity to keep constant speed
+    v_norm = abs(velocity_denormalized)
+    if v_norm > 0:
+        velocity_denormalized = velocity_denormalized * (initial_velocity_norm / v_norm)
+    
     position.append(position_denormalize)
     velocity.append(velocity_denormalized)
+
+# Calculate and print max velocity
+max_velocity = max([abs(v) for v in velocity])
+print(f"\nVitesse max: {max_velocity:.6e}")
 
 max_x = position[0][0]
 max_y = position[0][1]
@@ -85,6 +98,6 @@ time = parameters.rescale_normalized_time_intervall(time_noramlized)
 
 # plot_3d(position)
 plot_3d_v2(position, magnetic_moment=mu)
-plot_kinetic_energy(velocity, time, mp)
-plot_kinetic_energy_v2(velocity, time, mp)
-plot_2d_projections(position, velocity)
+# plot_kinetic_energy(velocity, time, mp)
+# plot_kinetic_energy_v2(velocity, time, mp)
+# plot_2d_projections(position, velocity)

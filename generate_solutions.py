@@ -339,7 +339,7 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
-    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
+    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth", colorscale=[[0, 'blue'], [1, 'blue']]))
     position_x = round(positions[0][0], 3)
     position_y = round(positions[0][1], 3)
     position_z = round(positions[0][2], 3)
@@ -482,7 +482,7 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
-    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
+    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth", colorscale=[[0, 'blue'], [1, 'blue']]))
     
     # Add magnetic moment vector at North Pole (0, 0, 1)
     # Normalize and scale the magnetic moment for visualization
