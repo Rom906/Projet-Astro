@@ -29,10 +29,140 @@ def get_intervall(steps: int, minimum: float, maximum: float) -> List[float]:
         intervall.append(minimum + h * i)
     return intervall
 
-
 def compute_solution(
     model: Callable[
         [List[Vector], Callable[[float, Vector], Vector], float, float, int], Vector
+    ],
+    differential_equation: Callable[[float, Vector], Vector],
+    initial_conditions: Vector,
+    max_n_steps: int,
+    initial_step_size: int,
+    multiple_steps_method: bool = False,
+    model_n_steps: int = 1,
+    model_order: int = 4,
+    ratio: int = 1,
+    variable_steps: bool = False,
+    tolerated_variation: int = 0.05
+) -> Tuple[List[Vector], List[float]]:
+    """
+    compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
+
+    :param model: function representing the model used to approximate the solution. It needs to take a specified amount of previous steps to calculate the next one
+    :type model: Callable[[List[Vector], differential_equation_type, float, float, int], Vector]
+    :param differential_equation: represent the differential equation system to approximate. It is a function which represent the f in the equation y' = f(y, t)
+    :type differential_equation: Callable[[Vector, float], Vector]
+    :param initial_conditions: the initial values of the differential equation system
+    :type initial_conditions: Vector
+    :param max_n_steps: number of steps used to approximate the solution
+    :type max_n_steps: int
+    :param initial_step_size: initial guess for appropriate step nice, not modified if non-variable steps
+    :type initial_step_size: int/float
+    :param multiple_steps_method: if true, means that the model used is using multiple steps to compute the solution
+    :type multiple_steps_method: bool
+    :param model_n_steps: if the method is using multiple steps, it is the maximum number of step used by it
+    :type model_n_steps: int
+    :param model_order: convergence order of the model
+    :type model_order: int
+    :param ratio: number of point keeped during computation. If 1 all points will be keeped, if 2 only one out of 2, ...
+    :type ratio: int
+    :param variable_steps: if true, means that the steps sise adapts to change
+    :type variable_steps: bool
+    :param tolerated_variation: if the step size is variable, it is the maximum tolerated variation between steps without which the step size is unchanged
+    :type tolerated_variation: float
+    :return: a list of "steps" approximated value of the differential equation solution
+    :rtype: List[Vector]
+    """
+    start_time = time.time()
+    solution: List[Vector] = [initial_conditions]
+    time_index = [0]
+    h = initial_step_size
+
+    if multiple_steps_method:
+        for i in range(1, model_n_steps):
+            vector_list = []
+            for j in range(i):
+                vector_list.append(solution[-i])
+            solution.append(
+                model(vector_list, differential_equation, minimum + h * i, h, i)
+            )
+            time_index.append(minimum + h * i)
+
+    counter = 0
+    treshold = ratio
+    time_index_deleted = []
+    n_steps = 0
+    ti = 0
+    while n_steps < max_n_steps - 1:
+        print(n_steps, h)
+        vector_list = []
+        for i in range(model_n_steps):
+            vector_list.append(solution[-1 - i])
+        new_step_large = model(
+            vector_list, differential_equation, ti, h, model_n_steps
+        )
+        new_step_pos_large = new_step_large[0]
+        if variable_steps:
+            half_step_fine = model(
+                vector_list, differential_equation, ti, h / 2, model_n_steps
+            )
+            new_step_fine = model(
+                [half_step_fine],
+                differential_equation,
+                ti + h / 2,
+                h / 2,
+                model_n_steps,
+            )
+            new_step_pos_fine = new_step_fine[0]
+            max_variation = 0
+            for i in range(len(new_step_pos_large.coordinates)):
+                variation = abs(new_step_pos_large[i] - new_step_pos_fine[i])
+                if variation > max_variation:
+                    max_variation = variation
+            if max_variation < tolerated_variation:
+                solution.append(new_step_large)
+                n_steps += 1
+                ti += h
+                time_index.append(ti)
+            if max_variation != 0:
+                h *= 0.9 * (tolerated_variation / max_variation) ** (1 / (model_order + 1))
+            if max_variation >= tolerated_variation:
+                new_step = model(
+                    vector_list, differential_equation, ti, h, model_n_steps
+                )
+                solution.append(new_step)
+                n_steps += 1
+                ti += h
+                time_index.append(ti)
+        else:
+            solution.append(new_step_large)
+            n_steps += 1
+            ti += h
+            time_index.append(ti)
+
+        if treshold >= 0:
+            treshold -= 1
+        else:
+            if counter >= ratio:
+                counter = 1
+                for i in range(ratio - 1):
+                    solution.pop(len(solution) - 2 * ratio + i)
+                    time_index.pop(len(solution) - 2 * ratio + i)
+            else:
+                counter += 1
+
+    comp_time = time.time() - start_time
+    print("\n=== Computation Statistics ===")
+    print(f"Method: {model.__name__}")
+    print(f"Number of points: {len(solution)}")
+    print(f"Computation time: {comp_time:.4f} s")
+    print("==============================\n")
+
+    return solution, time_index
+
+def compute_solution_no_trash_points(
+    model: Callable[
+        [List[Vector], Callable[[float, Vector], Vector], float, float, int],
+        Vector,
     ],
     differential_equation: Callable[[float, Vector], Vector],
     steps: int,
@@ -102,7 +232,8 @@ def compute_solution(
 
 def compute_solution_trash_points(
     model: Callable[
-        [List[Vector], Callable[[float, Vector], Vector], float, float, int], Vector
+        [List[Vector], Callable[[float, Vector], Vector], float, float, int],
+        Vector,
     ],
     differential_equation: Callable[[float, Vector], Vector],
     steps: int,
@@ -190,7 +321,6 @@ def compute_solution_trash_points(
 
     return solution, intervall
 
-
 def plot_x_solution(time: List[float], solution: List[Vector]) -> None:
     """
     plot the x coordinates of the computed solution
@@ -246,7 +376,9 @@ def plot_z_solution(time: List[float], solution: List[Vector]) -> None:
 
 
 def plot_error(
-    approximated_solution: List[Vector], exact_solution: List[Vector], time: List[float]
+    approximated_solution: List[Vector],
+    exact_solution: List[Vector],
+    time: List[float],
 ) -> None:
     """
     plot the error on the position during time of the computed solution compared to an exact (or almost exact) solution
@@ -400,7 +532,11 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
     figure.show()
 
 
-def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magnetic_moment: Vector = None) -> None:
+def plot_3d_v2(
+    positions: List[Vector],
+    initial_velocity: Vector = None,
+    magnetic_moment: Vector = None,
+) -> None:
     """
     Enhanced 3D plot of particle trajectory in magnetic field with magnetic dipole moment vector.
     Includes initial position/velocity information, start/end point markers, and magnetic moment visualization.
@@ -413,12 +549,12 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
     :type magnetic_moment: Vector or None
     """
     from constants import mu
-    
+
     if magnetic_moment is None:
         magnetic_moment = mu
-    
+
     figure = go.Figure()
-    
+
     # Plot the trajectory
     x = []
     y = []
@@ -464,17 +600,20 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
         )
     )
 
-    # Add a sphere at (0, 0, 0) representing earth
+    # Add a sphere at (0, 0, 0) representing Earth with realistic continents
     r = 1
-    phi = get_intervall(30, 0, 2 * pi)
-    theta = get_intervall(15, 0, pi)
+    phi = get_intervall(50, 0, 2 * pi)
+    theta = get_intervall(25, 0, pi)
     xe = []
     ye = []
     ze = []
+    sc = []  # surfacecolor (0..1) to map to terrain types
+
     for i in range(len(phi)):
         row_x = []
         row_y = []
         row_z = []
+        row_sc = []
         for j in range(len(theta)):
             # Convert spherical coords to Cartesian
             lon = phi[i]  # longitude [0, 2π]
@@ -530,6 +669,7 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
+<<<<<<< HEAD
     figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth", colorscale=[[0, 'blue'], [1, 'blue']]))
     
 =======
@@ -568,16 +708,16 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
     # Scale factor for visualization (proportional to magnitude but visible on plot)
     scale_factor = 2.0
     mu_scaled = mu_normalized * scale_factor
-    
+
     north_pole = [0, 0, 1]
     mu_end = [north_pole[i] + mu_scaled[i] for i in range(3)]
-    
+
     figure.add_trace(
         go.Scatter3d(
             x=[north_pole[0], mu_end[0]],
             y=[north_pole[1], mu_end[1]],
             z=[north_pole[2], mu_end[2]],
-            mode="lines+markers",
+            mode="lines",
             line=dict(color="purple", width=4),
             marker=dict(size=8, color="purple"),
             name="Magnetic Moment",
@@ -595,33 +735,25 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
     # text="Magnetic Moment"
     # )
 
-    # figure.add_annotation(
-    # xref="paper",
-    # yref="paper",
-    # x=north_pole[0],
-    # y=north_pole[1],
-    # z=north_pole[2],
-    # showarrow=True,
-    # text="Magnetic Moment"
-    # )
-
     position_x = round(positions[0][0], 3)
     position_y = round(positions[0][1], 3)
     position_z = round(positions[0][2], 3)
-    
+
     # Add annotations for initial conditions
     initial_pos_text = f"Initial Position (en RT):<br>x={position_x:.3f}<br>y={position_y:.3f}<br>z={position_z:.3f}"
     if initial_velocity is not None:
         velocity_text = (
             f"<br>Initial Velocity:<br>"
-            f"vx={ScientificNotation(initial_velocity[0], 'm').to_scientific_notation()}<br>"
-            f"vy={ScientificNotation(initial_velocity[1], 'm').to_scientific_notation()}<br>"
-            f"vz={ScientificNotation(initial_velocity[2], 'm').to_scientific_notation()}"
+            f"vx={ScientificNotation(initial_velocity[0], 'm.s^-1').to_scientific_notation()}<br>"
+            f"vy={ScientificNotation(initial_velocity[1], 'm.s^-1').to_scientific_notation()}<br>"
+            f"vz={ScientificNotation(initial_velocity[2], 'm.s^-1').to_scientific_notation()}"
         )
         initial_pos_text += velocity_text
-    
+
     # Add magnetic moment information
-    mu_magnitude_formatted = ScientificNotation(mu_magnitude, 'A·m²').to_scientific_notation()
+    mu_magnitude_formatted = ScientificNotation(
+        mu_magnitude, "A·m²"
+    ).to_scientific_notation()
     magnetic_moment_text = f"<br><br>Magnetic Moment: {mu_magnitude_formatted}"
     initial_pos_text += magnetic_moment_text
 
@@ -686,7 +818,7 @@ def plot_kinetic_energy(
     kinetic_energy = []
     for i in range(len(velocity)):
         kinetic_energy.append(1 / 2 * mp * abs(velocity[i]) ** 2)
-    
+
     sb.lineplot(x=time_list, y=kinetic_energy)
     plt.title("System kinetic energy during time")
     plt.grid(True)
@@ -696,6 +828,7 @@ def plot_kinetic_energy(
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import List
+
 
 def plot_kinetic_energy_v2(
     velocity: List["Vector"], time_list: List[float], mp: float
@@ -707,7 +840,7 @@ def plot_kinetic_energy_v2(
     # --- Scale from first value
     ke0 = ke[0]
     exponent = int(np.floor(np.log10(abs(ke0))))
-    scale = 10 ** exponent
+    scale = 10**exponent
 
     ke_scaled = ke / scale
 
@@ -723,30 +856,36 @@ def plot_kinetic_energy_v2(
     # --- Plot
     fig, ax = plt.subplots(figsize=(12, 6))
 
-    ax.axvspan(time_list[0], critical_time,
-               alpha=0.3, color='lightgreen',
-               label='Reliable zone (<10%)')
+    ax.axvspan(
+        time_list[0],
+        critical_time,
+        alpha=0.3,
+        color="lightgreen",
+        label="Reliable zone (<10%)",
+    )
 
-    ax.plot(time_list, ke_scaled, linewidth=2, label='Ke/m')
+    ax.plot(time_list, ke_scaled, linewidth=2, label="Ke/m")
 
     # Labels
-    ax.set_xlabel('Time (s)')
-    ax.set_ylabel(f'Ke/m (×10^{exponent})')
-    ax.set_title(f'Kinetic Energy per mass (m = {mp})')
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel(f"Ke/m (×10^{exponent})")
+    ax.set_title(f"Kinetic Energy per mass (m = {mp})")
 
     # force global scale
     ax.set_ylim(0, np.max(ke_scaled) * 1.1)
 
     # Remove offset
-    ax.ticklabel_format(axis='y', style='plain', useOffset=False)
+    ax.ticklabel_format(axis="y", style="plain", useOffset=False)
 
     # Legend outside
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 
     ax.grid(True, alpha=0.3)
 
     plt.tight_layout(rect=[0, 0, 0.8, 1])
     plt.show()
+    plt.savefig("bob.png")
+
 
 def plot_kinetic_energy_multiple(velocity_list, time_list, mp):
 
@@ -772,26 +911,36 @@ def plot_kinetic_energy_multiple(velocity_list, time_list, mp):
                     critical_index = j - 1
                     break
 
-        ke_final = ke[:critical_index+1] 
-        time_final = time_list[sol_idx][:critical_index+1] if sol_idx < len(time_list) else []
+        ke_final = ke[: critical_index + 1]
+        time_final = (
+            time_list[sol_idx][: critical_index + 1] if sol_idx < len(time_list) else []
+        )
         valid_mask = ke_final > 0
         ke_valid = ke_final[valid_mask]
         time_valid = np.array(time_final)[valid_mask] if len(time_final) > 0 else []
 
         if len(ke_valid) > 0:
             all_ke_final.extend(ke_valid)
-            ax.plot(time_valid, ke_valid, linewidth=2, marker='o', markersize=3, label=f'Solution {sol_idx+1}')
+            ax.plot(
+                time_valid,
+                ke_valid,
+                linewidth=2,
+                marker="o",
+                markersize=3,
+                label=f"Solution {sol_idx+1}",
+            )
 
-    ax.set_xlabel('Time (s)')
-    ax.set_ylabel(f'Ke/m (×10^{exponent})')
-    ax.set_yscale('log')
-    ax.set_xscale('log')  
-    ax.set_title(f'Kinetic Energy per mass (m = {mp})')
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel(f"Ke/m (×10^{exponent})")
+    ax.set_yscale("log")
+    ax.set_xscale("log")
+    ax.set_title(f"Kinetic Energy per mass (m = {mp})")
 
-    ax.grid(True, alpha=0.3, which='both', linestyle='-', linewidth=0.5)
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.grid(True, alpha=0.3, which="both", linestyle="-", linewidth=0.5)
+    ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     plt.tight_layout(rect=[0, 0, 0.8, 1])
     plt.show()
+
 
 def plot_2d_projections(positions_list, velocities_list=None, title="Projections 2D"):
     """
@@ -890,7 +1039,12 @@ def saved_plot_kinetic_energy(
     plt.savefig(save_name)
 
 
-def saved_plot_2d_projections(positions_list, save_name: str, velocities_list=None, title="Projections 2D"):
+def saved_plot_2d_projections(
+    positions_list,
+    save_name: str,
+    velocities_list=None,
+    title="Projections 2D",
+):
     """
     Generates 3 stacked 2D projection plots.
 
@@ -966,7 +1120,9 @@ def saved_plot_2d_projections(positions_list, save_name: str, velocities_list=No
     plt.savefig(save_name)
 
 
-def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = None) -> None:
+def plot_3d_multi(
+    positions_list: List[List[Vector]], magnetic_moment: Vector = None
+) -> None:
     """
     3D plot of multiple particle trajectories in magnetic field with magnetic dipole moment vector.
     Trajectories are colored with a plasma gradient to distinguish between particles.
@@ -979,24 +1135,28 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
     """
     from constants import mu
     import matplotlib.cm as cm
-    
+
     if magnetic_moment is None:
         magnetic_moment = mu
-    
+
     figure = go.Figure()
-    
+
     # Generate plasma colormap for particles
     num_particles = len(positions_list)
-    plasma_colors = cm.get_cmap('plasma')
-    
+    plasma_colors = cm.get_cmap("plasma")
+
     # Plot each trajectory
     for particle_idx, positions in enumerate(positions_list):
         # Compute color for this particle on the plasma gradient
-        color_val = particle_idx / max(1, num_particles - 1) if num_particles > 1 else 0.5
+        color_val = (
+            particle_idx / max(1, num_particles - 1) if num_particles > 1 else 0.5
+        )
         rgba = plasma_colors(color_val)
         # Convert RGBA to hex color for plotly
-        color_hex = f'rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 0.8)'
-        
+        color_hex = (
+            f"rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 0.8)"
+        )
+
         # Extract coordinates
         x = []
         y = []
@@ -1005,7 +1165,7 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
             x.append(pos[0])
             y.append(pos[1])
             z.append(pos[2])
-        
+
         # Plot trajectory with reduced line width
         figure.add_trace(
             go.Scatter3d(
@@ -1018,7 +1178,7 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
                 hoverinfo="skip",
             )
         )
-        
+
         # Add starting point (smaller)
         figure.add_trace(
             go.Scatter3d(
@@ -1031,7 +1191,7 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
                 hoverinfo="skip",
             )
         )
-        
+
         # Add ending point (smaller)
         figure.add_trace(
             go.Scatter3d(
@@ -1044,7 +1204,7 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
                 hoverinfo="skip",
             )
         )
-    
+
     # Add Earth sphere
     r = 1
     phi = get_intervall(30, 0, 2 * pi)
@@ -1064,15 +1224,15 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
         ye.append(row_y)
         ze.append(row_z)
     figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
-    
+
     # Add magnetic moment vector at North Pole (0, 0, 1)
     mu_normalized = magnetic_moment.normalized()
     scale_factor = 2.0
     mu_scaled = mu_normalized * scale_factor
-    
+
     north_pole = [0, 0, 1]
     mu_end = [north_pole[i] + mu_scaled[i] for i in range(3)]
-    
+
     figure.add_trace(
         go.Scatter3d(
             x=[north_pole[0], mu_end[0]],
@@ -1085,7 +1245,7 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
             showlegend=True,
         )
     )
-    
+
     # Set parameters
     figure.update_layout(
         scene=dict(
@@ -1098,6 +1258,6 @@ def plot_3d_multi(positions_list: List[List[Vector]], magnetic_moment: Vector = 
         showlegend=True,
         legend=dict(x=0.7, y=0.9),
     )
-    
+
     # Show figure
     figure.show()
