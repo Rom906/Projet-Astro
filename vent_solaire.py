@@ -17,6 +17,7 @@ from normalization import (
 from generate_solutions import compute_solution_trash_points, plot_3d_multi
 
 
+
 def plot_multi_particules(
     N_particules=10,
     cercle=3,

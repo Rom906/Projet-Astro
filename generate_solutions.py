@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 from math import pi, cos, sin
 import time
 import numpy as np
+from scientific_notation import ScientificNotation
 
 
 def get_intervall(steps: int, minimum: float, maximum: float) -> List[float]:
@@ -229,6 +230,7 @@ def compute_solution_trash_points(
 
     return solution, time_index
 
+
 def compute_solution_trash_points_by_steps(
     model: Callable[
         [List[Vector], Callable[[float, Vector], Vector], float, float, int], Vector
@@ -360,6 +362,7 @@ def compute_solution_trash_points_by_steps(
     print("==============================\n")
 
     return solution, time_index
+
 
 def plot_x_solution(time: List[float], solution: List[Vector]) -> None:
     """
@@ -510,7 +513,29 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
-    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth"))
+    figure.add_trace(
+        go.Surface(
+            x=xe,
+            y=ye,
+            z=ze,
+            showscale=False,
+            name="Earth",
+            colorscale=[[0, "blue"], [1, "blue"]],
+        )
+    )
+    position_x = round(positions[0][0], 3)
+    position_y = round(positions[0][1], 3)
+    position_z = round(positions[0][2], 3)
+    # Add annotations for initial conditions
+    initial_pos_text = f"Initial Position (en RT):<br>x={position_x:.3f}<br>y={position_y:.3f}<br>z={position_z:.3f}"
+    if initial_velocity is not None:
+        velocity_text = (
+            f"<br>Initial Velocity:<br>"
+            f"vx={ScientificNotation(initial_velocity[0], 'm').to_scientific_notation()}<br>"
+            f"vy={ScientificNotation(initial_velocity[1], 'm').to_scientific_notation()}<br>"
+            f"vz={ScientificNotation(initial_velocity[2], 'm').to_scientific_notation()}"
+        )
+        initial_pos_text += velocity_text
 
     # Add annotations for initial conditions
     initial_pos_text = f"Initial Position:<br>x={positions[0][0]:.4f}<br>y={positions[0][1]:.4f}<br>z={positions[0][2]:.4f}"
