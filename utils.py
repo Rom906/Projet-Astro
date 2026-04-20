@@ -306,7 +306,7 @@ def save_time_interval(time_interval: List[float], save_name: str) -> None:
 
 
 def load_time_interval(save_name: str) -> List[float]:
-    f = open(save_name, 'r', newline="")
+    f = open(save_name, "r", newline="")
     reader = csv.reader(f)
     time_intervall = []
     for value in reader:

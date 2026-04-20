@@ -476,14 +476,91 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
         row_y = []
         row_z = []
         for j in range(len(theta)):
-            row_x.append(r * cos(phi[i]) * sin(theta[j]))
-            row_y.append(r * sin(phi[i]) * sin(theta[j]))
-            row_z.append(r * cos(theta[j]))
+            # Convert spherical coords to Cartesian
+            lon = phi[i]  # longitude [0, 2π]
+            lat = theta[j]  # latitude [0, π], where π/2 is equator
+
+            px = r * cos(lon) * sin(lat)
+            py = r * sin(lon) * sin(lat)
+            pz = r * cos(lat)
+
+            row_x.append(px)
+            row_y.append(py)
+            row_z.append(pz)
+
+            # --- Realistic terrain generation with harmonious continents ---
+            # Convert latitude to degrees (-90 to +90)
+            lat_deg = (lat - pi / 2) * 180 / pi  # Range: [-90°, 90°]
+            # Convert longitude to degrees (0 to 360)
+            lon_deg = lon * 180 / pi
+
+            # Start with OCEAN (default)
+            terrain = 0.15
+
+            # --- Simplified Perlin-like noise for natural continents ---
+            # Create a base continental noise pattern
+            base_noise = (
+                0.4 * sin(lon_deg * pi / 180) * cos(lat_deg * pi / 180)
+                + 0.3 * sin(2 * lon_deg * pi / 180)
+                + 0.2 * cos(3 * lat_deg * pi / 180)
+                + 0.1 * sin(5 * lon_deg * pi / 180)
+            )
+
+            # Reduce ocean coverage at certain latitudes (where continents exist)
+            if -60 <= lat_deg <= 75:
+                # Apply continent pattern more strongly
+                continent_presence = base_noise + 0.15 * sin(lat_deg * pi / 180)
+
+                if continent_presence > -0.1:
+                    # Progressively map noise to terrain values
+                    terrain = 0.50 + continent_presence * 0.25
+
+            # --- Make polar regions slightly higher terrain (greenland-like) ---
+            if lat_deg > 75:
+                if base_noise > -0.2:
+                    terrain = 0.70  # Greenish at far north
+            elif lat_deg < -75:
+                if base_noise > -0.2:
+                    terrain = 0.70  # Greenish at far south
+
+            # Clamp to [0, 1]
+            terrain = max(0.15, min(1.0, terrain))
+            row_sc.append(terrain)
+
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
     figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth", colorscale=[[0, 'blue'], [1, 'blue']]))
     
+=======
+        sc.append(row_sc)
+
+    # Enhanced colorscale - Blue and Green only (no white)
+    earth_colorscale = [
+        [0.00, "rgb(0, 30, 100)"],  # Deep ocean
+        [0.25, "rgb(20, 100, 180)"],  # Ocean blue
+        [0.50, "rgb(60, 150, 50)"],  # Green forest
+        [0.75, "rgb(80, 180, 80)"],  # Light green
+        [1.00, "rgb(100, 200, 100)"],  # Bright green
+    ]
+
+    figure.add_trace(
+        go.Surface(
+            x=xe,
+            y=ye,
+            z=ze,
+            surfacecolor=sc,
+            colorscale=earth_colorscale,
+            cmin=0,
+            cmax=1,
+            showscale=False,
+            name="Earth",
+            lighting=dict(ambient=0.6, diffuse=0.6, roughness=0.9, specular=0.1),
+            lightposition=dict(x=100, y=200, z=0),
+        )
+    )
+
+>>>>>>> 5448aeabca727522f26132efa026e2cfb0582342
     # Add magnetic moment vector at North Pole (0, 0, 1)
     # Normalize and scale the magnetic moment for visualization
     mu_normalized = magnetic_moment.normalized()
@@ -507,7 +584,27 @@ def plot_3d_v2(positions: List[Vector], initial_velocity: Vector = None, magneti
             showlegend=True,
         )
     )
-    
+
+    # figure.add_annotation(
+    # xref="paper",
+    # yref="paper",
+    # x=north_pole[0],
+    # y=north_pole[1],
+    # z=north_pole[2],
+    # showarrow=True,
+    # text="Magnetic Moment"
+    # )
+
+    # figure.add_annotation(
+    # xref="paper",
+    # yref="paper",
+    # x=north_pole[0],
+    # y=north_pole[1],
+    # z=north_pole[2],
+    # showarrow=True,
+    # text="Magnetic Moment"
+    # )
+
     position_x = round(positions[0][0], 3)
     position_y = round(positions[0][1], 3)
     position_z = round(positions[0][2], 3)

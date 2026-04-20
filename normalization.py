@@ -19,7 +19,7 @@ Where:
 
 NORMALIZATION SCALES:
 =====================
-- Length scale: R₀ (Earth radius) 
+- Length scale: R₀ (Earth radius)
 - Time scale: T = 4πmₚR₀³/(qμ₀m₀)
 - Spatial coordinate: r = R₀ * u
 - Temporal coordinate: t = T * τ
@@ -97,7 +97,9 @@ class NormalizationParameters:
         else:
             return Vector((u_prime_norm * scale).tolist())
 
-    def dimensionalize_velocity_time_only(self, u_prime_norm: Vector | np.ndarray) -> Vector:
+    def dimensionalize_velocity_time_only(
+        self, u_prime_norm: Vector | np.ndarray
+    ) -> Vector:
         """Convert normalized velocity u' to dimensional v = (1/T)·u'."""
         scale = 1 / self.T
         if isinstance(u_prime_norm, Vector):
@@ -113,7 +115,9 @@ class NormalizationParameters:
         else:
             return Vector((v_dim * scale).tolist())
 
-    def rescale_normalized_time_intervall(self, norm_intervall: List[float]) -> List[float]:
+    def rescale_normalized_time_intervall(
+        self, norm_intervall: List[float]
+    ) -> List[float]:
         denormalized_intervall = []
         for i in range(len(norm_intervall)):
             denormalized_intervall.append(norm_intervall[i] * self.T)
@@ -390,4 +394,3 @@ def convert_to_dimensional_time_only(u_norm, v_norm, params: NormalizationParame
     """
     v_dim = params.dimensionalize_velocity_time_only(v_norm)
     return u_norm, v_dim
-
