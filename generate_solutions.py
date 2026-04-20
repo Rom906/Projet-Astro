@@ -78,7 +78,7 @@ def compute_solution(
     h = initial_step_size
 
     if multiple_steps_method:
-        for i in range(1, number_of_steps):
+        for i in range(1, model_n_steps):
             vector_list = []
             for j in range(i):
                 vector_list.append(solution[-i])
@@ -95,22 +95,22 @@ def compute_solution(
     while n_steps < max_n_steps - 1:
         print(n_steps, h)
         vector_list = []
-        for i in range(number_of_steps):
+        for i in range(model_n_steps):
             vector_list.append(solution[-1 - i])
         new_step_large = model(
-            vector_list, differential_equation, ti, h, number_of_steps
+            vector_list, differential_equation, ti, h, model_n_steps
         )
         new_step_pos_large = new_step_large[0]
         if variable_steps:
             half_step_fine = model(
-                vector_list, differential_equation, ti, h / 2, number_of_steps
+                vector_list, differential_equation, ti, h / 2, model_n_steps
             )
             new_step_fine = model(
                 [half_step_fine],
                 differential_equation,
                 ti + h / 2,
                 h / 2,
-                number_of_steps,
+                model_n_steps,
             )
             new_step_pos_fine = new_step_fine[0]
             max_variation = 0
@@ -127,7 +127,7 @@ def compute_solution(
                 h *= 0.9 * (tolerated_variation / max_variation) ** (1 / (model_order + 1))
             if max_variation >= tolerated_variation:
                 new_step = model(
-                    vector_list, differential_equation, ti, h, number_of_steps
+                    vector_list, differential_equation, ti, h, model_n_steps
                 )
                 solution.append(new_step)
                 n_steps += 1
@@ -712,13 +712,23 @@ def plot_3d_v2(
             x=[north_pole[0], mu_end[0]],
             y=[north_pole[1], mu_end[1]],
             z=[north_pole[2], mu_end[2]],
-            mode="lines+markers",
+            mode="lines",
             line=dict(color="purple", width=4),
             marker=dict(size=8, color="purple"),
             name="Magnetic Moment",
             showlegend=True,
         )
     )
+
+    # figure.add_annotation(
+    # xref="paper",
+    # yref="paper",
+    # x=north_pole[0],
+    # y=north_pole[1],
+    # z=north_pole[2],
+    # showarrow=True,
+    # text="Magnetic Moment"
+    # )
 
     position_x = round(positions[0][0], 3)
     position_y = round(positions[0][1], 3)
@@ -869,6 +879,7 @@ def plot_kinetic_energy_v2(
 
     plt.tight_layout(rect=[0, 0, 0.8, 1])
     plt.show()
+    plt.savefig("bob.png")
 
 
 def plot_kinetic_energy_multiple(velocity_list, time_list, mp):
