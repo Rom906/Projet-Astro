@@ -859,12 +859,12 @@ def plot_kinetic_energy_v2(
         label="Reliable zone (<10%)",
     )
 
-    ax.plot(time_list, ke_scaled, linewidth=2, label="Ke/m")
+    ax.plot(time_list, ke_scaled, linewidth=2, label="Ke/m (J/kg)")
 
     # Labels
     ax.set_xlabel("Time (s)")
-    ax.set_ylabel(f"Ke/m (×10^{exponent})")
-    ax.set_title(f"Kinetic Energy per mass (m = {mp})")
+    ax.set_ylabel(f"Ke/m (×10^{exponent} J/kg)")
+    ax.set_title(f"Kinetic Energy per mass (m = {mp} (kg))")
 
     # force global scale
     ax.set_ylim(0, np.max(ke_scaled) * 1.1)
@@ -926,10 +926,10 @@ def plot_kinetic_energy_multiple(velocity_list, time_list, mp):
             )
 
     ax.set_xlabel("Time (s)")
-    ax.set_ylabel(f"Ke/m (×10^{exponent})")
+    ax.set_ylabel(f"Ke/m (×10^{exponent} J/kg)")
     ax.set_yscale("log")
     ax.set_xscale("log")
-    ax.set_title(f"Kinetic Energy per mass (m = {mp})")
+    ax.set_title(f"Kinetic Energy per mass (m = {mp} kg)")
 
     ax.grid(True, alpha=0.3, which="both", linestyle="-", linewidth=0.5)
     ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
