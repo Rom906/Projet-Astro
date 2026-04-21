@@ -20,7 +20,7 @@ from math import inf
 
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
-initial_position = Vector([-2 * RT, -4 * RT, -6 * RT])
+initial_position = Vector([-1 * RT, -1 * RT, -1 * RT])
 initial_velocity = RT * Vector([0.01, 0.01, 0.01])
 initial_conditions = convert_to_normalized(
     initial_position, initial_velocity, parameters
@@ -37,6 +37,7 @@ solution_normalized, time_noramlized = compute_solution(
 )
 
 print(len(solution_normalized))
+
 
 position = []
 velocity = []
