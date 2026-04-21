@@ -5,7 +5,7 @@ from utils import Vector
 from constants import RT, mp, MO, qe, mu
 from typing import List, Callable, Tuple
 import time
-from aurores import collision_test
+from monte_carlo import test_collision
 from atmospheric_model import O, O2, H, HE, AR, N2
 from random import randrange
 from multiprocessing import Pool
@@ -100,7 +100,7 @@ def compute_solution_trash_points_by_steps(
             denormalized_posvel = convert_to_dimensional(pos_vel[0], pos_vel[1], params)
             conditions = Vector([denormalized_posvel[0], denormalized_posvel[1]])
             
-            if collision_test(conditions, molecule_index):
+            if test_collision(conditions, molecule_index):
                 collisions = True
                 molecule = molecule_index
         if n_steps > max_n_steps:
