@@ -720,16 +720,6 @@ def plot_3d_v2(
         )
     )
 
-    # figure.add_annotation(
-    # xref="paper",
-    # yref="paper",
-    # x=north_pole[0],
-    # y=north_pole[1],
-    # z=north_pole[2],
-    # showarrow=True,
-    # text="Magnetic Moment"
-    # )
-
     position_x = round(positions[0][0], 3)
     position_y = round(positions[0][1], 3)
     position_z = round(positions[0][2], 3)
@@ -879,7 +869,6 @@ def plot_kinetic_energy_v2(
 
     plt.tight_layout(rect=[0, 0, 0.8, 1])
     plt.show()
-    plt.savefig("bob.png")
 
 
 def plot_kinetic_energy_multiple(velocity_list, time_list, mp):

@@ -27,16 +27,13 @@ initial_conditions = convert_to_normalized(
 )
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)
-solution_normalized, time_noramlized = compute_solution_trash_points(
+solution_normalized, time_noramlized = compute_solution(
     RK4,
     differential_equation_normalized,
-    35000,
-    0,
-    200000,
     initial_conditions,
-    False,
-    1,
-    10,
+    max_n_steps=10000,
+    initial_step_size=1,
+    variable_steps=True,
 )
 
 print(len(solution_normalized))
@@ -85,3 +82,4 @@ time = parameters.rescale_normalized_time_intervall(time_noramlized)
 
 # plot_3d(position)
 plot_3d_v2(position, initial_velocity, magnetic_moment=mu)
+plot_kinetic_energy_v2(velocity, time, mp=mp)
