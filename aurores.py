@@ -8,7 +8,7 @@ from atmospheric_model import concentration_ni, O2, O, N2, H, HE, AR
 
 molecules_index = [O, O2, H, HE, AR, N2]
 
-def collision_test(conditions: List[Vector], molecule_index) -> bool:
+def test_collision(conditions: List[Vector], molecule_index) -> bool:
     n = concentration_ni(abs(conditions[0]), molecules_index[molecule_index])
     s = cross_section(molecules_index[molecule_index], 0)
     v = conditions[1] - maxwell_boltzmann()
@@ -16,21 +16,14 @@ def collision_test(conditions: List[Vector], molecule_index) -> bool:
     return uniform(0, 1) < collision_rate.real
 
 
-def maxwell_boltzmann_test():
-    from normalization import NormalizationParameters, convert_to_normalized
-from utils import Vector
-from numpy import np
-
-
-def tirage_vitesse_aleatoire(initial_velocity=400000, vitesse_thermique=40000):
-
+def draw_maxwell_boltzmann_velocity(central_velocity, velocity_range):
     initial_velocity = Vector([initial_velocity, 0, 0])
 
-    vx = np.random.normal(loc=initial_velocity[0], scale=vitesse_thermique)
-    vy = np.random.normal(loc=initial_velocity[1], scale=vitesse_thermique)
-    vz = np.random.normal(loc=initial_velocity[2], scale=vitesse_thermique)
+    vx = np.random.normal(loc=central_velocity[0], scale=velocity_range)
+    vy = np.random.normal(loc=central_velocity[1], scale=velocity_range)
+    vz = np.random.normal(loc=central_velocity[2], scale=velocity_range)
 
-    vitesse_particule_random = Vector([vx, vy, vz])
+    random_particle_speed = Vector([vx, vy, vz])
     return vitesse_particule_random
 
 
