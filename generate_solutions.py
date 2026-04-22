@@ -776,9 +776,9 @@ def plot_3d_multi(
 
     figure.update_layout(
         scene=dict(
-            xaxis=dict(title="x/RT", showgrid=True, zeroline=True, range=[-15, 15]),
-            yaxis=dict(title="y/RT", showgrid=True, zeroline=True, range=[-15, 15]),
-            zaxis=dict(title="z/RT", showgrid=True, zeroline=True, range=[-15, 15]),
+            xaxis=dict(title="x/RT", showgrid=True, zeroline=True, range=[-50, 50]),
+            yaxis=dict(title="y/RT", showgrid=True, zeroline=True, range=[-50, 50]),
+            zaxis=dict(title="z/RT", showgrid=True, zeroline=True, range=[-50, 50]),
             aspectmode="cube",  # Force la zone d'affichage à rester un cube parfait
         ),
         title="Multiple Particle Trajectories in Magnetic Field",

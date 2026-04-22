@@ -15,7 +15,7 @@ from normalization import (
     convert_to_normalized,
 )
 from generate_solutions import compute_solution_trash_points, plot_3d_multi
-
+from time import time
 
 
 def plot_multi_particules(
@@ -99,6 +99,8 @@ def plot_multi_particules(
     )
 
 
+temps_initial = time()
+
 if __name__ == "__main__":
     (
         N_particules,
@@ -109,11 +111,11 @@ if __name__ == "__main__":
         intervalle_temps,
         ratio_sur_100,
     ) = plot_multi_particules(
-        N_particules=100,
+        N_particules=10,
         cercle=3,
-        distance_cercle=3,
-        nombre_points=10000,
-        intervalle_temps=10000000,
+        distance_cercle=100,
+        nombre_points=100000,
+        intervalle_temps=100000000000,
         ratio_sur_100=1,
         variable_steps=True,
         tolerated_variation=0.05,
@@ -130,3 +132,8 @@ if __name__ == "__main__":
         color="multi",
         epaisseur=1,
     )
+
+temps_execution = time() - temps_initial
+print(
+    f"Temps d'exécution pour {N_particules} particules : {temps_execution:.2f} secondes"
+)
