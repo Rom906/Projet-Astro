@@ -59,12 +59,13 @@ def compute_solution_trash_points_by_steps(
     n_steps = 0
     ti = 0
     collisions = False
+    E = convert_electric_field_to_normalized(Vector([0, 0, 0]), params)
     while not collisions:
-        E = 0
-        for i in range() in range(other_particles):
-            E += field_contribution(-qe, pos_vel[0], other_particles[i][-1][0])
-            new_step_large = model(
-            [pos_vel], differential_equation, ti, h, model_n_steps, E=E
+        # E = 0
+        # for i in range() in range(other_particles):
+        #     E += field_contribution(-qe, pos_vel[0], other_particles[i][-1][0])
+        new_step_large = model(
+        [pos_vel], differential_equation, ti, h, model_n_steps, E=E
         )
         new_step_pos_large = new_step_large[0]
 
