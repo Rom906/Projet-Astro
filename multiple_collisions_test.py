@@ -1,14 +1,16 @@
-from generate_solutions import plot_3d_collisions_only
+from generate_solutions import plot_3d_collisions_only, plot_3d_multi
 from normalization import NormalizationParameters, differential_equation_normalized, convert_to_normalized, convert_to_dimensional, convert_electric_field_to_normalized
 from integration_functions import RK4
 from utils import Vector
 from constants import RT, mp, MO, qe, mu
 from typing import List, Callable, Tuple
 import time
+import time
 from monte_carlo import molecules_list, test_collision, field_contribution
 from atmospheric_model import O, O2, H, HE, AR, N2
 from random import randrange
 from multiprocessing import Pool
+from monte_carlo import apply_post_collision_velocity
 
 NA = 6
 
@@ -24,7 +26,7 @@ def compute_solution_trash_points_by_steps(
     model_n_steps: int = 1,
     model_order: int = 4,
     tolerated_variation: float = 0.05
-) -> Tuple[Vector, float, int]:
+) -> Tuple[List[Vector], float, List[int], List[Vector]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
 
@@ -58,60 +60,45 @@ def compute_solution_trash_points_by_steps(
     pos_vel = initial_conditions
     n_steps = 0
     ti = 0
-    collisions = False
+    is_active = True
+    liste_collisions_pos = []
+    liste_molecules_hit = []
+    liste_positions = []  # Stocker toutes les positions (trajectoire)
+    
     E = convert_electric_field_to_normalized(Vector([0, 0, 0]), params)
-    while not collisions:
-        # E = 0
-        # for i in range() in range(other_particles):
-        #     E += field_contribution(-qe, pos_vel[0], other_particles[i][-1][0])
-        new_step_large = model(
-        [pos_vel], differential_equation, ti, h, model_n_steps, E=E
-        )
-        new_step_pos_large = new_step_large[0]
-
-        half_step_fine = model(
-            [pos_vel], differential_equation, ti, h / 2, model_n_steps, E=E
-        )
-        new_step_fine = model(
-            [half_step_fine],
-            differential_equation,
-            ti + h / 2,
-            h / 2,
-            model_n_steps,
-            E=E
-        )
-        new_step_pos_fine = new_step_fine[0]
-        max_variation = 0
-        for i in range(len(new_step_pos_large.coordinates)):
-            variation = abs(new_step_pos_large[i] - new_step_pos_fine[i])
-            if variation > max_variation:
-                max_variation = variation
-        if max_variation < tolerated_variation:
-            pos_vel = new_step_large
-            n_steps += 1
-            ti += h
-        if max_variation != 0:
-            h *= 0.9 * (tolerated_variation / max_variation) ** (1 / (model_order + 1))
-        if max_variation >= tolerated_variation:
-            new_step = model(
-                [pos_vel], differential_equation, ti, h, model_n_steps, E=E
-            )
-            pos_vel = new_step
-            n_steps += 1
-            ti += h
+    
+    while is_active:
+        # --- RK4 INTEGRATION STEP ---
+        vector_list = [pos_vel]
+        new_pos_vel = model(vector_list, differential_equation, ti, h, 1)
+        pos_vel = new_pos_vel
+        n_steps += 1
+        ti += h
+        liste_positions.append(pos_vel[0])  # Enregistrer la position
+        
+        # --- GESTION DES COLLISIONS MULTIPLES ---
         for i in range(len(molecules_list)):
             denormalized_posvel = convert_to_dimensional(pos_vel[0], pos_vel[1], params)
             conditions = Vector([denormalized_posvel[0], denormalized_posvel[1]])
             
             if test_collision(conditions, i):
-                collisions = True
-                molecule = i
-        if n_steps > max_n_steps:
-            molecule = NA
-            break
-        if abs(pos_vel[0]) > 50:
-            molecule = NA
-            break
+                # 1. Enregistrer le choc
+                liste_collisions_pos.append(pos_vel[0])
+                liste_molecules_hit.append(i)
+                
+                # 2. Mettre à jour la vitesse post-collision
+                new_velocity = apply_post_collision_velocity(pos_vel[0], pos_vel[1], i, params)
+                pos_vel = Vector([pos_vel[0], new_velocity])
+                
+                # 3. Arrêter si l'électron n'a plus d'énergie
+                if abs(new_velocity) == 0:
+                    is_active = False
+                
+                break # On sort de la boucle for (un seul choc par itération)
+                
+        # --- CONDITIONS D'ARRÊT SECONDAIRES ---
+        if n_steps > max_n_steps or abs(pos_vel[0]) > 50:
+            is_active = False
 
     comp_time = time.time() - start_time
     print("\n=== Computation Statistics ===")
@@ -120,7 +107,7 @@ def compute_solution_trash_points_by_steps(
     print(f"Computation time: {comp_time:.4f} s")
     print("==============================\n")
 
-    return pos_vel, ti, molecule
+    return liste_collisions_pos, ti, liste_molecules_hit, liste_positions
 
 
 if __name__ == "__main__":
@@ -145,8 +132,19 @@ if __name__ == "__main__":
     collisions_positions = []
     times = []
     molecule_collisions_index = []
-    for result in results:
-        collisions_positions.append(result[0][0])
-        times.append(result[1])
-        molecule_collisions_index.append(result[2])
+    
+    for i, result in enumerate(results):
+        trajectory = result[3]  # Récupérer la trajectoire complète
+        
+        print(f"Particule {i+1}: {len(trajectory)} positions")
+        
+        if result[0]:  # Only process particles that had collisions
+            collisions_positions.append(result[0][0])
+            times.append(result[1])
+            molecule_collisions_index.append(result[2])
+        
+        print(f"  Collisions détectées: {len(result[0])}")  # Debug: afficher nb collisions par particule
+    
+
+    print(f"\n📊 Affichage des {len(collisions_positions)} collisions...\n")
     plot_3d_collisions_only(collisions_positions, molecule_collisions_index)
