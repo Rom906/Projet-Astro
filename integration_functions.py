@@ -65,7 +65,7 @@ def euler(
     return ui_plus_un
 
 
-def RK4(vector_list, differential_equation, t, h, number_of_steps):
+def RK4(vector_list, differential_equation, t, h, number_of_steps, E=Vector([0, 0, 0])):
     """
     Runge-Kutta 4 single step compatible with `compute_solution`.
 
@@ -83,16 +83,16 @@ def RK4(vector_list, differential_equation, t, h, number_of_steps):
     Y = vector_list[0]
 
     # k1 = f(t, Y)
-    k1 = differential_equation(t, Y)
+    k1 = differential_equation(t, Y, E=E)
 
     # k2 = f(t + h/2, Y + k1 * (h/2))
-    k2 = differential_equation(t + h / 2.0, Y + k1 * (h / 2.0))
+    k2 = differential_equation(t + h / 2.0, Y + k1 * (h / 2.0), E=E)
 
     # k3 = f(t + h/2, Y + k2 * (h/2))
-    k3 = differential_equation(t + h / 2.0, Y + k2 * (h / 2.0))
+    k3 = differential_equation(t + h / 2.0, Y + k2 * (h / 2.0), E=E)
 
     # k4 = f(t + h, Y + k3 * h)
-    k4 = differential_equation(t + h, Y + k3 * h)
+    k4 = differential_equation(t + h, Y + k3 * h, E=E)
 
     # Combine to produce next value
     Y_next = Y + (k1 * (h / 6.0) + k2 * (h / 3.0) + k3 * (h / 3.0) + k4 * (h / 6.0))

@@ -1,18 +1,16 @@
 from generate_solutions import plot_3d_collisions_only
-from normalization import NormalizationParameters, differential_equation_normalized, convert_to_normalized, convert_to_dimensional
+from normalization import NormalizationParameters, differential_equation_normalized, convert_to_normalized, convert_to_dimensional, convert_electric_field_to_normalized
 from integration_functions import RK4
 from utils import Vector
 from constants import RT, mp, MO, qe, mu
 from typing import List, Callable, Tuple
 import time
-from monte_carlo import test_collision
+from monte_carlo import molecules_list, test_collision, field_contribution
 from atmospheric_model import O, O2, H, HE, AR, N2
 from random import randrange
 from multiprocessing import Pool
 
 NA = 6
-molecules_index = [O, O2, H, HE, AR, N2]
-
 
 def compute_solution_trash_points_by_steps(
     model: Callable[
@@ -62,13 +60,16 @@ def compute_solution_trash_points_by_steps(
     ti = 0
     collisions = False
     while not collisions:
-        new_step_large = model(
-            [pos_vel], differential_equation, ti, h, model_n_steps
+        E = 0
+        for i in range() in range(other_particles):
+            E += field_contribution(-qe, pos_vel[0], other_particles[i][-1][0])
+            new_step_large = model(
+            [pos_vel], differential_equation, ti, h, model_n_steps, E=E
         )
         new_step_pos_large = new_step_large[0]
 
         half_step_fine = model(
-            [pos_vel], differential_equation, ti, h / 2, model_n_steps
+            [pos_vel], differential_equation, ti, h / 2, model_n_steps, E=E
         )
         new_step_fine = model(
             [half_step_fine],
@@ -76,6 +77,7 @@ def compute_solution_trash_points_by_steps(
             ti + h / 2,
             h / 2,
             model_n_steps,
+            E=E
         )
         new_step_pos_fine = new_step_fine[0]
         max_variation = 0
@@ -91,18 +93,18 @@ def compute_solution_trash_points_by_steps(
             h *= 0.9 * (tolerated_variation / max_variation) ** (1 / (model_order + 1))
         if max_variation >= tolerated_variation:
             new_step = model(
-                [pos_vel], differential_equation, ti, h, model_n_steps
+                [pos_vel], differential_equation, ti, h, model_n_steps, E=E
             )
             pos_vel = new_step
             n_steps += 1
             ti += h
-        for molecule_index in molecules_index:
+        for i in range(len(molecules_list)):
             denormalized_posvel = convert_to_dimensional(pos_vel[0], pos_vel[1], params)
             conditions = Vector([denormalized_posvel[0], denormalized_posvel[1]])
             
-            if test_collision(conditions, molecule_index):
+            if test_collision(conditions, i):
                 collisions = True
-                molecule = molecule_index
+                molecule = i
         if n_steps > max_n_steps:
             molecule = NA
             break

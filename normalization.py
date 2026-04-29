@@ -262,12 +262,12 @@ def create_normalized_differential_equation(
 
     return f_normalized
 
-
 def differential_equation_normalized(
     tau: float,
     Y: Vector,
+    E = Vector([0, 0, 0]),
     params: NormalizationParameters = None,
-    mu_direction=mu.normalized(),
+    mu_direction=mu.normalized()
 ) -> Vector:
     """
     Direct evaluation of normalized differential equation.
@@ -314,7 +314,7 @@ def differential_equation_normalized(
     B_vector = Vector(B_field.tolist())
 
     # Compute acceleration
-    acceleration = v_norm @ B_vector
+    acceleration = v_norm @ B_vector + E
 
     return Vector([v_norm, acceleration])
 
@@ -391,3 +391,5 @@ def convert_to_dimensional_time_only(u_norm, v_norm, params: NormalizationParame
     v_dim = params.dimensionalize_velocity_time_only(v_norm)
     return u_norm, v_dim
 
+def convert_electric_field_to_normalized(E, params: NormalizationParameters):
+    return E * params.q_over_m * params.T**2 * params.R0
