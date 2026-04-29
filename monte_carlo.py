@@ -14,7 +14,6 @@ def test_collision(conditions: List[Vector], molecule_index) -> bool:
     s = cross_section(molecules_list[molecule_index], 0)
     v = conditions[1] - draw_maxwell_boltzmann_velocity(mass(molecules_list[molecule_index]), T(abs(conditions[0])))
     collision_rate = n * s * abs(v)
-    print(collision_rate.real)
     return uniform(0, 1) < collision_rate.real
 
 

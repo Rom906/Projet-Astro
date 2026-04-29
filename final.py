@@ -25,6 +25,12 @@ def compute_solution(index: int) -> None:
     E = convert_electric_field_to_normalized(E, params)
     new_pos_vel = RK4([pos_vel], differential_equation_normalized, ti, h, 1, E=E)  # type: ignore
     initial_conditions[index][1] = new_pos_vel
+    for i in range(6):
+        denormalized_posvel = convert_to_dimensional(new_pos_vel[0], new_pos_vel[1], params)
+        conditions = Vector([denormalized_posvel[0], denormalized_posvel[1]])
+        if test_collision(conditions, i):
+            global collision_points
+            collision_points.append(new_pos_vel)
 
 
 def init(shared, b):
@@ -32,6 +38,9 @@ def init(shared, b):
     barrier = b
     global initial_conditions
     initial_conditions = shared
+    global collision_points
+    collision_points = []
+
 
 
 def compute_thread(indexs: List[int], nombre_pas):
