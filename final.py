@@ -20,9 +20,9 @@ def compute_solution(index: int) -> None:
     E = Vector([0, 0, 0])
     pos_vel = initial_condition[0]
     for j in range(len(initial_conditions)):
-        if j != index:
+        if pos_vel[0] != initial_conditions[j][0][0]:
             E += field_contribution(-qe, pos_vel[0], initial_conditions[j][0][0])
-    E = convert_electric_field_to_normalized(Vector([0, 0, 0]), params)
+    E = convert_electric_field_to_normalized(E, params)
     new_pos_vel = RK4([pos_vel], differential_equation_normalized, ti, h, 1, E=E)  # type: ignore
     initial_conditions[index][1] = new_pos_vel
 
