@@ -392,4 +392,4 @@ def convert_to_dimensional_time_only(u_norm, v_norm, params: NormalizationParame
     return u_norm, v_dim
 
 def convert_electric_field_to_normalized(E, params: NormalizationParameters):
-    return E * params.q_over_m * params.T**2 * params.R0
+    return E * params.q_over_m * params.T**2 / params.R0
