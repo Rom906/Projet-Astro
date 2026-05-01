@@ -9,7 +9,7 @@ from atmospheric_model import concentration_ni, Na, T
 
 molecules_list = ["O", "O2", "H", "HE", "AR", "N2"]
 
-def test_collision(conditions: List[Vector], molecule_index) -> bool:
+def test_collision(conditions: Vector, molecule_index) -> bool:
     n = concentration_ni(abs(conditions[0]), molecule_index)
     s = cross_section(molecules_list[molecule_index], 0)
     v = conditions[1] - draw_maxwell_boltzmann_velocity(mass(molecules_list[molecule_index]), T(abs(conditions[0])))

@@ -1258,7 +1258,7 @@ def plot_3d_collisions_only(collisions_positions: List[Vector], molecules: List[
                     y=y,
                     z=z,
                     mode="markers",
-                    marker=dict(size=1, color=molecules_color[molecules[i]]),
+                    marker=dict(size=5, color=molecules_color[molecules[i]]),
                     opacity=1,
                     name=f"collision :{molecules_name[molecules[i]]}",
                     showlegend=True,
