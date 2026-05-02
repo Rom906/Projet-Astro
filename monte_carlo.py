@@ -55,4 +55,4 @@ def mass(molecule):
     return molar_mass * Na 
 
 def field_contribution(q_other, r_self, r_other):
-    return (q_other) / (4 * pi * e0 * abs(r_other - r_self)**2) * r_other - r_self
+    return (q_other) / (4 * pi * e0 * abs(r_other - r_self)**2) * r_self - r_other
