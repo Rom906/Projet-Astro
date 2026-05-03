@@ -1,5 +1,15 @@
-from generate_solutions import plot_3d_collisions_only, plot_3d_multi
-from normalization import NormalizationParameters, differential_equation_normalized, convert_to_normalized, convert_to_dimensional, convert_electric_field_to_normalized
+from generate_solutions import (
+    plot_3d_collisions_only,
+    plot_3d_multi,
+    plot_3d_collisions,
+)
+from normalization import (
+    NormalizationParameters,
+    differential_equation_normalized,
+    convert_to_normalized,
+    convert_to_dimensional,
+    convert_electric_field_to_normalized,
+)
 from integration_functions import RK4
 from utils import Vector
 from constants import RT, mp, MO, qe, mu
@@ -14,6 +24,60 @@ from monte_carlo import apply_post_collision_velocity
 
 NA = 6
 
+
+def calculer_trajectoire_complete(
+    initial_conditions, model, diff_eq, params, max_steps=100000
+):
+    pos_vel = initial_conditions
+    trajectoire_entiere = [pos_vel[0]]  # Liste de toutes les positions (Vector)
+    points_collisions = []  # Liste des positions exactes des chocs
+
+    h = 1.0  # Pas initial
+    n_steps = 0
+    is_active = True
+
+    while is_active:
+        # 1. Calcul du pas suivant (RK4)
+        new_step = model([pos_vel], diff_eq, n_steps * h, h, 1)
+
+        # 2. Test de collision via Monte-Carlo
+        collision_detectee = False
+        for i in range(len(molecules_list)):
+            # Conversion en unités réelles pour le test physique
+            real_posvel = convert_to_dimensional(new_step[0], new_step[1], params)
+            if test_collision(Vector([real_posvel[0], real_posvel[1]]), i):
+                # Enregistrement du point de choc
+                points_collisions.append(new_step[0])
+
+                # Application de la nouvelle vitesse (perte d'énergie + déviation)
+                # Cette fonction doit être importée de votre module monte_carlo
+                v_post = apply_post_collision_velocity(
+                    new_step[0], new_step[1], i, params
+                )
+
+                # Mise à jour de l'état avec la nouvelle direction/vitesse
+                pos_vel = Vector([new_step[0], v_post])
+                collision_detectee = True
+
+                # Si l'énergie est épuisée, on arrête
+                if abs(v_post) == 0:
+                    is_active = False
+                break
+
+        if not collision_detectee:
+            pos_vel = new_step
+
+        # Enregistrement systématique du point dans la trajectoire
+        trajectoire_entiere.append(pos_vel[0])
+        n_steps += 1
+
+        # Conditions de sortie de sécurité
+        if n_steps > max_steps or abs(pos_vel[0]) > 50 or abs(pos_vel[0]) < 1.01:
+            is_active = False
+
+    return trajectoire_entiere, points_collisions
+
+
 def compute_solution_trash_points_by_steps(
     model: Callable[
         [List[Vector], Callable[[float, Vector], Vector], float, float, int], Vector
@@ -25,7 +89,7 @@ def compute_solution_trash_points_by_steps(
     params: NormalizationParameters,
     model_n_steps: int = 1,
     model_order: int = 4,
-    tolerated_variation: float = 0.05
+    tolerated_variation: float = 0.05,
 ) -> Tuple[List[Vector], float, List[int], List[Vector]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
@@ -64,9 +128,9 @@ def compute_solution_trash_points_by_steps(
     liste_collisions_pos = []
     liste_molecules_hit = []
     liste_positions = []  # Stocker toutes les positions (trajectoire)
-    
+
     E = convert_electric_field_to_normalized(Vector([0, 0, 0]), params)
-    
+
     while is_active:
         # --- RK4 INTEGRATION STEP ---
         vector_list = [pos_vel]
@@ -75,27 +139,29 @@ def compute_solution_trash_points_by_steps(
         n_steps += 1
         ti += h
         liste_positions.append(pos_vel[0])  # Enregistrer la position
-        
+
         # --- GESTION DES COLLISIONS MULTIPLES ---
         for i in range(len(molecules_list)):
             denormalized_posvel = convert_to_dimensional(pos_vel[0], pos_vel[1], params)
             conditions = Vector([denormalized_posvel[0], denormalized_posvel[1]])
-            
+
             if test_collision(conditions, i):
                 # 1. Enregistrer le choc
                 liste_collisions_pos.append(pos_vel[0])
                 liste_molecules_hit.append(i)
-                
+
                 # 2. Mettre à jour la vitesse post-collision
-                new_velocity = apply_post_collision_velocity(pos_vel[0], pos_vel[1], i, params)
+                new_velocity = apply_post_collision_velocity(
+                    pos_vel[0], pos_vel[1], i, params
+                )
                 pos_vel = Vector([pos_vel[0], new_velocity])
-                
+
                 # 3. Arrêter si l'électron n'a plus d'énergie
                 if abs(new_velocity) == 0:
                     is_active = False
-                
-                break # On sort de la boucle for (un seul choc par itération)
-                
+
+                break  # On sort de la boucle for (un seul choc par itération)
+
         # --- CONDITIONS D'ARRÊT SECONDAIRES ---
         if n_steps > max_n_steps or abs(pos_vel[0]) > 50:
             is_active = False
@@ -110,41 +176,83 @@ def compute_solution_trash_points_by_steps(
     return liste_collisions_pos, ti, liste_molecules_hit, liste_positions
 
 
+# if __name__ == "__main__":
+#     parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
+#     initial_conditions = []
+#     for i in range(32):
+#         x_start = 10
+#         y_start = randrange(-5, 6)
+#         z_start = randrange(-5, 6)
+#         vx_start = -randrange(1, 11) / 100
+#         vy_start = randrange(-1, 1) / 100
+#         vz_start = randrange(-1, 1) / 100
+#         initial_position = RT * Vector([x_start, y_start, z_start])
+#         initial_velocity = RT * Vector([vx_start, vy_start, vz_start])
+#         initial_condition = convert_to_normalized(
+#             initial_position, initial_velocity, parameters
+#         )
+#         initial_condition = Vector([initial_condition[0], initial_condition[1]])
+#         initial_conditions.append(
+#             (
+#                 RK4,
+#                 differential_equation_normalized,
+#                 initial_condition,
+#                 100000,
+#                 1,
+#                 parameters,
+#             )
+#         )
+
+#     with Pool() as p:
+#         results = p.starmap(compute_solution_trash_points_by_steps, initial_conditions)
+
+#     collisions_positions = []
+#     times = []
+#     molecule_collisions_index = []
+
+#     for i, result in enumerate(results):
+#         trajectory = result[3]  # Récupérer la trajectoire complète
+
+#         print(f"Particule {i+1}: {len(trajectory)} positions")
+
+#         if result[0]:  # Only process particles that had collisions
+#             collisions_positions.append(result[0][0])
+#             times.append(result[1])
+#             molecule_collisions_index.append(result[2])
+
+#         print(
+#             f"  Collisions détectées: {len(result[0])}"
+#         )  # Debug: afficher nb collisions par particule
+
+#     print(f"\n📊 Affichage des {len(collisions_positions)} collisions...\n")
+#     plot_3d_collisions_only(collisions_positions, molecule_collisions_index)
+
 if __name__ == "__main__":
+
     parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
-    initial_conditions = []
-    for i in range(32):
-        x_start = 10
-        y_start = randrange(-5, 6)
-        z_start = randrange(-5, 6)
-        vx_start = -randrange(1, 11) / 100
-        vy_start = randrange(-1, 1) / 100
-        vz_start = randrange(-1, 1) / 100
-        initial_position = RT * Vector([x_start, y_start, z_start])
-        initial_velocity = RT * Vector([vx_start, vy_start, vz_start])
-        initial_condition = convert_to_normalized(initial_position, initial_velocity, parameters)
-        initial_condition = Vector([initial_condition[0], initial_condition[1]])
-        initial_conditions.append((RK4, differential_equation_normalized, initial_condition, 100000, 1, parameters))
 
-    with Pool() as p:
-        results = p.starmap(compute_solution_trash_points_by_steps, initial_conditions)
+    initial_position = RT * Vector([10.0, 0.5, 0.5])
+    initial_velocity = RT * Vector([-0.05, 0.0, 0.0])
 
-    collisions_positions = []
-    times = []
-    molecule_collisions_index = []
-    
-    for i, result in enumerate(results):
-        trajectory = result[3]  # Récupérer la trajectoire complète
-        
-        print(f"Particule {i+1}: {len(trajectory)} positions")
-        
-        if result[0]:  # Only process particles that had collisions
-            collisions_positions.append(result[0][0])
-            times.append(result[1])
-            molecule_collisions_index.append(result[2])
-        
-        print(f"  Collisions détectées: {len(result[0])}")  # Debug: afficher nb collisions par particule
-    
+    initial_condition_norm = convert_to_normalized(
+        initial_position, initial_velocity, parameters
+    )
 
-    print(f"\n📊 Affichage des {len(collisions_positions)} collisions...\n")
-    plot_3d_collisions_only(collisions_positions, molecule_collisions_index)
+    initial_conditions_vector = Vector(
+        [initial_condition_norm[0], initial_condition_norm[1]]
+    )
+
+    print("Début de la simulation de la trajectoire post-collision...")
+
+    trajectoire, points_chocs = calculer_trajectoire_complete(
+        initial_conditions=initial_conditions_vector,
+        model=RK4,
+        diff_eq=differential_equation_normalized,
+        params=parameters,
+    )
+
+    print(f"Simulation terminée ! La particule a subi {len(points_chocs)} collisions.")
+
+    plot_3d_collisions(
+        trajectoire, points_chocs, initial_velocity=initial_conditions_vector[1]
+    )
