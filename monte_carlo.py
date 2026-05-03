@@ -52,7 +52,7 @@ def mass(molecule):
         molar_mass = 39.95 #g/mol
     elif molecule == "N2":
         molar_mass = 28.014 #g/mol
-    return molar_mass * Na 
+    return molar_mass * Na / 10**3
 
 def field_contribution(q_other, r_self, r_other):
     return (q_other) / (4 * pi * e0 * abs(r_other - r_self)**2) * r_self - r_other
