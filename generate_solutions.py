@@ -168,6 +168,8 @@ def compute_solution_trash_points(
     time_index_deleted = []
     ti = 0
     while ti < maximum:
+        if abs(solution[-1][0]) > 50:
+            break
         vector_list = []
         for i in range(number_of_steps):
             vector_list.append(solution[-1 - i])

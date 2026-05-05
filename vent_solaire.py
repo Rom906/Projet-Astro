@@ -16,6 +16,7 @@ from normalization import (
 )
 from generate_solutions import compute_solution_trash_points, plot_3d_multi
 from time import time
+from multiprocessing import Pool
 
 
 def plot_multi_particules(
@@ -69,24 +70,17 @@ def plot_multi_particules(
             print(f"- position : {liste_conditions_initiales[i][0]}")
             print(f"- vitesse : {liste_conditions_initiales[i][1]}\n")
 
+    initial_conditions = []
+    for condition in liste_conditions_initiales:
+        initial_conditions.append((RK4, differential_equation_normalized, nombre_points, 0, intervalle_temps, condition, False, 1, ratio_sur_100, variable_steps, tolerated_variation))
+
     liste_solutions = []
 
-    for i in range(len(liste_conditions_initiales)):
-        solution_normalized, time_normalized = compute_solution_trash_points(
-            RK4,
-            differential_equation_normalized,
-            nombre_points,
-            0,
-            intervalle_temps,
-            liste_conditions_initiales[i],
-            False,
-            1,
-            ratio_sur_100,
-            variable_steps,
-            tolerated_variation,
-        )
+    with Pool() as p:
+        results = p.starmap(compute_solution_trash_points, initial_conditions)
+    for result in results:
+        solution_normalized, time_normalized = result
         liste_solutions.append(solution_normalized)
-        print(f"Point de {i+1}eme particule générés avec succès !\n")
 
     return (
         N_particules,
