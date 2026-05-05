@@ -72,7 +72,21 @@ def plot_multi_particules(
 
     initial_conditions = []
     for condition in liste_conditions_initiales:
-        initial_conditions.append((RK4, differential_equation_normalized, nombre_points, 0, intervalle_temps, condition, False, 1, ratio_sur_100, variable_steps, tolerated_variation))
+        initial_conditions.append(
+            (
+                RK4,
+                differential_equation_normalized,
+                nombre_points,
+                0,
+                intervalle_temps,
+                condition,
+                False,
+                1,
+                ratio_sur_100,
+                variable_steps,
+                tolerated_variation,
+            )
+        )
 
     liste_solutions = []
 
@@ -107,9 +121,9 @@ if __name__ == "__main__":
     ) = plot_multi_particules(
         N_particules=100,
         cercle=3,
-        distance_cercle=0.1,
+        distance_cercle=10,
         nombre_points=100000,
-        intervalle_temps=100000,
+        intervalle_temps=10000000,
         ratio_sur_100=1,
         variable_steps=True,
         tolerated_variation=0.05,
@@ -128,6 +142,4 @@ if __name__ == "__main__":
     )
 
 temps_execution = time() - temps_initial
-print(
-    f"Temps d'exécution pour {N_particules} particules : {temps_execution:.2f} secondes"
-)
+print(f"Temps d'exécution : {temps_execution:.2f} secondes")
