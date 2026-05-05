@@ -48,6 +48,8 @@ def init(shared, b, cp, ic):
 
 def compute_thread(indexs: List[int], nombre_pas):
     for i in range(nombre_pas):
+        if i % 100 == 0:
+            print(f"Step : {i} / 100000")
         try:
             for index in indexs:
                 compute_solution(index)
@@ -65,8 +67,8 @@ def compute_thread(indexs: List[int], nombre_pas):
 
 if __name__ == "__main__":
     parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
-    nombre_particules = 32
-    nombre_pas = 10000
+    nombre_particules = 4
+    nombre_pas = 100000
     with Manager() as manager:
         initial_conditions = manager.list()
         collision_points = manager.list()
