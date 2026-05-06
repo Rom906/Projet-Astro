@@ -6,14 +6,24 @@ from utils import (
     load_time_interval,
     load_from_csv,
 )
-from integration_functions import RK4
+from integration_functions import (
+    adams,
+    RK4,
+    euler,
+    dormand_prince,
+    Heun,
+    velocity_verlet,
+)
+
+from constants import RT, qe, mp, MO, mu
 from normalization import (
     NormalizationParameters,
     differential_equation_normalized,
     convert_to_normalized,
 )
-from generate_solutions import compute_solution, plot_3d_multi
-from random import uniform
+from generate_solutions import compute_solution_trash_points, plot_3d_multi
+from time import time
+from multiprocessing import Pool
 
 
 def plot_multi_particules(
@@ -67,23 +77,31 @@ def plot_multi_particules(
             print(f"- position : {liste_conditions_initiales[i][0]}")
             print(f"- vitesse : {liste_conditions_initiales[i][1]}\n")
 
+    initial_conditions = []
+    for condition in liste_conditions_initiales:
+        initial_conditions.append(
+            (
+                RK4,
+                differential_equation_normalized,
+                nombre_points,
+                0,
+                intervalle_temps,
+                condition,
+                False,
+                1,
+                ratio_sur_100,
+                # variable_steps,
+                # tolerated_variation,
+            )
+        )
+
     liste_solutions = []
 
-    for i in range(len(liste_conditions_initiales)):
-        solution_normalized, time_index_normalized = compute_solution_trash_points(
-            RK4,
-            differential_equation_normalized,
-            liste_conditions_initiales[i],
-            nombre_points,
-            False,
-            1,
-            ratio_sur_100,
-            variable_steps,
-            tolerated_variation,
-        )
+    with Pool() as p:
+        results = p.starmap(compute_solution_trash_points, initial_conditions)
+    for result in results:
+        solution_normalized, time_normalized = result
         liste_solutions.append(solution_normalized)
-        liste_tps.append(time_index_normalized)
-        print(f"Point de {i+1}eme particule générés avec succès !\n")
 
     return (
         N_particules,
@@ -95,16 +113,8 @@ def plot_multi_particules(
         ratio_sur_100,
     )
 
-def collision_test(conditions: Vector, concentration_ni, molecule: dict, ):
-    n = concentration_ni(abs(conditions[0]), molecule["index"])
-    s = molecule["cross_section"]
-    v = conditions[i] - maxwell_boltzmann()
-    collision_rate = n * s *v
-    return uniform() > collision_rate
 
-def maxwell_boltzmann():
-    return Vector([0, 0, 0])
-
+temps_initial = time()
 
 if __name__ == "__main__":
     (
@@ -118,8 +128,8 @@ if __name__ == "__main__":
     ) = plot_multi_particules(
         N_particules=100,
         cercle=3,
-        distance_cercle=3,
-        nombre_points=10000,
+        distance_cercle=10,
+        nombre_points=100000,
         intervalle_temps=10000000,
         ratio_sur_100=1,
         variable_steps=True,
@@ -137,3 +147,6 @@ if __name__ == "__main__":
         color="multi",
         epaisseur=1,
     )
+
+temps_execution = time() - temps_initial
+print(f"Temps d'exécution : {temps_execution:.2f} secondes")
