@@ -61,6 +61,8 @@ def compute_solution_trash_points_by_steps(
     collisions = False
     E = convert_electric_field_to_normalized(Vector([0, 0, 0]), params)
     while not collisions:
+        if n_steps % 100 == 0:
+            print(f"Step : {n_steps} / {max_n_steps}")
         # E = 0
         # for i in range() in range(other_particles):
         #     E += field_contribution(-qe, pos_vel[0], other_particles[i][-1][0])
