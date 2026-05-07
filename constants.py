@@ -7,7 +7,7 @@ qe = 1.602e-19  # charge of proton [C]
 phi = 11.70 * pi / 180.0  # Magnetic dipole tilt [rad]
 theta = 23.5 * pi / 180  # Magnetic dipole theta angle
 mu = -7.94e22 * Vector(
-    [cos(phi), sin(phi), sin(theta)]
+    [cos(phi) * sin(theta), sin(phi) * sin(theta), sin(theta)]
 )  # Earth's magnetic moment [A m2]
 ROdip = Vector([0.0, 0.0, 0.0])  # Dipole location
 MO = 1.0e-7  # mu0/4pi

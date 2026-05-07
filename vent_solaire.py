@@ -123,7 +123,7 @@ if __name__ == "__main__":
         cercle=3,
         distance_cercle=10,
         nombre_points=100000,
-        intervalle_temps=10000000,
+        intervalle_temps=1000000000,
         ratio_sur_100=1,
         variable_steps=True,
         tolerated_variation=0.05,
