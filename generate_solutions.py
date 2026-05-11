@@ -289,6 +289,8 @@ def compute_solution_trash_points(
     treesold = ratio
     time_index_deleted = []
     for i in range(1, len(intervall)):
+        if i % 100 == 0:
+            print(f"Step : {i} / {len(intervall)}")
         ti = intervall[i]
         vector_list = []
         for i in range(number_of_steps):

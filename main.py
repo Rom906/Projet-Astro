@@ -16,12 +16,11 @@ from normalization import (
 from integration_functions import adams, euler, RK4, dormand_prince, velocity_verlet
 from utils import Vector, save_to_csv, save_time_interval
 from constants import RT, mp, MO, qe, mu
-from math import inf
 
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
-initial_position = Vector([-4 * RT, -1 * RT, -6 * RT])
-initial_velocity = RT * Vector([0.0001, 0.00, 0.00])
+initial_position = Vector([-8 * RT, 0 * RT, 0 * RT])
+initial_velocity = RT * Vector([0.04, 0.01, 0.04])
 initial_conditions = convert_to_normalized(
     initial_position, initial_velocity, parameters
 )
@@ -32,7 +31,7 @@ solution_normalized, time_noramlized = compute_solution_trash_points(
     differential_equation_normalized,
     2000000,
     0,
-    3600000000,
+    3600000,
     initial_conditions,
     False,
     1,
