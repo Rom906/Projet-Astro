@@ -669,10 +669,6 @@ def plot_3d_v2(
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
-<<<<<<< HEAD
-    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth", colorscale=[[0, 'blue'], [1, 'blue']]))
-    
-=======
         sc.append(row_sc)
 
     # Enhanced colorscale - Blue and Green only (no white)
@@ -700,7 +696,6 @@ def plot_3d_v2(
         )
     )
 
->>>>>>> 5448aeabca727522f26132efa026e2cfb0582342
     # Add magnetic moment vector at North Pole (0, 0, 1)
     # Normalize and scale the magnetic moment for visualization
     mu_normalized = magnetic_moment.normalized()

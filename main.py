@@ -20,20 +20,23 @@ from math import inf
 
 
 parameters = NormalizationParameters(RT, qe / mp, MO, abs(mu))
-initial_position = Vector([-1 * RT, -1 * RT, -1 * RT])
-initial_velocity = RT * Vector([0.01, 0.01, 0.01])
+initial_position = Vector([-4 * RT, -1 * RT, -6 * RT])
+initial_velocity = RT * Vector([0.0001, 0.00, 0.00])
 initial_conditions = convert_to_normalized(
     initial_position, initial_velocity, parameters
 )
 initial_conditions = Vector([initial_conditions[0], initial_conditions[1]])
 print(initial_conditions)
-solution_normalized, time_noramlized = compute_solution(
+solution_normalized, time_noramlized = compute_solution_trash_points(
     RK4,
     differential_equation_normalized,
+    2000000,
+    0,
+    3600000000,
     initial_conditions,
-    max_n_steps=10000,
-    initial_step_size=1,
-    variable_steps=True,
+    False,
+    1,
+    1
 )
 
 print(len(solution_normalized))
@@ -81,6 +84,6 @@ time = parameters.rescale_normalized_time_intervall(time_noramlized)
 # save_to_csv(velocity, "debug_velocity.csv")
 # save_time_interval(time, "debug_time.csv")
 
-# plot_3d(position)
+plot_3d_v2(position)
 plot_3d_v2(position, initial_velocity, magnetic_moment=mu)
 plot_kinetic_energy_v2(velocity, time, mp=mp)
