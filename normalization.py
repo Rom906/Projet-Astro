@@ -74,6 +74,7 @@ class NormalizationParameters:
         # Time scale from normalization: T = 4πmₚR₀³/(qμ₀m₀)
         # Using q/m instead: T = 4πR₀³/((q/m)·μ₀·m₀)
         self.T = 4 * pi * self.R0**3 / (self.q_over_m * 4 * mu0_over_4pi * m_oplus)
+        print(self.T)
 
     def dimensionalize_position(self, u_norm: Vector | np.ndarray) -> Vector:
         """Convert normalized position u to dimensional r = R₀·u."""
@@ -270,7 +271,6 @@ def create_normalized_differential_equation(
 def differential_equation_normalized(
     tau: float,
     Y: Vector,
-    params: NormalizationParameters = None,
     mu_direction=mu.normalized(),
 ) -> Vector:
     """

@@ -289,6 +289,8 @@ def compute_solution_trash_points(
     treesold = ratio
     time_index_deleted = []
     for i in range(1, len(intervall)):
+        if i % 100 == 0:
+            print(f"Step : {i} / {len(intervall)}")
         ti = intervall[i]
         vector_list = []
         for i in range(number_of_steps):
@@ -669,8 +671,38 @@ def plot_3d_v2(
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
+<<<<<<< HEAD
     figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth", colorscale=[[0, 'blue'], [1, 'blue']]))
     
+=======
+        sc.append(row_sc)
+
+    # Enhanced colorscale - Blue and Green only (no white)
+    earth_colorscale = [
+        [0.00, "rgb(0, 30, 100)"],  # Deep ocean
+        [0.25, "rgb(20, 100, 180)"],  # Ocean blue
+        [0.50, "rgb(60, 150, 50)"],  # Green forest
+        [0.75, "rgb(80, 180, 80)"],  # Light green
+        [1.00, "rgb(100, 200, 100)"],  # Bright green
+    ]
+
+    figure.add_trace(
+        go.Surface(
+            x=xe,
+            y=ye,
+            z=ze,
+            surfacecolor=sc,
+            colorscale=earth_colorscale,
+            cmin=0,
+            cmax=1,
+            showscale=False,
+            name="Earth",
+            lighting=dict(ambient=0.6, diffuse=0.6, roughness=0.9, specular=0.1),
+            lightposition=dict(x=100, y=200, z=0),
+        )
+    )
+
+>>>>>>> 67b3460c78e3d183a6428768eb4566ca976a10ba
     # Add magnetic moment vector at North Pole (0, 0, 1)
     # Normalize and scale the magnetic moment for visualization
     mu_normalized = magnetic_moment.normalized()
