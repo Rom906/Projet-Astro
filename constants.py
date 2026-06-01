@@ -21,3 +21,6 @@ UNIT_V = [
     "nm.s^-1",
     "pm.s^-1",
 ]  # Units for the scientific notation, from the biggest to the smallest
+kB = 1.380649e-23 # Boltzmann's constant [J/K]
+dalton = 1.6605300000013e-27 #conversion dalton to kg [kg]
+e0 = 8.85418782e10-12 #vacuum permittivity [F.m^-1] 
