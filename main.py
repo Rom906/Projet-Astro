@@ -21,11 +21,11 @@ solution_normalized, time_noramlized = compute_solution_trash_points_by_steps(
     RK4,
     differential_equation_normalized,
     initial_conditions,
-    1000000,
+    30000,
     5000,
     multiple_steps_method=True,
     ratio=2,
-    variable_steps=False,
+    variable_steps=True,
 )
 
 print(len(solution_normalized))
