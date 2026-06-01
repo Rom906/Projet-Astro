@@ -9,28 +9,29 @@ def adams(
     f: Callable[[float, Vector], Vector],
     ti: float,
     h: float,
-    m: int,
+    number_of_steps: int,
 ) -> Vector:
     """
-    Calculate an integration step using Adams-Bashforth
+    Calculates an integration step using explicit Adams-Bashforth
 
-    param liste ui: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
-    type liste_ui: List['Vector']
-    param f: ODE (ordinary differential equation) that takes in entry a time and a vector and returns a vector
+    param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    type previous_conditions: List['Vector']
+    param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
     type f: function
-    param ti: initial time with relation ti+1 = ti + h
+    param ti: initial time with relation t_{i+1} = t_i + h
     type ti: float
     param h: step size
     type h: int
-    param m: number of previous step used
-    type m: int
+    param number_of_steps: number of previous step used
+    type number_of_steps: int
+    rtype: Vector
     """
 
     betas = [1, 1 / 2, 1 / 12, 1 / 24]
     alphas = [(1,), (3, -1), (23, -16, 5), (55, -59, 37, -9)]
 
-    beta_choisi = betas[m - 1]
-    alpha_choisi = alphas[m - 1]
+    beta_choisi = betas[number_of_steps - 1]
+    alpha_choisi = alphas[number_of_steps - 1]
 
     sum = Vector(
         [
@@ -39,7 +40,7 @@ def adams(
         ]
     )
 
-    for i in range(m):
+    for i in range(number_of_steps):
         alpha_i = alpha_choisi[i]
         u_pred = liste_ui[-i]
         t_pred = ti - (i - 1) * h
@@ -54,61 +55,50 @@ def adams(
 
 
 def euler(
-    liste_ui: List[Vector],
+    previous_conditions: List[Vector],
     f: Callable[[float, Vector], Vector],
     ti: float,
     h: float,
-    m: int,
+    number_of_steps: int,
 ) -> Vector:
     """
-    Calculate an integration step using explicit Euler
+    Calculates an integration step using explicit Euler
 
-    param liste ui: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
-    type liste_ui: List['Vector']
-    param f: ODE (ordinary differential equation) that takes in entry a time and a vector and returns a vector
+    param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    type previous_conditions: List['Vector']
+    param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
     type f: function
-    param ti: initial time with relation ti+1 = ti + h
+    param ti: initial time with relation t_{i+1} = t_i + h
     type ti: float
     param h: step size
     type h: int
-    param m: number of previous step used
-    type m: int
+    param number_of_steps: number of previous step used
+    type number_of_steps: int
+    rtype: Vector
     """
-    vector = liste_ui[0]
-    ui_plus_un = vector + h * f(ti, vector)
-    return ui_plus_un
+    Y = previous_conditions[0]
+    Y_next = Y + h * f(ti, Y)
+    return Y_next
 
 
-def RK4(vector_list, differential_equation, t, h, number_of_steps):
+def RK4(previous_conditions, f, t, h, number_of_steps):
     """
-    Runge-Kutta 4 single step compatible with `compute_solution`.
+    Calculates an integration step using RK4
 
-    Expected inputs:
-      - vector_list: List[Vector] where vector_list[0] is the most recent state Y_n.
-      - differential_equation: function f(t, Y) -> Vector representing Y'.
-      - t: current time (float)
-      - h: timestep (float)
-      - number_of_steps: not used for single-step RK4 but kept for API compatibility.
-
-    Returns:
-      - Vector: the estimated Y_{n+1}
-    """
-    """
-    Calculate an integration step using RK4
-
-    param liste ui: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
-    type liste_ui: List['Vector']
-    param f: ODE (ordinary differential equation) that takes in entry a time and a vector and returns a vector
+    param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    type previous_conditions: List['Vector']
+    param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
     type f: function
-    param ti: initial time with relation ti+1 = ti + h
+    param ti: initial time with relation t_{i+1} = t_i + h
     type ti: float
     param h: step size
     type h: int
-    param m: number of previous step used
-    type m: int
+    param number_of_steps: number of previous step used
+    type number_of_steps: int
+    rtype: Vector
     """
     # The most recent state
-    Y = vector_list[0]
+    Y = previous_conditions[0]
 
     # k1 = f(t, Y)
     k1 = differential_equation(t, Y)
@@ -129,39 +119,30 @@ def RK4(vector_list, differential_equation, t, h, number_of_steps):
 
 
 def dormand_prince(
-    u_i: List[Vector],
+    previous_conditions: List[Vector],
     f: Callable[[Vector, float], Vector],
     ti: float,
     h: float,
-    m: int,
+    number_of_steps: int,
 ) -> Vector:
     """
-    Dormand-Prince 5(4) method for solving differential equations.
+    Calculates an integration step using Dormand-Prince
 
-    This is an explicit Runge-Kutta method with 7 stages, providing both 5th and 4th order solutions.
-    With fixed step size h.
-
-    Parameters:
-    -----------
-    u_i : List[Vector]
-        List of previous solution vectors. For single-step methods, only u_i[-1] is used.
-    f : Callable[[Vector, float], Vector]
-        The differential equation function: y' = f(y, t)
-    ti : float
-        Current time point
-    h : float
-        Fixed time step size
-    m : int
-        Number of steps used by the method (not used for single-step Dormand-Prince, kept for compatibility)
-
-    Returns:
-    --------
-    Vector
-        The solution at time ti + h
+    param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    type previous_conditions: List['Vector']
+    param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
+    type f: function
+    param ti: initial time with relation t_{i+1} = t_i + h
+    type ti: float
+    param h: step size
+    type h: int
+    param number_of_steps: number of previous step used
+    type number_of_steps: int
+    rtype: Vector
     """
 
-    # Extract the current state (last element of u_i list)
-    y = u_i[-1]
+    # Extract the current state (last element of previous_conditions list)
+    Y = previous_conditions[-1]
     t = ti
 
     # Dormand-Prince 5(4) coefficients
@@ -207,86 +188,49 @@ def dormand_prince(
     k = []
     for i in range(7):
         # Compute the argument for f
-        y_stage = y.copy()
+        Y_stage = y.copy()
         for j in range(i):
-            y_stage = y_stage + (k[j] * (a[i][j] * h))
+            Y_stage = Y_stage + (k[j] * (a[i][j] * h))
 
         # Evaluate f at the stage point
         t_stage = t + c[i] * h
-        k_i = f(t_stage, y_stage)
+        k_i = f(t_stage, Y_stage)
         k.append(k_i)
 
     # Compute the 5th order solution
-    y_next = y.copy()
+    Y_next = Y.copy()
     for i in range(7):
-        y_next = y_next + (k[i] * (b5[i] * h))
+        Y_next = Y_next + (k[i] * (b5[i] * h))
 
-    return y_next
-
-
-# ==================== VELOCITY VERLET METHOD ====================
+    return Y_next
 
 
 def velocity_verlet(
-    u_i: List[Vector], f: Callable[[Vector, float], Vector], ti: float, h: float, m: int
+    previous_conditions: List[Vector], f: Callable[[Vector, float], Vector], ti: float, h: float, number_of_steps: int
 ) -> Vector:
     """
-    Velocity Verlet method for solving Hamiltonian systems of differential equations.
+    Calculates an integration step using Velocity-Verlet
 
-    This is a 2nd order symplectic integrator, particularly efficient for systems
-    that decompose into position and velocity components.
-
-    The method is time-reversible and energy-conserving, making it ideal for long-term
-    simulations and problems in classical mechanics and electromagnetism.
-
-    Parameters:
-    -----------
-    u_i : List[Vector]
-        List of previous solution vectors. For single-step methods, only u_i[-1] is used.
-        Expected structure: u_i[-1] = [position_vector, velocity_vector]
-    f : Callable[[Vector, float], Vector]
-        The differential equation function: Y' = f(τ, Y)
-        With Y = [r, v], returns [dr/dτ, dv/dτ] = [velocity, acceleration]
-    ti : float
-        Current time point (in normalized time τ)
-    h : float
-        Fixed time step size
-    m : int
-        Number of steps used by the method (not used for Velocity Verlet, kept for compatibility)
-
-    Returns:
-    --------
-    Vector
-        The solution at time ti + h, structured as [position_new, velocity_new]
-
-    Algorithm:
-    ----------
-    For a system with structure Y = [r, v] where:
-    - dr/dτ = velocity (dY[0]/dτ) = f(...)[0]
-    - dv/dτ = acceleration (dY[1]/dτ) = f(...)[1]
-
-    The Velocity Verlet scheme works as follows:
-
-    1. v(τ + h/2) = v(τ) + (h/2) * a(τ)          [half-step velocity]
-    2. r(τ + h)   = r(τ) + h * v(τ + h/2)        [full-step position]
-    3. a(τ + h)   = f(τ + h, [r_new, v_{h/2}])[1] [acceleration at new position]
-    4. v(τ + h)   = v(τ + h/2) + (h/2) * a(τ + h) [full-step velocity]
-
-    Notes:
-    ------
-    - Symplectic integrator: preserves the structure of Hamiltonian systems
-    - Error is O(h³) per step, O(h²) for global error
-    - Energy drift is minimal even for very long simulations
-    - Time-reversible and volume-preserving in phase space
+    param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    type previous_conditions: List['Vector']
+    param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
+    type f: function
+    param ti: initial time with relation t_{i+1} = t_i + h
+    type ti: float
+    param h: step size
+    type h: int
+    param number_of_steps: number of previous step used
+    type number_of_steps: int
+    rtype: Vector
     """
 
-    # Extract current state (last element of u_i list)
-    y_current = u_i[-1]
+    # Extract current state (last element of previous_conditions list)
+    Y_current = previous_conditions[-1]
 
     # Extract position and velocity components
     # Y = [position, velocity]
-    r_current = y_current[0]  # Current position
-    v_current = y_current[1]  # Current velocity
+    r_current = Y_current[0]  # Current position
+    v_current = Y_current[1]  # Current velocity
 
     # Step 1: Evaluate derivatives at current time
     f_current = f(ti, y_current)
@@ -301,8 +245,8 @@ def velocity_verlet(
     r_new = r_current + v_half * h
 
     # Step 4: Evaluate derivatives at new position
-    y_new_intermediate = Vector([r_new, v_half])
-    f_new = f(ti + h, y_new_intermediate)
+    Y_new_intermediate = Vector([r_new, v_half])
+    f_new = f(ti + h, Y_new_intermediate)
     a_new = f_new[1]
 
     # Step 5: Full-step velocity update
@@ -313,32 +257,26 @@ def velocity_verlet(
 
 
 def Heun(
-    prev_steps: List[Vector],
-    diff_eq: Callable[[Vector, float], Vector],
+    previous_conditions: List[Vector],
+    f: Callable[[Vector, float], Vector],
     t: float,
     h: float,
-    n_steps: int,
+    number_of_steps: int,
 ) -> Vector:
     """
-    Solves the differential equation system Y' = f(Y, t) using an explicit
-    Heun method (Predictor-Corrector), specifically structured for Hamiltonian
-    systems where Y = [position, velocity].
+    Calculates an integration step using Heun
 
-    but uses the Heun averaging scheme instead of the symplectic half-step scheme.
-
-    :param prev_steps: List containing previous state vectors.
-                       Expected structure: Y = [position_vector, velocity_vector]
-    :type prev_steps: List[Vector]
-    :param diff_eq: Differential equation function f(Y, t) returning [velocity, acceleration].
-    :type diff_eq: Callable[[Vector, float], Vector]
-    :param t: Current time t_n
-    :type t: float
-    :param h: Time step size (delta t)
-    :type h: float
-    :param n_steps: Total number of steps (unused in this single-step implementation)
-    :type n_steps: int
-    :return: Estimated state vector Y_{n+1} structured as [position_new, velocity_new]
-    :rtype: Vector
+    param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    type previous_conditions: List['Vector']
+    param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
+    type f: function
+    param ti: initial time with relation t_{i+1} = t_i + h
+    type ti: float
+    param h: step size
+    type h: int
+    param number_of_steps: number of previous step used
+    type number_of_steps: int
+    rtype: Vector
     """
     # Extract current state Y_n (last element of history)
     Y_current = prev_steps[-1]
@@ -352,7 +290,7 @@ def Heun(
     # --- Step 1: Predictor (Explicit Euler) ---
 
     # Calculate slopes at current time: k1 = f(t_n, Y_n) = [r_n, v_n]
-    k1 = diff_eq(t, Y_current)
+    k1 = f(t, Y_current)
     v_slope_1 = k1[0]  # Should be v_current
     a_slope_1 = k1[1]  # Acceleration at t
 
@@ -368,7 +306,7 @@ def Heun(
     # --- Step 2: Corrector (Explicit Average) ---
 
     # Calculate slopes at the predicted state: k2 = f(t_{n+1}, Y_pred)
-    k2 = diff_eq(t_next, Y_predict)
+    k2 = f(t_next, Y_predict)
     v_slope_2 = k2[0]  # Velocity at predicted state
     a_slope_2 = k2[1]  # Acceleration at predicted state
 
