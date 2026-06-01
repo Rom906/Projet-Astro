@@ -11,20 +11,20 @@ def adams(
     h: float,
     m: int,
 ) -> Vector:
-    """Calculate the next ui of the list, using the previous ones
+    """
+    Calculate an integration step using Adams-Bashforth
 
-    Parameters
-    ----------
-    liste ui : List['Vector']
-        all ui to calculate ui+1, in order (u0,u1,u2 etc...)
-    f : function
-        ODE (ordinary differential equation) that takes in entry a time and a vector and returns a vector
-    ti : float
-        temps i avec la relation ti+1 = ti + h
-    h : int
-        step
-    m : int
-        number of previous step used"""
+    param liste ui: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    type liste_ui: List['Vector']
+    param f: ODE (ordinary differential equation) that takes in entry a time and a vector and returns a vector
+    type f: function
+    param ti: initial time with relation ti+1 = ti + h
+    type ti: float
+    param h: step size
+    type h: int
+    param m: number of previous step used
+    type m: int
+    """
 
     betas = [1, 1 / 2, 1 / 12, 1 / 24]
     alphas = [(1,), (3, -1), (23, -16, 5), (55, -59, 37, -9)]
@@ -60,6 +60,20 @@ def euler(
     h: float,
     m: int,
 ) -> Vector:
+    """
+    Calculate an integration step using explicit Euler
+
+    param liste ui: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    type liste_ui: List['Vector']
+    param f: ODE (ordinary differential equation) that takes in entry a time and a vector and returns a vector
+    type f: function
+    param ti: initial time with relation ti+1 = ti + h
+    type ti: float
+    param h: step size
+    type h: int
+    param m: number of previous step used
+    type m: int
+    """
     vector = liste_ui[0]
     ui_plus_un = vector + h * f(ti, vector)
     return ui_plus_un
@@ -78,6 +92,20 @@ def RK4(vector_list, differential_equation, t, h, number_of_steps):
 
     Returns:
       - Vector: the estimated Y_{n+1}
+    """
+    """
+    Calculate an integration step using RK4
+
+    param liste ui: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    type liste_ui: List['Vector']
+    param f: ODE (ordinary differential equation) that takes in entry a time and a vector and returns a vector
+    type f: function
+    param ti: initial time with relation ti+1 = ti + h
+    type ti: float
+    param h: step size
+    type h: int
+    param m: number of previous step used
+    type m: int
     """
     # The most recent state
     Y = vector_list[0]
