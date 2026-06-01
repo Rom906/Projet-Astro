@@ -14,11 +14,11 @@ def test_collision(conditions: Vector, molecule_index) -> bool:
     """
     Performs a randomised test to determine whether a particle has collided or not
 
-    param conditions: the position and speed of the particle at the time of test
-    type conditions: Vector
-    param molecule_index: index of the molecule with which the collision is tested in the molecules_list
-    type molecule_index: int
-    rtype: Bool
+    :param conditions: the position and speed of the particle at the time of test
+    :type conditions: Vector
+    :param molecule_index: index of the molecule with which the collision is tested in the molecules_list
+    :type molecule_index: int
+    :rtype: Bool
     """
     n = concentration_ni(abs(conditions[0]), molecule_index)
     s = cross_section(molecules_list[molecule_index], 0)
@@ -33,11 +33,11 @@ def draw_maxwell_boltzmann_velocity(m, T):
     """
     Performs a randomised test to extract a speed from a Maxwell-Boltzmann distribution
 
-    param m: mass of the particle tested
-    type m: float
-    param T: temperature of the gas tested
-    type T: float
-    rtype: Bool
+    :param m: mass of the particle tested
+    :type m: float
+    :param T: temperature of the gas tested
+    :type T: float
+    :rtype: Bool
     """
     sdev = (kB * T / m) ** (1 / 2)
     vx = random.normal(loc=0, scale=sdev)
@@ -50,11 +50,11 @@ def cross_section(molecule, electron_nrg):
     """
     Determines the cross section of a molecule depending on incoming electron energy
 
-    param molecule: symbol of the atmospheric molecule tested
-    type moleucle: str
-    param electron_nrg: energy of the incoming electron
-    type electron_nrg: float
-    rtype: float
+    :param molecule: symbol of the atmospheric molecule tested
+    :type moleucle: str
+    :param electron_nrg: energy of the incoming electron
+    :type electron_nrg: float
+    :rtype: float
     """
     # this is rudimentary version of the function where the cross section is not a function of the nrg but this is an approximation
     if molecule == "O":
@@ -75,11 +75,11 @@ def mass(molecule):
     """
     Determines the mass of a molecule
 
-    param molecule: symbol of the atmospheric molecule tested
-    type molecule: str
-    rtype: float
+    :param molecule: symbol of the atmospheric molecule tested
+    :type molecule: str
+    :rtype: float
     """
-    #doesn't actually need to be a function
+    # doesn't actually need to be a function
     if molecule == "O":
         molar_mass = 15.999  # g/mol
     elif molecule == "O2":
@@ -99,12 +99,12 @@ def field_contribution(q_other, r_self, r_other):
     """
     Computes the Coulomb force btw two particules without the charge of the receiving particle
 
-    param q_other: charge of the other particle
-    type q_other: float
-    param r_self: position of the receiving particle
-    type r_self: Vector
-    param r_self: position of the other particle
-    type r_self: Vector
-    rtype: Vector
+    :param q_other: charge of the other particle
+    :type q_other: float
+    :param r_self: position of the receiving particle
+    :type r_self: Vector
+    :param r_self: position of the other particle
+    :type r_self: Vector
+    :rtype: Vector
     """
     return (q_other) / (4 * pi * e0 * abs(r_other - r_self) ** 2) * r_self - r_other

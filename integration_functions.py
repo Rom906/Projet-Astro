@@ -14,17 +14,17 @@ def adams(
     """
     Calculates an integration step using explicit Adams-Bashforth
 
-    param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
-    type previous_conditions: List['Vector']
-    param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
-    type f: function
-    param ti: initial time with relation t_{i+1} = t_i + h
-    type ti: float
-    param h: step size
-    type h: int
-    param number_of_steps: number of previous step used
-    type number_of_steps: int
-    rtype: Vector
+    :param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    :type previous_conditions: List['Vector']
+    :param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
+    :type f: function
+    :param ti: initial time with relation t_{i+1} = t_i + h
+    :type ti: float
+    :param h: step size
+    :type h: int
+    :param number_of_steps: number of previous step used
+    :type number_of_steps: int
+    :rtype: Vector
     """
 
     betas = [1, 1 / 2, 1 / 12, 1 / 24]
@@ -64,17 +64,17 @@ def euler(
     """
     Calculates an integration step using explicit Euler
 
-    param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
-    type previous_conditions: List['Vector']
-    param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
-    type f: function
-    param ti: initial time with relation t_{i+1} = t_i + h
-    type ti: float
-    param h: step size
-    type h: int
-    param number_of_steps: number of previous step used
-    type number_of_steps: int
-    rtype: Vector
+    :param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    :type previous_conditions: List['Vector']
+    :param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
+    :type f: function
+    :param ti: initial time with relation t_{i+1} = t_i + h
+    :type ti: float
+    :param h: step size
+    :type h: int
+    :param number_of_steps: number of previous step used
+    :type number_of_steps: int
+    :rtype: Vector
     """
     Y = previous_conditions[0]
     Y_next = Y + h * f(ti, Y)
@@ -85,17 +85,17 @@ def RK4(previous_conditions, f, t, h, number_of_steps):
     """
     Calculates an integration step using RK4
 
-    param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
-    type previous_conditions: List['Vector']
-    param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
-    type f: function
-    param ti: initial time with relation t_{i+1} = t_i + h
-    type ti: float
-    param h: step size
-    type h: int
-    param number_of_steps: number of previous step used
-    type number_of_steps: int
-    rtype: Vector
+    :param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    :type previous_conditions: List['Vector']
+    :param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
+    :type f: function
+    :param ti: initial time with relation t_{i+1} = t_i + h
+    :type ti: float
+    :param h: step size
+    :type h: int
+    :param number_of_steps: number of previous step used
+    :type number_of_steps: int
+    :rtype: Vector
     """
     # The most recent state
     Y = previous_conditions[0]
@@ -128,17 +128,17 @@ def dormand_prince(
     """
     Calculates an integration step using Dormand-Prince
 
-    param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
-    type previous_conditions: List['Vector']
-    param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
-    type f: function
-    param ti: initial time with relation t_{i+1} = t_i + h
-    type ti: float
-    param h: step size
-    type h: int
-    param number_of_steps: number of previous step used
-    type number_of_steps: int
-    rtype: Vector
+    :param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    :type previous_conditions: List['Vector']
+    :param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
+    :type f: function
+    :param ti: initial time with relation t_{i+1} = t_i + h
+    :type ti: float
+    :param h: step size
+    :type h: int
+    :param number_of_steps: number of previous step used
+    :type number_of_steps: int
+    :rtype: Vector
     """
 
     # Extract the current state (last element of previous_conditions list)
@@ -206,22 +206,26 @@ def dormand_prince(
 
 
 def velocity_verlet(
-    previous_conditions: List[Vector], f: Callable[[Vector, float], Vector], ti: float, h: float, number_of_steps: int
+    previous_conditions: List[Vector],
+    f: Callable[[Vector, float], Vector],
+    ti: float,
+    h: float,
+    number_of_steps: int,
 ) -> Vector:
     """
     Calculates an integration step using Velocity-Verlet
 
-    param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
-    type previous_conditions: List['Vector']
-    param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
-    type f: function
-    param ti: initial time with relation t_{i+1} = t_i + h
-    type ti: float
-    param h: step size
-    type h: int
-    param number_of_steps: number of previous step used
-    type number_of_steps: int
-    rtype: Vector
+    :param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    :type previous_conditions: List['Vector']
+    :param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
+    :type f: function
+    :param ti: initial time with relation t_{i+1} = t_i + h
+    :type ti: float
+    :param h: step size
+    :type h: int
+    :param number_of_steps: number of previous step used
+    :type number_of_steps: int
+    :rtype: Vector
     """
 
     # Extract current state (last element of previous_conditions list)
@@ -266,17 +270,17 @@ def Heun(
     """
     Calculates an integration step using Heun
 
-    param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
-    type previous_conditions: List['Vector']
-    param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
-    type f: function
-    param ti: initial time with relation t_{i+1} = t_i + h
-    type ti: float
-    param h: step size
-    type h: int
-    param number_of_steps: number of previous step used
-    type number_of_steps: int
-    rtype: Vector
+    :param previous_conditions: all ui to calculate ui+1, in order (u0,u1,u2 etc...)
+    :type previous_conditions: List['Vector']
+    :param f: function of the ODE Y' = f(Y) that takes in entry a time and a vector and returns a vector
+    :type f: function
+    :param ti: initial time with relation t_{i+1} = t_i + h
+    :type ti: float
+    :param h: step size
+    :type h: int
+    :param number_of_steps: number of previous step used
+    :type number_of_steps: int
+    :rtype: Vector
     """
     # Extract current state Y_n (last element of history)
     Y_current = prev_steps[-1]

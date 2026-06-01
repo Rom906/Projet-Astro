@@ -29,6 +29,7 @@ def get_intervall(steps: int, minimum: float, maximum: float) -> List[float]:
         intervall.append(minimum + h * i)
     return intervall
 
+
 def compute_solution(
     model: Callable[
         [List[Vector], Callable[[float, Vector], Vector], float, float, int], Vector
@@ -42,7 +43,7 @@ def compute_solution(
     model_order: int = 4,
     ratio: int = 1,
     variable_steps: bool = False,
-    tolerated_variation: int = 0.05
+    tolerated_variation: int = 0.05,
 ) -> Tuple[List[Vector], List[float]]:
     """
     compute an approximated solution of the given differential equation using the given model between min and max in a specified number of steps. This method also keep a limited amount of position points allowing it to consume less memory. The catch is that you need to set a ration number higher than the number of step used or it wont work
@@ -97,9 +98,7 @@ def compute_solution(
         vector_list = []
         for i in range(model_n_steps):
             vector_list.append(solution[-1 - i])
-        new_step_large = model(
-            vector_list, differential_equation, ti, h, model_n_steps
-        )
+        new_step_large = model(vector_list, differential_equation, ti, h, model_n_steps)
         new_step_pos_large = new_step_large[0]
         if variable_steps:
             half_step_fine = model(
@@ -124,7 +123,9 @@ def compute_solution(
                 ti += h
                 time_index.append(ti)
             if max_variation != 0:
-                h *= 0.9 * (tolerated_variation / max_variation) ** (1 / (model_order + 1))
+                h *= 0.9 * (tolerated_variation / max_variation) ** (
+                    1 / (model_order + 1)
+                )
             if max_variation >= tolerated_variation:
                 new_step = model(
                     vector_list, differential_equation, ti, h, model_n_steps
@@ -158,6 +159,7 @@ def compute_solution(
     print("==============================\n")
 
     return solution, time_index
+
 
 def compute_solution_no_trash_points(
     model: Callable[
@@ -323,6 +325,7 @@ def compute_solution_trash_points(
 
     return solution, intervall
 
+
 def plot_x_solution(time: List[float], solution: List[Vector]) -> None:
     """
     plot the x coordinates of the computed solution
@@ -473,7 +476,16 @@ def plot_3d(positions: List[Vector], initial_velocity: Vector = None) -> None:
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
-    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth", colorscale=[[0, 'blue'], [1, 'blue']]))
+    figure.add_trace(
+        go.Surface(
+            x=xe,
+            y=ye,
+            z=ze,
+            showscale=False,
+            name="Earth",
+            colorscale=[[0, "blue"], [1, "blue"]],
+        )
+    )
     position_x = round(positions[0][0], 3)
     position_y = round(positions[0][1], 3)
     position_z = round(positions[0][2], 3)
@@ -671,8 +683,17 @@ def plot_3d_v2(
         xe.append(row_x)
         ye.append(row_y)
         ze.append(row_z)
-    figure.add_trace(go.Surface(x=xe, y=ye, z=ze, showscale=False, name="Earth", colorscale=[[0, 'blue'], [1, 'blue']]))
-    
+    figure.add_trace(
+        go.Surface(
+            x=xe,
+            y=ye,
+            z=ze,
+            showscale=False,
+            name="Earth",
+            colorscale=[[0, "blue"], [1, "blue"]],
+        )
+    )
+
     # Add magnetic moment vector at North Pole (0, 0, 1)
     # Normalize and scale the magnetic moment for visualization
     mu_normalized = magnetic_moment.normalized()
@@ -1223,22 +1244,23 @@ def plot_3d_multi(
     # Show figure
     figure.show()
 
+
 def saved_plot_2d_projections_color(
-    positions_list: List[Vector], 
-    save_name: str, 
-    velocities_list: List[Vector] = None, 
-    title: str = "2D Projections", 
-    coordinate_system: str = "cartesian", 
-    save: bool = True, 
-    time_list: List[float] = None
+    positions_list: List[Vector],
+    save_name: str,
+    velocities_list: List[Vector] = None,
+    title: str = "2D Projections",
+    coordinate_system: str = "cartesian",
+    save: bool = True,
+    time_list: List[float] = None,
 ) -> None:
     """
-    Generates and saves (or displays) a figure containing three 2D projection plots. 
-    Depending on the mode, it visualizes either Phase Space trajectories (Velocity vs Position) 
-    or Geometric Projections (Position vs Position). 
-    
-    In Phase Space mode, trajectories are rendered as continuous lines with a color gradient 
-    representing the evolution of time, using Matplotlib LineCollections for performance. 
+    Generates and saves (or displays) a figure containing three 2D projection plots.
+    Depending on the mode, it visualizes either Phase Space trajectories (Velocity vs Position)
+    or Geometric Projections (Position vs Position).
+
+    In Phase Space mode, trajectories are rendered as continuous lines with a color gradient
+    representing the evolution of time, using Matplotlib LineCollections for performance.
     In Geometric mode, trajectories are rendered as scatter plots.
 
     :param positions_list: List of position vectors (Vector objects) representing the trajectory coordinates.
@@ -1257,26 +1279,36 @@ def saved_plot_2d_projections_color(
     :type time_list: List[float], optional
     :raises ValueError: If "intrinsic" mode is selected but time_list or velocities_list are missing.
     """
-    
+
     # --- Handle Intrinsic Mode (not pertinent now and not realy finished) ---
-    
+
     if coordinate_system == "intrinsic":
         s, vs = None, None
         if time_list is None:
-            raise ValueError("Intrinsic mode requires the 'time_list' parameter (list of dt).")
+            raise ValueError(
+                "Intrinsic mode requires the 'time_list' parameter (list of dt)."
+            )
         if velocities_list is None:
-            raise ValueError("Intrinsic mode requires 'velocities_list' to calculate velocity magnitude.")
-        
-        s, vs = calculate_curvilinear_coordinates(positions_list, velocities_list, time_list)
-        
+            raise ValueError(
+                "Intrinsic mode requires 'velocities_list' to calculate velocity magnitude."
+            )
+
+        s, vs = calculate_curvilinear_coordinates(
+            positions_list, velocities_list, time_list
+        )
+
         # Replace x, y, z with s for the 3 plots.
         x, y, z = s, s, s
         vx, vy, vz = vs, vs, vs
-        
+
         labels_pos = [r"$s$ [RT]", r"$s$ [RT]", r"$s$ [RT]"]
         labels_vel = [r"$v_s$ [RT]", r"$v_s$ [RT]", r"$v_s$ [RT]"]
-        titles = [r"Intrinsic Phase Space: $v_s$ vs $s$", r"(Identical View)", r"(Identical View)"]
-        
+        titles = [
+            r"Intrinsic Phase Space: $v_s$ vs $s$",
+            r"(Identical View)",
+            r"(Identical View)",
+        ]
+
     # --- Handle Spherical Mode --- (Most pertinent)
     elif coordinate_system == "spherical":
         # Extract base Cartesian data
@@ -1289,18 +1321,18 @@ def saved_plot_2d_projections_color(
             orig_x = x
             orig_y = y
             orig_z = z
-            
+
             rho = np.sqrt(orig_x**2 + orig_y**2)
             r = np.sqrt(orig_x**2 + orig_y**2 + orig_z**2)
-            
+
             # Avoid division by zero
             r = np.where(r == 0, 1e-9, r)
             rho = np.where(rho == 0, 1e-9, rho)
 
             # Position Coordinates (r, theta, phi)
             x = r
-            y = np.arccos(orig_z / r)           # theta (Colatitude)
-            z = np.arctan2(orig_y, orig_x)      # phi (Longitude)
+            y = np.arccos(orig_z / r)  # theta (Colatitude)
+            z = np.arctan2(orig_y, orig_x)  # phi (Longitude)
 
             if velocities_list:
                 vx = np.array([v.coordinates[0] for v in velocities_list])
@@ -1312,21 +1344,33 @@ def saved_plot_2d_projections_color(
 
                 # Colatitudinal Speed (v_theta)
                 v_theta = (orig_z * (orig_x * vx + orig_y * vy) / rho - rho * vz) / r
-                
+
                 # Azimuthal Speed (v_phi)
                 v_phi = (orig_x * vy - orig_y * vx) / rho
 
                 vx, vy, vz = vr, v_theta, v_phi
 
                 labels_pos = [r"$r$ [$R_T$]", r"$\theta$ [rad]", r"$\phi$ [rad]"]
-                labels_vel = [r"$v_r$ [$R_T/s$]", r"$v_\theta$ [$R_T/s$]", r"$v_\phi$ [$R_T/s$]"]
-                titles = [r"Phase Space: $v_r$ vs $r$", r"Phase Space: $v_\theta$ vs $\theta$", r"Phase Space: $v_\phi$ vs $\phi$"]
+                labels_vel = [
+                    r"$v_r$ [$R_T/s$]",
+                    r"$v_\theta$ [$R_T/s$]",
+                    r"$v_\phi$ [$R_T/s$]",
+                ]
+                titles = [
+                    r"Phase Space: $v_r$ vs $r$",
+                    r"Phase Space: $v_\theta$ vs $\theta$",
+                    r"Phase Space: $v_\phi$ vs $\phi$",
+                ]
             else:
                 labels_pos = [r"$r$ [$R_T$]", r"$\theta$ [rad]", r"$\phi$ [rad]"]
-                titles = [r"Projection: $\theta$ vs $r$", r"Projection: $\phi$ vs $\theta$", r"Projection: $\phi$ vs $r$"]
+                titles = [
+                    r"Projection: $\theta$ vs $r$",
+                    r"Projection: $\phi$ vs $\theta$",
+                    r"Projection: $\phi$ vs $r$",
+                ]
 
         # --- Handle Cartesian Mode --- (can be useful)
-        else: # cartesian
+        else:  # cartesian
             if velocities_list:
                 vx = np.array([v.coordinates[0] for v in velocities_list])
                 vy = np.array([v.coordinates[1] for v in velocities_list])
@@ -1334,13 +1378,17 @@ def saved_plot_2d_projections_color(
 
             labels_pos = [r"$x$ [$R_T$]", r"$y$ [$R_T$]", r"$z$ [$R_T$]"]
             labels_vel = [r"$v_x$", r"$v_y$", r"$v_z$"]
-            titles = [r"Phase Space Projection: $v_x$ vs $x$", r"Phase Space Projection: $v_y$ vs $y$", r"Phase Space Projection: $v_z$ vs $z$"]
+            titles = [
+                r"Phase Space Projection: $v_x$ vs $x$",
+                r"Phase Space Projection: $v_y$ vs $y$",
+                r"Phase Space Projection: $v_z$ vs $z$",
+            ]
 
     # --- Plot Configuration ---
     # To add time in the graph we want a series of segments (posn,veln) -> (posn+1, veln+1) and attribute one color to each segment. We will plot a series of segments
-    
+
     # Normalise time_list and set color tab
-    time_list=np.array(time_list)
+    time_list = np.array(time_list)
     norm = Normalize(vmin=time_list.min(), vmax=time_list.max())
     cmap = plt.cm.viridis
 
@@ -1352,18 +1400,19 @@ def saved_plot_2d_projections_color(
     segments1 = np.concatenate([points_graph1[:-1], points_graph1[1:]], axis=1)
     segments2 = np.concatenate([points_graph2[:-1], points_graph2[1:]], axis=1)
     segments3 = np.concatenate([points_graph3[:-1], points_graph3[1:]], axis=1)
-    
 
     # -- Creation of Collections --- (plt.plot can't change colors so we use collections)
     lc1 = LineCollection(segments1, cmap=cmap, norm=norm)
-    lc1.set_array(time_list[:-1]) # Set color to the segments
+    lc1.set_array(time_list[:-1])  # Set color to the segments
     lc2 = LineCollection(segments2, cmap=cmap, norm=norm)
     lc2.set_array(time_list[:-1])
     lc3 = LineCollection(segments3, cmap=cmap, norm=norm)
     lc3.set_array(time_list[:-1])
 
     # --- Define plot and axes ---
-    fig, axs = plt.subplots(3, 1, figsize=(10, 12), sharex=False, constrained_layout=True)
+    fig, axs = plt.subplots(
+        3, 1, figsize=(10, 12), sharex=False, constrained_layout=True
+    )
     fig.suptitle(title, fontsize=16)
 
     # --- Point color and size definition --- (for the last part, don't know if it's pertinent to keep)
@@ -1393,7 +1442,7 @@ def saved_plot_2d_projections_color(
         # Graph 3
         axs[2].add_collection(lc3)
         axs[2].set_ylabel(labels_vel[2])
-        axs[2].set_xlabel(labels_pos[2]) # Display position unit on X axis
+        axs[2].set_xlabel(labels_pos[2])  # Display position unit on X axis
         axs[2].set_title(titles[2])
         axs[2].grid(True, alpha=0.3)
         axs[2].set_xlim(z.min(), z.max())
@@ -1401,7 +1450,7 @@ def saved_plot_2d_projections_color(
 
     else:
         # --- Geometric Projection Mode (pos vs pos) ---
-        
+
         # Graph 1: y vs x
         axs[0].plot(x, y, ".", markersize=point_size, color=color, alpha=0.5)
         axs[0].set_xlabel(labels_pos[0])
@@ -1427,8 +1476,8 @@ def saved_plot_2d_projections_color(
         axs[2].set_aspect("equal")
 
     # --- Add color bar ---
-    cbar = fig.colorbar(lc1, ax=axs.tolist(), shrink=0.95) 
-    cbar.set_label('Temps (s)')
+    cbar = fig.colorbar(lc1, ax=axs.tolist(), shrink=0.95)
+    cbar.set_label("Temps (s)")
 
     # --- Save as a file or show --- (to change the save location don't hesitate, add ../ or any type of redirection)
     if save:
