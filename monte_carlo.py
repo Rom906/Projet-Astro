@@ -9,16 +9,37 @@ from atmospheric_model import concentration_ni, Na, T
 
 molecules_list = ["O", "O2", "H", "HE", "AR", "N2"]
 
+
 def test_collision(conditions: Vector, molecule_index) -> bool:
+    """
+    Performs a randomised test to determine whether a particle has collided or not
+
+    param conditions: the position and speed of the particle at the time of test
+    type conditions: Vector
+    param molecule_index: index of the molecule with which the collision is tested in the molecules_list
+    type molecule_index: int
+    rtype: Bool
+    """
     n = concentration_ni(abs(conditions[0]), molecule_index)
     s = cross_section(molecules_list[molecule_index], 0)
-    v = conditions[1] - draw_maxwell_boltzmann_velocity(mass(molecules_list[molecule_index]), T(abs(conditions[0])))
+    v = conditions[1] - draw_maxwell_boltzmann_velocity(
+        mass(molecules_list[molecule_index]), T(abs(conditions[0]))
+    )
     collision_rate = n * s * abs(v)
     return uniform(0, 1) < collision_rate.real
 
 
 def draw_maxwell_boltzmann_velocity(m, T):
-    sdev = (kB * T / m) ** (1/2)
+    """
+    Performs a randomised test to extract a speed from a Maxwell-Boltzmann distribution
+
+    param m: mass of the particle tested
+    type m: float
+    param T: temperature of the gas tested
+    type T: float
+    rtype: Bool
+    """
+    sdev = (kB * T / m) ** (1 / 2)
     vx = random.normal(loc=0, scale=sdev)
     vy = random.normal(loc=0, scale=sdev)
     vz = random.normal(loc=0, scale=sdev)
@@ -26,33 +47,64 @@ def draw_maxwell_boltzmann_velocity(m, T):
 
 
 def cross_section(molecule, electron_nrg):
+    """
+    Determines the cross section of a molecule depending on incoming electron energy
+
+    param molecule: symbol of the atmospheric molecule tested
+    type moleucle: str
+    param electron_nrg: energy of the incoming electron
+    type electron_nrg: float
+    rtype: float
+    """
+    # this is rudimentary version of the function where the cross section is not a function of the nrg but this is an approximation
     if molecule == "O":
-        return 10**(-17) #m² @13.62eV
+        return 10 ** (-17)  # m² @13.62eV
     elif molecule == "O2":
-        return 10**(-19) #m²
+        return 10 ** (-19)  # m²
     elif molecule == "H":
-        return 10**(-19) #m² @13eV 1s2 -> 1s2p
+        return 10 ** (-19)  # m² @13eV 1s2 -> 1s2p
     elif molecule == "HE":
-        return 10**(-17) #m² @20.6eV 1S2 -> 1s2p
+        return 10 ** (-17)  # m² @20.6eV 1S2 -> 1s2p
     elif molecule == "AR":
-        return 10**(-20) #m² @circa 20eV
+        return 10 ** (-20)  # m² @circa 20eV
     elif molecule == "N2":
-        return 10**(-20) #m²
+        return 10 ** (-20)  # m²
+
 
 def mass(molecule):
+    """
+    Determines the mass of a molecule
+
+    param molecule: symbol of the atmospheric molecule tested
+    type molecule: str
+    rtype: float
+    """
+    #doesn't actually need to be a function
     if molecule == "O":
-        molar_mass = 15.999 #g/mol
+        molar_mass = 15.999  # g/mol
     elif molecule == "O2":
-        molar_mass = 29.998 #g//mol
+        molar_mass = 29.998  # g//mol
     elif molecule == "H":
-        molar_mass = 1.0080 #g/mol
+        molar_mass = 1.0080  # g/mol
     elif molecule == "HE":
-        molar_mass = 4.002602 #g/mol
+        molar_mass = 4.002602  # g/mol
     elif molecule == "AR":
-        molar_mass = 39.95 #g/mol
+        molar_mass = 39.95  # g/mol
     elif molecule == "N2":
-        molar_mass = 28.014 #g/mol
-    return molar_mass * Na 
+        molar_mass = 28.014  # g/mol
+    return molar_mass * Na
+
 
 def field_contribution(q_other, r_self, r_other):
-    return (q_other) / (4 * pi * e0 * abs(r_other - r_self)**2) * r_self - r_other
+    """
+    Computes the Coulomb force btw two particules without the charge of the receiving particle
+
+    param q_other: charge of the other particle
+    type q_other: float
+    param r_self: position of the receiving particle
+    type r_self: Vector
+    param r_self: position of the other particle
+    type r_self: Vector
+    rtype: Vector
+    """
+    return (q_other) / (4 * pi * e0 * abs(r_other - r_self) ** 2) * r_self - r_other
