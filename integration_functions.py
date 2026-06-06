@@ -81,7 +81,7 @@ def euler(
     return Y_next
 
 
-def RK4(previous_conditions, f, t, h, number_of_steps):
+def RK4(previous_conditions, f, t, h, number_of_steps, E=Vector([0, 0, 0])):
     """
     Calculates an integration step using RK4
 
@@ -101,22 +101,21 @@ def RK4(previous_conditions, f, t, h, number_of_steps):
     Y = previous_conditions[0]
 
     # k1 = f(t, Y)
-    k1 = differential_equation(t, Y)
+    k1 = f(t, Y, E=E)
 
     # k2 = f(t + h/2, Y + k1 * (h/2))
-    k2 = differential_equation(t + h / 2.0, Y + k1 * (h / 2.0))
+    k2 = f(t + h / 2.0, Y + k1 * (h / 2.0), E=E)
 
     # k3 = f(t + h/2, Y + k2 * (h/2))
-    k3 = differential_equation(t + h / 2.0, Y + k2 * (h / 2.0))
+    k3 = f(t + h / 2.0, Y + k2 * (h / 2.0), E=E)
 
     # k4 = f(t + h, Y + k3 * h)
-    k4 = differential_equation(t + h, Y + k3 * h)
+    k4 = f(t + h, Y + k3 * h, E=E)
 
     # Combine to produce next value
     Y_next = Y + (k1 * (h / 6.0) + k2 * (h / 3.0) + k3 * (h / 3.0) + k4 * (h / 6.0))
 
     return Y_next
-
 
 def dormand_prince(
     previous_conditions: List[Vector],

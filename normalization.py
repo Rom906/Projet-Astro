@@ -19,7 +19,7 @@ Where:
 
 NORMALIZATION SCALES:
 =====================
-- Length scale: R₀ (Earth radius)
+- Length scale: R₀ (Earth radius) 
 - Time scale: T = 4πmₚR₀³/(qμ₀m₀)
 - Spatial coordinate: r = R₀ * u
 - Temporal coordinate: t = T * τ
@@ -74,23 +74,22 @@ class NormalizationParameters:
         # Time scale from normalization: T = 4πmₚR₀³/(qμ₀m₀)
         # Using q/m instead: T = 4πR₀³/((q/m)·μ₀·m₀)
         self.T = 4 * pi * self.R0**3 / (self.q_over_m * 4 * mu0_over_4pi * m_oplus)
-        print(self.T)
 
-    def dimensionalize_position(self, u_norm: Vector | np.ndarray) -> Vector:
+    def dimensionalize_position(self, u_norm) -> Vector:
         """Convert normalized position u to dimensional r = R₀·u."""
         if isinstance(u_norm, Vector):
             return Vector([u_norm[i] * self.R0 for i in range(3)])
         else:
             return Vector((u_norm * self.R0).tolist())
 
-    def normalize_position(self, r_dim: Vector | np.ndarray) -> Vector:
+    def normalize_position(self, r_dim) -> Vector:
         """Convert dimensional position r to normalized u = r/R₀."""
         if isinstance(r_dim, Vector):
             return Vector([r_dim[i] / self.R0 for i in range(3)])
         else:
             return Vector((r_dim / self.R0).tolist())
 
-    def dimensionalize_velocity(self, u_prime_norm: Vector | np.ndarray) -> Vector:
+    def dimensionalize_velocity(self, u_prime_norm) -> Vector:
         """Convert normalized velocity u' to dimensional v = (R₀/T)·u'."""
         scale = self.R0 / self.T
         if isinstance(u_prime_norm, Vector):
@@ -98,9 +97,7 @@ class NormalizationParameters:
         else:
             return Vector((u_prime_norm * scale).tolist())
 
-    def dimensionalize_velocity_time_only(
-        self, u_prime_norm: Vector | np.ndarray
-    ) -> Vector:
+    def dimensionalize_velocity_time_only(self, u_prime_norm) -> Vector:
         """Convert normalized velocity u' to dimensional v = (1/T)·u'."""
         scale = 1 / self.T
         if isinstance(u_prime_norm, Vector):
@@ -108,7 +105,7 @@ class NormalizationParameters:
         else:
             return Vector((u_prime_norm * scale).tolist())
 
-    def normalize_velocity(self, v_dim: Vector | np.ndarray) -> Vector:
+    def normalize_velocity(self, v_dim) -> Vector:
         """Convert dimensional velocity v to normalized u' = (T/R₀)·v."""
         scale = self.T / self.R0
         if isinstance(v_dim, Vector):
@@ -116,9 +113,7 @@ class NormalizationParameters:
         else:
             return Vector((v_dim * scale).tolist())
 
-    def rescale_normalized_time_intervall(
-        self, norm_intervall: List[float]
-    ) -> List[float]:
+    def rescale_normalized_time_intervall(self, norm_intervall: List[float]) -> List[float]:
         denormalized_intervall = []
         for i in range(len(norm_intervall)):
             denormalized_intervall.append(norm_intervall[i] * self.T)
@@ -267,11 +262,12 @@ def create_normalized_differential_equation(
 
     return f_normalized
 
-
 def differential_equation_normalized(
     tau: float,
     Y: Vector,
-    mu_direction=mu.normalized(),
+    E = Vector([0, 0, 0]),
+    params: NormalizationParameters = None,
+    mu_direction=mu.normalized()
 ) -> Vector:
     """
     Direct evaluation of normalized differential equation.
@@ -318,7 +314,7 @@ def differential_equation_normalized(
     B_vector = Vector(B_field.tolist())
 
     # Compute acceleration
-    acceleration = v_norm @ B_vector
+    acceleration = v_norm @ B_vector + E
 
     return Vector([v_norm, acceleration])
 
@@ -394,3 +390,6 @@ def convert_to_dimensional_time_only(u_norm, v_norm, params: NormalizationParame
     """
     v_dim = params.dimensionalize_velocity_time_only(v_norm)
     return u_norm, v_dim
+
+def convert_electric_field_to_normalized(E, params: NormalizationParameters):
+    return E * params.q_over_m * params.T**2 / params.R0
