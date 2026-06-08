@@ -13,4 +13,4 @@ er = Vector([1, 0, 0])  # first unitay vector of the basis for spherical coordin
 UNIT = ["km", "m", "mm", "um", "nm", "pm"] #Units for the scientific notation, from the biggest to the smallest
 kB = 1.380649e-23 # Boltzmann's constant [J/K]
 dalton = 1.6605300000013e-27 #conversion dalton to kg [kg]
-e0 = 8.85418782e10-12 #vacuum permittivity [F.m^-1] 
+e0 = 8.85418782e10-12 #vacum permittivity [F.m^-1] 
